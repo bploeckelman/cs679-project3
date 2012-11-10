@@ -38,7 +38,12 @@ function Game(canvas, renderer) {
         TEST_MESH = new THREE.Mesh(
             new THREE.PlaneGeometry(GRID_SIZE.w, GRID_SIZE.h,
                                     GRID_SIZE.xcells, GRID_SIZE.ycells),
-            new THREE.MeshBasicMaterial({ color: 0xff00ff, wireframe: true })
+            new THREE.MeshBasicMaterial({ color: 0x112211, wireframe: true })
+        ),
+        TEST_MESH2 = new THREE.Mesh(
+            new THREE.PlaneGeometry(GRID_SIZE.w, GRID_SIZE.h,
+                                    GRID_SIZE.xcells / 4, GRID_SIZE.ycells / 4),
+            new THREE.MeshBasicMaterial({ color: 0x115511, wireframe: true })
         ),
         ZOOM_TIME  = 2500,
         PAN_SPEED  = 3,
@@ -47,14 +52,16 @@ function Game(canvas, renderer) {
     // Game methods -----------------------------------------------------------
     this.update = function () { 
         //this.level.update();
-        //updatePlayer(this);
+        this.player.update(); 
         //handleCollisions(this);
 
-        // Pan the camera
+        // Pan the camera directly with wasd
+        /*
         if      (this.input.panUp)    this.camera.position.y += PAN_SPEED;
         else if (this.input.panDown)  this.camera.position.y -= PAN_SPEED;
         if      (this.input.panLeft)  this.camera.position.x -= PAN_SPEED;
         else if (this.input.panRight) this.camera.position.x += PAN_SPEED;
+        */
 
         // Zoom the camera
         if (this.input.zoom) {
@@ -65,17 +72,16 @@ function Game(canvas, renderer) {
             }
         }
 
-        //TODO: remove WASD camera movement once player tracking is in place:
-        //updateCamera(this); {
-        //  this.camera.position.set(this.player.center);
-        //  this.camera.position.z = ZOOM_LEVEL;
-        //  this.camera.lookAt(this.player.center);
-        //}
-
-        // Spin the mesh around a bit
-        //TEST_MESH.rotation.x += 0.01;
-        //TEST_MESH.rotation.y += 0.001;
-        //TEST_MESH.rotation.z += 0.01;
+        // Follow the player
+        this.camera.position.x = this.player.mesh.position.x;
+        this.camera.position.y = this.player.mesh.position.y;
+        this.camera.lookAt(this.player.mesh.position);
+        /*
+        console.log("player pos: ("
+                + this.player.mesh.position.x + ", "
+                + this.player.mesh.position.y + ", "
+                + this.player.mesh.position.z + ")");
+        */
 
         TWEEN.update();
     };
@@ -173,12 +179,17 @@ function Game(canvas, renderer) {
         game.scene.add(game.camera);
         game.scene.add(new THREE.AxisHelper());
         game.scene.add(TEST_MESH);
+        game.scene.add(TEST_MESH2);
 
         // Reposition the grid so its bottom left corner at (0,0,0)
         TEST_MESH.position.set(GRID_SIZE.w / 2, GRID_SIZE.h / 2, 0);
+        TEST_MESH2.position.set(GRID_SIZE.w / 2, GRID_SIZE.h / 2, 0.1);
 
-        // Initialize the player and level
-        //game.player = new Player(game);
+        // Initialize the player
+        game.player = new Player(game);
+        game.scene.add(game.player.mesh);
+
+        // Initialize the level
         //game.level  = new Level(game);
 
         console.log("Game initialized.");
