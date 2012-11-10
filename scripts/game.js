@@ -82,9 +82,9 @@ function Game(canvas, renderer) {
             dy = this.player.position.y - this.camera.position.y,
             d  = Math.sqrt(dx*dx + dy*dy);
 
-        if (d < 0.5) {
-            this.camera.position.x = this.player.mesh.position.x;
-            this.camera.position.y = this.player.mesh.position.y;
+        if (d < 150) {
+            this.camera.position.x = this.player.mesh.position.x - 100;
+            this.camera.position.y = this.player.mesh.position.y - 100;
         } else {
             if (this.player.velocity.x != 0) {
                 this.camera.velocity.x = this.player.velocity.x;
@@ -105,6 +105,8 @@ function Game(canvas, renderer) {
             this.camera.position.y += this.camera.velocity.y;
         }
 
+        // NOTE: uncomment this to make the camera tilt until it catches up
+        this.camera.up = new THREE.Vector3(0,0,1);
         this.camera.lookAt(this.player.mesh.position);
 
         TWEEN.update();

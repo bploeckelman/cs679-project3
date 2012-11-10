@@ -28,25 +28,74 @@ function Player (game) {
         else if (game.input.panDown)  this.velocity.y -= MOVE_SPEED.y;
         else                          this.velocity.y  = 0;
 
+        // Limit the players maximum velocity
         if (this.velocity.x >  MAX_SPEED.x) this.velocity.x =  MAX_SPEED.x;
         if (this.velocity.x < -MAX_SPEED.x) this.velocity.x = -MAX_SPEED.x;
 
         if (this.velocity.y >  MAX_SPEED.y) this.velocity.y =  MAX_SPEED.y;
         if (this.velocity.y < -MAX_SPEED.y) this.velocity.y = -MAX_SPEED.y;
 
+        // Position the mesh to correspond with players updated position
         this.mesh.position = this.position.addSelf(this.velocity).clone();
 
-
+        // Handle spin move
         if (game.input.spin && !this.isSpinning) {
-            var player = this;
-            this.isSpinning = true;
+            var player = this,
+                currentZoom = game.camera.position.z;
+
+            player.isSpinning = true;
+            
+            // Rotate the player
+            var ROT_AMOUNT = -8 * Math.PI,
+                ROT_TIME   = 2000;
+
             new TWEEN.Tween({ rot: 0 })
-                .to({ rot: -4 * Math.PI }, 1500)
+                .to({ rot: ROT_AMOUNT }, ROT_TIME)
                 .easing(TWEEN.Easing.Quadratic.InOut)
+                // TODO: swap the next two statements this for a standup square
                 .onUpdate(function () { player.mesh.rotation.z = this.rot })
-                // TODO: uncomment this for a standup square
                 //.onUpdate(function () { player.mesh.rotation.y = this.rot })
-                .onComplete(function () { player.isSpinning = false; })
+                //.onComplete(function () { player.isSpinning = false; })
+                .start();
+
+            // NOTE: just messing around here, don't need to keep this....
+            var ZOOM_IN          = 100,
+                ZOOM_OUT         = 100,
+                ZOOM_IN_TIME     = 1500,
+                ZOOM_OUT_TIME    = 700,
+                ZOOM_RETURN_TIME = 400;
+
+            // Zoom the camera in...
+            new TWEEN.Tween({ zoom: currentZoom })
+                .to({ zoom: currentZoom - ZOOM_IN }, ZOOM_IN_TIME)
+                .easing(TWEEN.Easing.Elastic.Out)
+                .onUpdate(function () { game.camera.position.z = this.zoom; })
+                .onComplete(function () {
+                    game.camera.position.z = currentZoom - ZOOM_IN;
+                    // ...Then zoom farther out...
+                    new TWEEN.Tween({ zoom: currentZoom - ZOOM_IN})
+                        .to({ zoom: currentZoom + ZOOM_OUT }, ZOOM_OUT_TIME)
+                        .easing(TWEEN.Easing.Quadratic.Out)
+                        .onUpdate(function () {
+                            game.camera.position.z = this.zoom;
+                        })
+                        .onComplete(function () {
+                            game.camera.position.z = currentZoom + ZOOM_OUT;
+                            // ...Then zoom back to the starting level...
+                            new TWEEN.Tween({ zoom: currentZoom + ZOOM_OUT})
+                                .to({ zoom: currentZoom }, ZOOM_RETURN_TIME)
+                                .easing(TWEEN.Easing.Cubic.In)
+                                .onUpdate(function () {
+                                    game.camera.position.z = this.zoom;
+                                })
+                                .onComplete(function () {
+                                    game.camera.position.z = currentZoom;
+                                    player.isSpinning = false;
+                                })
+                                .start();
+                        })
+                        .start();
+                })
                 .start();
         }
     };
