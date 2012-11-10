@@ -15,14 +15,16 @@ function Game(canvas, renderer) {
         panLeft:  false,
         panRight: false,
         zoom:     false,
-        zoomMod:  false
+        zoomMod:  false,
+        spin:     false,
     };
     this.keymap = {
         panUp:    87, // W
         panDown:  83, // S
         panLeft:  65, // A
         panRight: 68, // D
-        zoom:     32, // Space (shift switches between in/out)
+        zoom:     90, // Z (shift switches between in/out)
+        spin:     32, // Space
     };
 
 
@@ -142,6 +144,9 @@ function Game(canvas, renderer) {
             case game.keymap.zoom:
                 game.input.zoom = true;
             break;
+            case game.keymap.spin:
+                game.input.spin = true;
+            break;
         };
     };
 
@@ -155,6 +160,7 @@ function Game(canvas, renderer) {
             case game.keymap.panLeft:  game.input.panLeft  = false; break;
             case game.keymap.panRight: game.input.panRight = false; break;
             case game.keymap.zoom:     game.input.zoom     = false; break;
+            case game.keymap.spin:     game.input.spin     = false; break;
         };
     };
 

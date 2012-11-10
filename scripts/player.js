@@ -7,6 +7,7 @@ function Player (game) {
     this.mesh     = null;
     this.position = null;
     this.velocity = null;
+    this.isSpinning = false;
 
 
     // Private variables ------------------------------------------------------
@@ -34,6 +35,20 @@ function Player (game) {
         if (this.velocity.y < -MAX_SPEED.y) this.velocity.y = -MAX_SPEED.y;
 
         this.mesh.position = this.position.addSelf(this.velocity).clone();
+
+
+        if (game.input.spin && !this.isSpinning) {
+            var player = this;
+            this.isSpinning = true;
+            new TWEEN.Tween({ rot: 0 })
+                .to({ rot: -4 * Math.PI }, 1500)
+                .easing(TWEEN.Easing.Quadratic.InOut)
+                .onUpdate(function () { player.mesh.rotation.z = this.rot })
+                // TODO: uncomment this for a standup square
+                //.onUpdate(function () { player.mesh.rotation.y = this.rot })
+                .onComplete(function () { player.isSpinning = false; })
+                .start();
+        }
     };
 
 
@@ -46,6 +61,8 @@ function Player (game) {
             new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true })
         );
         player.mesh.position.set(PLAYER_SIZE.w / 2, PLAYER_SIZE.h / 2, PLAYER_Z);
+        // TODO: uncomment this for a standup square
+        //player.mesh.rotation.x = Math.PI / 2;
         player.position = player.mesh.position;
         player.velocity = new THREE.Vector3(0,0,0);
 
