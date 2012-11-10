@@ -58,7 +58,7 @@ var MAX_LIGHTS = 20;
     }, false);
 
     // Setup stats (fps and ms render time graphs)
-    stats.setMode(1); // mode 0 = fps, mode 1 = ms render time
+    stats.setMode(0); // mode 0 = fps, mode 1 = ms render time
     stats.domElement.style.position = "absolute";
     stats.domElement.style.top = canvas.offsetTop + 4 + "px";
     stats.domElement.style.left = canvas.offsetLeft + "px";
@@ -66,15 +66,14 @@ var MAX_LIGHTS = 20;
 
     // Create the game object
     game = new Game(canvas, renderer);
-    input = {};
 
     // Enter main loop
     // ---------------
     (function mainLoop() {
         stats.begin();
         requestFrame(mainLoop);
-        game.update(input);
-        game.render(input);
+        game.update();
+        game.render();
         stats.end();
     })();
 
