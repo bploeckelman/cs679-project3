@@ -47,7 +47,10 @@ function Game(canvas, renderer) {
         ),
         ZOOM_TIME  = 2500,
         PAN_SPEED  = 3,
-        ZOOM_SPEED = 1;
+        ZOOM_SPEED = 1,
+        CAMERA_FRICTION = { x: 0.9, y: 0.9 };
+
+
 
     // Game methods -----------------------------------------------------------
     this.update = function () { 
@@ -72,16 +75,35 @@ function Game(canvas, renderer) {
             }
         }
 
-        // Follow the player
-        this.camera.position.x = this.player.mesh.position.x;
-        this.camera.position.y = this.player.mesh.position.y;
+        // Update the camera to follow the player
+        var dx = this.player.position.x - this.camera.position.x,
+            dy = this.player.position.y - this.camera.position.y,
+            d  = Math.sqrt(dx*dx + dy*dy);
+
+        if (d < 0.5) {
+            this.camera.position.x = this.player.mesh.position.x;
+            this.camera.position.y = this.player.mesh.position.y;
+        } else {
+            if (this.player.velocity.x != 0) {
+                this.camera.velocity.x = this.player.velocity.x;
+            } else {
+                this.camera.velocity.x = dx / d;
+            }
+
+            if (this.player.velocity.y != 0) {
+                this.camera.velocity.y = this.player.velocity.y;
+            } else {
+                this.camera.velocity.y = dy / d;
+            }
+
+            this.camera.velocity.x *= CAMERA_FRICTION.x;
+            this.camera.velocity.y *= CAMERA_FRICTION.y;
+
+            this.camera.position.x += this.camera.velocity.x;
+            this.camera.position.y += this.camera.velocity.y;
+        }
+
         this.camera.lookAt(this.player.mesh.position);
-        /*
-        console.log("player pos: ("
-                + this.player.mesh.position.x + ", "
-                + this.player.mesh.position.y + ", "
-                + this.player.mesh.position.z + ")");
-        */
 
         TWEEN.update();
     };
@@ -150,6 +172,7 @@ function Game(canvas, renderer) {
         // Initialize the camera
         game.camera = new THREE.PerspectiveCamera(FOV, ASPECT, NEAR, FAR);
         game.camera.position.set(0, 0, 200);
+        game.camera.velocity = new THREE.Vector3(0,0,0);
         game.camera.lookAt(new THREE.Vector3(0,0,0));
 
         // Set up a few tweens to zoom the camera in and out

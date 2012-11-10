@@ -13,25 +13,25 @@ function Player (game) {
     var PLAYER_SIZE = { w: 9, h: 9 },
         MOVE_SPEED  = { x: 0.25, y: 0.25 },
         MAX_SPEED   = { x: 3, y: 3 },
-        FRICTION    = { x: 0.9, y: 0.9 },
         PLAYER_Z    = 0.2;
 
 
     // Player methods ---------------------------------------------------------
     this.update = function () {
         // Move the player
-        if      (game.input.panUp)    this.velocity.y += MOVE_SPEED.y;
-        else if (game.input.panDown)  this.velocity.y -= MOVE_SPEED.y;
         if      (game.input.panLeft)  this.velocity.x -= MOVE_SPEED.x;
         else if (game.input.panRight) this.velocity.x += MOVE_SPEED.x;
+        else                          this.velocity.x  = 0;
+
+        if      (game.input.panUp)    this.velocity.y += MOVE_SPEED.y;
+        else if (game.input.panDown)  this.velocity.y -= MOVE_SPEED.y;
+        else                          this.velocity.y  = 0;
 
         if (this.velocity.x >  MAX_SPEED.x) this.velocity.x =  MAX_SPEED.x;
         if (this.velocity.x < -MAX_SPEED.x) this.velocity.x = -MAX_SPEED.x;
+
         if (this.velocity.y >  MAX_SPEED.y) this.velocity.y =  MAX_SPEED.y;
         if (this.velocity.y < -MAX_SPEED.y) this.velocity.y = -MAX_SPEED.y;
-
-        this.velocity.x *= FRICTION.x;
-        this.velocity.y *= FRICTION.y;
 
         this.mesh.position = this.position.addSelf(this.velocity).clone();
     };
