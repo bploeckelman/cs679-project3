@@ -105,8 +105,7 @@ function Game(canvas, renderer) {
             this.camera.position.y += this.camera.velocity.y;
         }
 
-        // NOTE: uncomment this to make the camera tilt until it catches up
-        this.camera.up = new THREE.Vector3(0,0,1);
+        // Force camera to center on the player
         this.camera.lookAt(this.player.mesh.position);
 
         TWEEN.update();
@@ -181,6 +180,7 @@ function Game(canvas, renderer) {
         game.camera = new THREE.PerspectiveCamera(FOV, ASPECT, NEAR, FAR);
         game.camera.position.set(0, 0, 200);
         game.camera.velocity = new THREE.Vector3(0,0,0);
+        game.camera.up = new THREE.Vector3(0,0,1);
         game.camera.lookAt(new THREE.Vector3(0,0,0));
 
         // Set up a few tweens to zoom the camera in and out
