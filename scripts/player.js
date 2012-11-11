@@ -115,6 +115,31 @@ function Player (game) {
         player.position = player.mesh.position;
         player.velocity = new THREE.Vector3(0,0,0);
 
+        var BREATHE_TIME = 1000,
+            MAX_SCALE = 1.25,
+            MIN_SCALE = 0.75,
+            breatheIn = new TWEEN.Tween({ scale: MIN_SCALE })
+                .to({ scale: MAX_SCALE }, BREATHE_TIME)
+                .easing(TWEEN.Easing.Cubic.InOut)
+                .onUpdate(function () {
+                    player.mesh.scale.x = this.scale;
+                    player.mesh.scale.y = this.scale;
+                })
+                .onComplete(function () { this.scale = MIN_SCALE; }),
+            breatheOut = new TWEEN.Tween({ scale: MAX_SCALE })
+                .to({ scale: MIN_SCALE }, BREATHE_TIME)
+                .easing(TWEEN.Easing.Cubic.InOut)
+                .onUpdate(function () {
+                    player.mesh.scale.x = this.scale;
+                    player.mesh.scale.y = this.scale;
+                })
+                .onComplete(function () { this.scale = MAX_SCALE; });
+
+        breatheIn.chain(breatheOut);
+        breatheOut.chain(breatheIn);
+        breatheIn.start();
+
+
         console.log("Player initialized.");
     })(this);
 
