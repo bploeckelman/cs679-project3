@@ -11,7 +11,8 @@ function Player (game) {
 
 
     // Private variables ------------------------------------------------------
-    var PLAYER_SIZE = { w: 9, h: 9 },
+    var self = this,
+        PLAYER_SIZE = { w: 9, h: 9 },
         MOVE_SPEED  = { x: 0.25, y: 0.25 },
         MAX_SPEED   = { x: 3, y: 3 },
         PLAYER_Z    = 0.2;
@@ -40,10 +41,9 @@ function Player (game) {
 
         // Handle spin move
         if (game.input.spin && !this.isSpinning) {
-            var player = this,
-                currentZoom = game.camera.position.z;
+            var currentZoom = game.camera.position.z;
 
-            player.isSpinning = true;
+            self.isSpinning = true;
             
             // Rotate the player
             var ROT_AMOUNT = -8 * Math.PI,
@@ -52,10 +52,7 @@ function Player (game) {
             new TWEEN.Tween({ rot: 0 })
                 .to({ rot: ROT_AMOUNT }, ROT_TIME)
                 .easing(TWEEN.Easing.Quadratic.InOut)
-                // TODO: swap the next two statements this for a standup square
-                .onUpdate(function () { player.mesh.rotation.z = this.rot })
-                //.onUpdate(function () { player.mesh.rotation.y = this.rot })
-                //.onComplete(function () { player.isSpinning = false; })
+                .onUpdate(function () { self.mesh.rotation.z = this.rot })
                 .start();
 
             // NOTE: just messing around here, don't need to keep this....
@@ -90,7 +87,7 @@ function Player (game) {
                                 })
                                 .onComplete(function () {
                                     game.camera.position.z = currentZoom;
-                                    player.isSpinning = false;
+                                    self.isSpinning = false;
                                 })
                                 .start();
                         })
@@ -105,16 +102,16 @@ function Player (game) {
     (this.init = function (player) {
         console.log("Player initializing...");
 
+        // Create player mesh
         player.mesh = new THREE.Mesh(
             new THREE.PlaneGeometry(PLAYER_SIZE.w, PLAYER_SIZE.h),
             new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true })
         );
         player.mesh.position.set(PLAYER_SIZE.w / 2, PLAYER_SIZE.h / 2, PLAYER_Z);
-        // TODO: uncomment this for a standup square
-        //player.mesh.rotation.x = Math.PI / 2;
         player.position = player.mesh.position;
         player.velocity = new THREE.Vector3(0,0,0);
 
+        // Create "breathing" animation
         var BREATHE_TIME = 1000,
             MAX_SCALE = 1.25,
             MIN_SCALE = 0.75,
@@ -139,9 +136,8 @@ function Player (game) {
         breatheOut.chain(breatheIn);
         breatheIn.start();
 
-
         console.log("Player initialized.");
-    })(this);
+    })(self);
 
 } // end Player object
 

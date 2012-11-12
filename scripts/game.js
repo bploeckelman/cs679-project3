@@ -30,7 +30,8 @@ function Game(canvas, renderer) {
 
 
     // Private variables ------------------------------------------------------
-    var GLOBAL_LIGHT0 = new THREE.AmbientLight(0x4f4f4f),
+    var self = this,
+        GLOBAL_LIGHT0 = new THREE.AmbientLight(0x4f4f4f),
         GLOBAL_FOG0   = new THREE.Fog(0xa0a0a0, 1, 1000),
         FOV    = 67,
         ASPECT = canvas.width / canvas.height,
@@ -48,120 +49,108 @@ function Game(canvas, renderer) {
             new THREE.MeshBasicMaterial({ color: 0x115511, wireframe: true })
         ),
         ZOOM_TIME  = 2500,
-        PAN_SPEED  = 3,
         ZOOM_SPEED = 1,
         CAMERA_FRICTION = { x: 0.9, y: 0.9 };
 
 
-
     // Game methods -----------------------------------------------------------
     this.update = function () { 
-        //this.level.update();
-        this.player.update(); 
-        //handleCollisions(this);
-
-        // Pan the camera directly with wasd
-        /*
-        if      (this.input.panUp)    this.camera.position.y += PAN_SPEED;
-        else if (this.input.panDown)  this.camera.position.y -= PAN_SPEED;
-        if      (this.input.panLeft)  this.camera.position.x -= PAN_SPEED;
-        else if (this.input.panRight) this.camera.position.x += PAN_SPEED;
-        */
+        //self.level.update();
+        self.player.update(); 
+        //handleCollisions(self);
 
         // Zoom the camera
-        if (this.input.zoom) {
-            if (this.input.zoomMod) {
-                this.camera.position.z += ZOOM_SPEED;
+        if (self.input.zoom) {
+            if (self.input.zoomMod) {
+                self.camera.position.z += ZOOM_SPEED;
             } else {
-                this.camera.position.z -= ZOOM_SPEED;
+                self.camera.position.z -= ZOOM_SPEED;
             }
         }
 
         // Update the camera to follow the player
-        var dx = this.player.position.x - this.camera.position.x,
-            dy = this.player.position.y - this.camera.position.y,
+        var dx = self.player.position.x - self.camera.position.x,
+            dy = self.player.position.y - self.camera.position.y,
             d  = Math.sqrt(dx*dx + dy*dy);
 
         if (d < 150) {
-            this.camera.position.x = this.player.mesh.position.x - 100;
-            this.camera.position.y = this.player.mesh.position.y - 100;
+            self.camera.position.x = self.player.mesh.position.x - 100;
+            self.camera.position.y = self.player.mesh.position.y - 100;
         } else {
-            if (this.player.velocity.x != 0) {
-                this.camera.velocity.x = this.player.velocity.x;
+            if (self.player.velocity.x != 0) {
+                self.camera.velocity.x = self.player.velocity.x;
             } else {
-                this.camera.velocity.x = dx / d;
+                self.camera.velocity.x = dx / d;
             }
 
-            if (this.player.velocity.y != 0) {
-                this.camera.velocity.y = this.player.velocity.y;
+            if (self.player.velocity.y != 0) {
+                self.camera.velocity.y = self.player.velocity.y;
             } else {
-                this.camera.velocity.y = dy / d;
+                self.camera.velocity.y = dy / d;
             }
 
-            this.camera.velocity.x *= CAMERA_FRICTION.x;
-            this.camera.velocity.y *= CAMERA_FRICTION.y;
+            self.camera.velocity.x *= CAMERA_FRICTION.x;
+            self.camera.velocity.y *= CAMERA_FRICTION.y;
 
-            this.camera.position.x += this.camera.velocity.x;
-            this.camera.position.y += this.camera.velocity.y;
+            self.camera.position.x += self.camera.velocity.x;
+            self.camera.position.y += self.camera.velocity.y;
         }
 
         // Force camera to center on the player
-        this.camera.lookAt(this.player.mesh.position);
+        self.camera.lookAt(self.player.mesh.position);
 
         TWEEN.update();
     };
 
 
     this.render = function () {
-        renderer.render(this.scene, this.camera);
-        ++this.frames;
+        renderer.render(self.scene, self.camera);
+        ++self.frames;
     };
 
 
     // Input handlers ---------------------------------------------------------
-    var game = this;
-
     // Key Down
     function handleKeydown (event) {
-        game.input.zoomMod = event.shiftKey;
+        self.input.zoomMod = event.shiftKey;
 
         switch (event.keyCode) {
-            case game.keymap.panUp:
-                game.input.panUp   = true;
-                game.input.panDown = false;
+            case self.keymap.panUp:
+                self.input.panUp   = true;
+                self.input.panDown = false;
             break;
-            case game.keymap.panDown:
-                game.input.panDown = true;
-                game.input.panUp   = false;
+            case self.keymap.panDown:
+                self.input.panDown = true;
+                self.input.panUp   = false;
             break;
-            case game.keymap.panLeft:
-                game.input.panLeft  = true;
-                game.input.panRight = false;
+            case self.keymap.panLeft:
+                self.input.panLeft  = true;
+                self.input.panRight = false;
             break;
-            case game.keymap.panRight:
-                game.input.panRight = true;
-                game.input.panLeft  = false;
+            case self.keymap.panRight:
+                self.input.panRight = true;
+                self.input.panLeft  = false;
             break;
-            case game.keymap.zoom:
-                game.input.zoom = true;
+            case self.keymap.zoom:
+                self.input.zoom = true;
             break;
-            case game.keymap.spin:
-                game.input.spin = true;
+            case self.keymap.spin:
+                self.input.spin = true;
             break;
         };
     };
 
     // Key Up
     function handleKeyup (event) {
-        game.input.zoomMod = event.shiftKey;
+        self.input.zoomMod = event.shiftKey;
 
         switch (event.keyCode) {
-            case game.keymap.panUp:    game.input.panUp    = false; break;
-            case game.keymap.panDown:  game.input.panDown  = false; break;
-            case game.keymap.panLeft:  game.input.panLeft  = false; break;
-            case game.keymap.panRight: game.input.panRight = false; break;
-            case game.keymap.zoom:     game.input.zoom     = false; break;
-            case game.keymap.spin:     game.input.spin     = false; break;
+            case self.keymap.panUp:    self.input.panUp    = false; break;
+            case self.keymap.panDown:  self.input.panDown  = false; break;
+            case self.keymap.panLeft:  self.input.panLeft  = false; break;
+            case self.keymap.panRight: self.input.panRight = false; break;
+            case self.keymap.zoom:     self.input.zoom     = false; break;
+            case self.keymap.spin:     self.input.spin     = false; break;
         };
     };
 
@@ -182,24 +171,6 @@ function Game(canvas, renderer) {
         game.camera.velocity = new THREE.Vector3(0,0,0);
         game.camera.up = new THREE.Vector3(0,0,1);
         game.camera.lookAt(new THREE.Vector3(0,0,0));
-
-        // Set up a few tweens to zoom the camera in and out
-        /*
-        var zoomIn = new TWEEN.Tween({ zoom: 100 })
-                .to({ zoom: 0 }, ZOOM_TIME)
-                .easing(TWEEN.Easing.Sinusoidal.InOut)
-                .onUpdate(function () { game.camera.position.z = this.zoom; })
-                .onComplete(function () { this.zoom = 100 }),
-            zoomOut = new TWEEN.Tween({ zoom: 0 })
-                .to({ zoom: 100 }, ZOOM_TIME)
-                .easing(TWEEN.Easing.Sinusoidal.InOut)
-                .onUpdate(function () { game.camera.position.z = this.zoom; })
-                .onComplete(function () { this.zoom = 0 });
-
-        zoomOut.chain(zoomIn);
-        zoomIn.chain(zoomOut);
-        zoomIn.start();
-        */
 
         // Initialize the three.js scene
         game.scene  = new THREE.Scene();
@@ -224,7 +195,7 @@ function Game(canvas, renderer) {
         //game.level  = new Level(game);
 
         console.log("Game initialized.");
-    })(this);
+    })(self);
 
 } // end Game object
 
