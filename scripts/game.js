@@ -37,25 +37,13 @@ function Game(canvas, renderer) {
         ASPECT = canvas.width / canvas.height,
         NEAR   = 1,
         FAR    = 1000,
-        GRID_SIZE = { w: 1000, h: 1000, xcells: 100, ycells: 100 },
-        TEST_MESH = new THREE.Mesh(
-            new THREE.PlaneGeometry(GRID_SIZE.w, GRID_SIZE.h,
-                                    GRID_SIZE.xcells, GRID_SIZE.ycells),
-            new THREE.MeshBasicMaterial({ color: 0x112211, wireframe: true })
-        ),
-        TEST_MESH2 = new THREE.Mesh(
-            new THREE.PlaneGeometry(GRID_SIZE.w, GRID_SIZE.h,
-                                    GRID_SIZE.xcells / 4, GRID_SIZE.ycells / 4),
-            new THREE.MeshBasicMaterial({ color: 0x115511, wireframe: true })
-        ),
-        ZOOM_TIME  = 2500,
         ZOOM_SPEED = 1,
         CAMERA_FRICTION = { x: 0.9, y: 0.9 };
 
 
     // Game methods -----------------------------------------------------------
     this.update = function () { 
-        //self.level.update();
+        self.level.update();
         self.player.update(); 
         //handleCollisions(self);
 
@@ -180,19 +168,13 @@ function Game(canvas, renderer) {
         // Add stuff to the scene
         game.scene.add(game.camera);
         game.scene.add(new THREE.AxisHelper());
-        game.scene.add(TEST_MESH);
-        game.scene.add(TEST_MESH2);
 
-        // Reposition the grid so its bottom left corner at (0,0,0)
-        TEST_MESH.position.set(GRID_SIZE.w / 2, GRID_SIZE.h / 2, 0);
-        TEST_MESH2.position.set(GRID_SIZE.w / 2, GRID_SIZE.h / 2, 0.1);
+        // Initialize the level
+        game.level  = new Level(game);
 
         // Initialize the player
         game.player = new Player(game);
         game.scene.add(game.player.mesh);
-
-        // Initialize the level
-        //game.level  = new Level(game);
 
         console.log("Game initialized.");
     })(self);

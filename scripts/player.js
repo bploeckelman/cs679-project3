@@ -100,8 +100,6 @@ function Player (game) {
 
     // Constructor ------------------------------------------------------------
     (this.init = function (player) {
-        console.log("Player initializing...");
-
         // Create player mesh
         player.mesh = new THREE.Mesh(
             new THREE.PlaneGeometry(PLAYER_SIZE.w, PLAYER_SIZE.h),
