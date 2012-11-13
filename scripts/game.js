@@ -9,6 +9,7 @@ function Game(canvas, renderer) {
     this.camera = null;
     this.level  = null;
     this.player = null;
+    this.enemies = null;
     this.input  = {
         panUp:    false,
         panDown:  false,
@@ -45,6 +46,10 @@ function Game(canvas, renderer) {
     this.update = function () { 
         self.level.update();
         self.player.update(); 
+
+        for(var i = 0; i < self.enemies.length; ++i) {
+            self.enemies[i].update();
+        }
         //handleCollisions(self);
 
         // Zoom the camera
@@ -175,6 +180,34 @@ function Game(canvas, renderer) {
         // Initialize the player
         game.player = new Player(game);
         game.scene.add(game.player.mesh);
+
+        // Initialize an enemy
+        var NUM_ENEMIES = 20,
+            enemy = null;
+
+        game.enemies = [];
+        for(var i = 0; i < NUM_ENEMIES; ++i){
+            enemy = new Enemy({
+                color:    new THREE.Vector3(
+                                Math.random(),
+                                Math.random(),
+                                Math.random()),
+                position: new THREE.Vector3(
+                                Math.floor(Math.random() * 1000),
+                                Math.floor(Math.random() * 1000), 0.1),
+                size:     new THREE.Vector2(
+                                Math.floor(Math.random() * 40) + 10,
+                                Math.floor(Math.random() * 40) + 10),
+                speed:    new THREE.Vector2(
+                                Math.random() * 1.5,
+                                Math.random() * 1.5),
+                maxspeed: new THREE.Vector2(5,5)
+            });
+            enemy.setFollowTarget(game.player);
+            game.scene.add(enemy.mesh);
+
+            game.enemies.push(enemy);
+        }
 
         console.log("Game initialized.");
     })(self);
