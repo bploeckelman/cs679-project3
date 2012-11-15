@@ -43,6 +43,7 @@ function Game(canvas, renderer) {
 
 
     // Game methods -----------------------------------------------------------
+    // Update
     this.update = function () { 
         self.level.update();
         self.player.update(); 
@@ -50,7 +51,8 @@ function Game(canvas, renderer) {
         for(var i = 0; i < self.enemies.length; ++i) {
             self.enemies[i].update();
         }
-        //handleCollisions(self);
+
+        handleCollisions(self);
 
         // Zoom the camera
         if (self.input.zoom) {
@@ -66,9 +68,9 @@ function Game(canvas, renderer) {
             dy = self.player.position.y - self.camera.position.y,
             d  = Math.sqrt(dx*dx + dy*dy);
 
-        if (d < 150) {
-            self.camera.position.x = self.player.mesh.position.x - 100;
-            self.camera.position.y = self.player.mesh.position.y - 100;
+        if (d < 100) {
+            self.camera.position.x = self.player.mesh.position.x - 50;
+            self.camera.position.y = self.player.mesh.position.y - 50;
         } else {
             if (self.player.velocity.x != 0) {
                 self.camera.velocity.x = self.player.velocity.x;
@@ -96,10 +98,43 @@ function Game(canvas, renderer) {
     };
 
 
+    // Render
     this.render = function () {
         renderer.render(self.scene, self.camera);
         ++self.frames;
     };
+
+    // Handle Collisions
+    function handleCollisions (game) {
+        var player = game.player,
+            playerMin = new THREE.Vector2(
+                player.position.x - 9 / 2,
+                player.position.y - 9 / 2),
+            playerMax = new THREE.Vector2(
+                player.position.x + 9 / 2,
+                player.position.y + 9 / 2);
+
+        for(var i = 0; i < game.enemies.length; ++i) {
+            var enemy = game.enemies[i],
+                enemyMin = new THREE.Vector2(
+                    enemy.position.x - enemy.size.x / 2,
+                    enemy.position.y - enemy.size.y / 2),
+                enemyMax = new THREE.Vector2(
+                    enemy.position.x + enemy.size.x / 2,
+                    enemy.position.y + enemy.size.y / 2);
+
+            if (playerMin.x > enemyMax.x 
+             || playerMax.x < enemyMin.x
+             || playerMin.y > enemyMax.y
+             || playerMax.y < enemyMin.y) {
+                enemy.mesh.material.wireframe = true;
+            } else {
+                if (player.isSpinning) {
+                    enemy.mesh.material.wireframe = false;
+                }
+            }
+        }
+    }
 
 
     // Input handlers ---------------------------------------------------------

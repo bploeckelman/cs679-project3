@@ -44,6 +44,8 @@ function Player (game) {
             var currentZoom = game.camera.position.z;
 
             self.isSpinning = true;
+            self.mesh.scale.x = 5;
+            self.mesh.scale.y = 5;
             
             // Rotate the player
             var ROT_AMOUNT = -8 * Math.PI,
@@ -52,7 +54,8 @@ function Player (game) {
             new TWEEN.Tween({ rot: 0 })
                 .to({ rot: ROT_AMOUNT }, ROT_TIME)
                 .easing(TWEEN.Easing.Quadratic.InOut)
-                .onUpdate(function () { self.mesh.rotation.z = this.rot })
+                .onUpdate(function () { self.mesh.rotation.z = this.rot; })
+                //.onComplete(function () { self.isSpinning = false; })
                 .start();
 
             // NOTE: just messing around here, don't need to keep this....
@@ -94,6 +97,7 @@ function Player (game) {
                         .start();
                 })
                 .start();
+            //*/
         }
     };
 
