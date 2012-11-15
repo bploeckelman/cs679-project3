@@ -3,6 +3,13 @@
 // Game object 
 // ----------------------------------------------------------------------------
 function Game(canvas, renderer) {
+	//FIXME:
+	//Delete me later, just for debugdraw
+	var debugcanvas = document.getElementById("debugcanvas");
+	 debugcanvas.width = 800;
+	 debugcanvas.height = 300;
+	var theContext = debugcanvas.getContext("2d");
+
 
     // Public properties ------------------------------------------------------
     this.frames = 0;            // number of frames drawn
@@ -55,6 +62,7 @@ function Game(canvas, renderer) {
 		//we need to centralize position and velocity update
 		//shouldn't do it twice, once in box2d, and once in our game logic
 		self.box2d.world.Step(1/60, 10, 10);
+		self.box2d.world.DrawDebugData();
     	self.box2d.world.ClearForces();
 		
         self.level.update();
@@ -183,6 +191,8 @@ function Game(canvas, renderer) {
     // Constructor ------------------------------------------------------------
     (this.init = function (game) {
         console.log("Game initializing..."); 
+		
+		 
 
         // Setup input handlers
         document.addEventListener("keyup",   handleKeyup,   false);
@@ -190,6 +200,15 @@ function Game(canvas, renderer) {
 		
 		// Initialize the physics using Box2D
 		game.initBox2d();
+		
+		
+		   var debugDraw = new b2DebugDraw();
+			debugDraw.SetSprite(theContext);
+			debugDraw.SetDrawScale(1.0);
+			debugDraw.SetFillAlpha(0.5);
+			debugDraw.SetLineThickness(1.0);
+			debugDraw.SetFlags(b2DebugDraw.e_shapeBit | b2DebugDraw.e_jointBit);
+			game.box2d.world.SetDebugDraw(debugDraw);
 
         // Initialize the camera
         game.camera = new THREE.PerspectiveCamera(FOV, ASPECT, NEAR, FAR);

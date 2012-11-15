@@ -37,8 +37,11 @@ var MAX_LIGHTS = 20;
     document.getElementsByTagName("body")[0].style.overflow   = "hidden";
 
     // Setup sizes and add the renderer to the document 
-    canvas.width  = canvasWidth;
-    canvas.height = canvasHeight;
+  //  canvas.width  = canvasWidth;
+  //  canvas.height = canvasHeight;
+  //for debug purpos, make canvas smaller
+     canvas.width = 800;
+	 canvas.height = 600;
     renderer.setSize(canvasWidth, canvasHeight);
     document.getElementById("container").appendChild(renderer.domElement);
 

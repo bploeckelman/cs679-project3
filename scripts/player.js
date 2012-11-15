@@ -5,9 +5,10 @@ function Player (game) {
 
     // Public properties ------------------------------------------------------
     this.mesh     = null;
-    this.position = null;
     this.isSpinning = false;
 	this.box2dObject = null;
+	this.position = null;
+	this.velocity = null;
 	//used by box2D
 	this.width = null;
 	this.height = null;
@@ -29,6 +30,7 @@ function Player (game) {
 		var velocity = new b2Vec2;
 		
         // Move the player
+		
         if      (game.input.panLeft)  velocity.x -= MOVE_SPEED.x;
         else if (game.input.panRight) velocity.x += MOVE_SPEED.x;
         else                          velocity.x  = 0;
@@ -43,11 +45,20 @@ function Player (game) {
 
         if (velocity.y >  MAX_SPEED.y) velocity.y =  MAX_SPEED.y;
         if (velocity.y < -MAX_SPEED.y) velocity.y = -MAX_SPEED.y;
-
+		
+		
+	
+		var scale = 100.0;
+		velocity.x = velocity.x * scale;
+		velocity.y = velocity.y * scale;
 		self.box2dObject.body.SetLinearVelocity(velocity);
+		self.velocity = velocity;
 		
         // Position the mesh to correspond with players updated position
-        this.mesh.position = this.position.addSelf(velocity).clone();
+		var position = self.box2dObject.body.GetPosition();
+		this.mesh.position.set(position.x, position.y, this.mesh.position.z);
+		this.position = this.mesh.position;
+		console.log(position);
 
         // Handle spin move
         if (game.input.spin && !this.isSpinning) {
@@ -111,38 +122,21 @@ function Player (game) {
     // Constructor ------------------------------------------------------------
     (this.init = function (player) {
 		
+		// Create Box2D representation
+		player.width = PLAYER_SIZE.w;
+		player.height = PLAYER_SIZE.h;
+		self.box2dObject = new box2dObject(game, player);
+		var position = new b2Vec2(PLAYER_SIZE.w / 2, PLAYER_SIZE.h / 2);
+		self.position = position;
+		self.box2dObject.body.SetPosition(position);
 		
         // Create player mesh
         player.mesh = new THREE.Mesh(
             new THREE.PlaneGeometry(PLAYER_SIZE.w, PLAYER_SIZE.h),
             new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true })
         );
-        player.mesh.position.set(PLAYER_SIZE.w / 2, PLAYER_SIZE.h / 2, PLAYER_Z);
-        player.position = player.mesh.position;
-        player.velocity = new THREE.Vector3(0,0,0);
+        player.mesh.position.set(position.x, position.y, PLAYER_Z);
 		
-	
-		// Create Box2D representation
-		player.width = PLAYER_SIZE.w;
-		player.height = PLAYER_SIZE.h;
-		self.box2dObject = new box2dObject(game, player);
-		
-		/*
-		var bodyDef = new b2BodyDef;
-		bodyDef.type = b2Body.b2_dynamicBody;
-		bodyDef.allowSleep = true;
-		bodyDef.position.Set(player.position.x, player.position.y);
-		player.body = game.box2d.world.CreateBody(bodyDef);
-		player.body.userData = player;
-		
-		var fixDef = new b2FixtureDef;
-		fixDef.shape = new b2PolygonShape();
-		fixDef.shape.SetAsBox(PLAYER_SIZE.w, PLAYER_SIZE.h);
-		fixDef.friction = player.friction;
-		fixDef.restitution = player.restitution;
-		fixDef.density = player.density;
-		player.fixture = player.body.CreateFixture(fixDef);
-		*/
 	
 
         // Create "breathing" animation
