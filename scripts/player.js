@@ -55,49 +55,49 @@ function Player (game) {
                 .to({ rot: ROT_AMOUNT }, ROT_TIME)
                 .easing(TWEEN.Easing.Quadratic.InOut)
                 .onUpdate(function () { self.mesh.rotation.z = this.rot; })
-                //.onComplete(function () { self.isSpinning = false; })
+                .onComplete(function () { self.isSpinning = false; })
                 .start();
 
             // NOTE: just messing around here, don't need to keep this....
-            var ZOOM_IN          = 100,
-                ZOOM_OUT         = 100,
-                ZOOM_IN_TIME     = 1500,
-                ZOOM_OUT_TIME    = 700,
-                ZOOM_RETURN_TIME = 400;
+//            var ZOOM_IN          = 100,
+//                ZOOM_OUT         = 100,
+//                ZOOM_IN_TIME     = 1500,
+//                ZOOM_OUT_TIME    = 700,
+//                ZOOM_RETURN_TIME = 400;
 
-            // Zoom the camera in...
-            new TWEEN.Tween({ zoom: currentZoom })
-                .to({ zoom: currentZoom - ZOOM_IN }, ZOOM_IN_TIME)
-                .easing(TWEEN.Easing.Elastic.Out)
-                .onUpdate(function () { game.camera.position.z = this.zoom; })
-                .onComplete(function () {
-                    game.camera.position.z = currentZoom - ZOOM_IN;
-                    // ...Then zoom farther out...
-                    new TWEEN.Tween({ zoom: currentZoom - ZOOM_IN})
-                        .to({ zoom: currentZoom + ZOOM_OUT }, ZOOM_OUT_TIME)
-                        .easing(TWEEN.Easing.Quadratic.Out)
-                        .onUpdate(function () {
-                            game.camera.position.z = this.zoom;
-                        })
-                        .onComplete(function () {
-                            game.camera.position.z = currentZoom + ZOOM_OUT;
-                            // ...Then zoom back to the starting level...
-                            new TWEEN.Tween({ zoom: currentZoom + ZOOM_OUT})
-                                .to({ zoom: currentZoom }, ZOOM_RETURN_TIME)
-                                .easing(TWEEN.Easing.Cubic.In)
-                                .onUpdate(function () {
-                                    game.camera.position.z = this.zoom;
-                                })
-                                .onComplete(function () {
-                                    game.camera.position.z = currentZoom;
-                                    self.isSpinning = false;
-                                })
-                                .start();
-                        })
-                        .start();
-                })
-                .start();
-            //*/
+//            // Zoom the camera in...
+//            new TWEEN.Tween({ zoom: currentZoom })
+//                .to({ zoom: currentZoom - ZOOM_IN }, ZOOM_IN_TIME)
+//                .easing(TWEEN.Easing.Elastic.Out)
+//                .onUpdate(function () { game.camera.position.z = this.zoom; })
+//                .onComplete(function () {
+//                    game.camera.position.z = currentZoom - ZOOM_IN;
+//                    // ...Then zoom farther out...
+//                    new TWEEN.Tween({ zoom: currentZoom - ZOOM_IN})
+//                        .to({ zoom: currentZoom + ZOOM_OUT }, ZOOM_OUT_TIME)
+//                        .easing(TWEEN.Easing.Quadratic.Out)
+//                        .onUpdate(function () {
+//                            game.camera.position.z = this.zoom;
+//                        })
+//                        .onComplete(function () {
+//                            game.camera.position.z = currentZoom + ZOOM_OUT;
+//                            // ...Then zoom back to the starting level...
+//                            new TWEEN.Tween({ zoom: currentZoom + ZOOM_OUT})
+//                                .to({ zoom: currentZoom }, ZOOM_RETURN_TIME)
+//                                .easing(TWEEN.Easing.Cubic.In)
+//                                .onUpdate(function () {
+//                                    game.camera.position.z = this.zoom;
+//                                })
+//                                .onComplete(function () {
+//                                    game.camera.position.z = currentZoom;
+//                                    self.isSpinning = false;
+//                                })
+//                                .start();
+//                        })
+//                        .start();
+//                })
+//                .start();
+//            //*/
         }
     };
 

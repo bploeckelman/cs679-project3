@@ -18,7 +18,7 @@ var MAX_LIGHTS = 20;
             clearAlpha: 1,
             maxLights:  MAX_LIGHTS // default is 4
         }),
-        stats = new Stats(),
+        stats = null,
         game  = null,
         input = null,
         requestFrame = null;
@@ -58,6 +58,7 @@ var MAX_LIGHTS = 20;
     }, false);
 
     // Setup stats (fps and ms render time graphs)
+    stats = new Stats();
     stats.setMode(0); // mode 0 = fps, mode 1 = ms render time
     stats.domElement.style.position = "absolute";
     stats.domElement.style.top = canvas.offsetTop + 4 + "px";

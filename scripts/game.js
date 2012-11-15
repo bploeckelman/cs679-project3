@@ -216,13 +216,12 @@ function Game(canvas, renderer) {
         game.player = new Player(game);
         game.scene.add(game.player.mesh);
 
-        // Initialize an enemy
-        var NUM_ENEMIES = 20,
-            enemy = null;
+        // TODO : Move this to some Config file maybe Wave.js
+        var NUM_ENEMIES = 20;
 
         game.enemies = [];
         for(var i = 0; i < NUM_ENEMIES; ++i){
-            enemy = new Enemy({
+            var enemy = new Enemy({
                 color:    new THREE.Vector3(
                                 Math.random(),
                                 Math.random(),
