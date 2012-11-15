@@ -6,10 +6,13 @@ function Player (game) {
     // Public properties ------------------------------------------------------
     this.mesh     = null;
     this.position = null;
-    this.velocity = null;
     this.isSpinning = false;
+	this.box2dObject = null;
+	//used by box2D
+	this.width = null;
+	this.height = null;
 
-
+	
     // Private variables ------------------------------------------------------
     var self = this,
         PLAYER_SIZE = { w: 9, h: 9 },
@@ -20,24 +23,31 @@ function Player (game) {
 
     // Player methods ---------------------------------------------------------
     this.update = function () {
+	
+	    //FIXME:
+		//need to scale the velocity....
+		var velocity = new b2Vec2;
+		
         // Move the player
-        if      (game.input.panLeft)  this.velocity.x -= MOVE_SPEED.x;
-        else if (game.input.panRight) this.velocity.x += MOVE_SPEED.x;
-        else                          this.velocity.x  = 0;
+        if      (game.input.panLeft)  velocity.x -= MOVE_SPEED.x;
+        else if (game.input.panRight) velocity.x += MOVE_SPEED.x;
+        else                          velocity.x  = 0;
 
-        if      (game.input.panUp)    this.velocity.y += MOVE_SPEED.y;
-        else if (game.input.panDown)  this.velocity.y -= MOVE_SPEED.y;
-        else                          this.velocity.y  = 0;
+        if      (game.input.panUp)    velocity.y += MOVE_SPEED.y;
+        else if (game.input.panDown)  velocity.y -= MOVE_SPEED.y;
+        else                          velocity.y  = 0;
 
         // Limit the players maximum velocity
-        if (this.velocity.x >  MAX_SPEED.x) this.velocity.x =  MAX_SPEED.x;
-        if (this.velocity.x < -MAX_SPEED.x) this.velocity.x = -MAX_SPEED.x;
+        if (velocity.x >  MAX_SPEED.x) velocity.x =  MAX_SPEED.x;
+        if (velocity.x < -MAX_SPEED.x) velocity.x = -MAX_SPEED.x;
 
-        if (this.velocity.y >  MAX_SPEED.y) this.velocity.y =  MAX_SPEED.y;
-        if (this.velocity.y < -MAX_SPEED.y) this.velocity.y = -MAX_SPEED.y;
+        if (velocity.y >  MAX_SPEED.y) velocity.y =  MAX_SPEED.y;
+        if (velocity.y < -MAX_SPEED.y) velocity.y = -MAX_SPEED.y;
 
+		self.box2dObject.body.SetLinearVelocity(velocity);
+		
         // Position the mesh to correspond with players updated position
-        this.mesh.position = this.position.addSelf(this.velocity).clone();
+        this.mesh.position = this.position.addSelf(velocity).clone();
 
         // Handle spin move
         if (game.input.spin && !this.isSpinning) {
@@ -100,6 +110,8 @@ function Player (game) {
 
     // Constructor ------------------------------------------------------------
     (this.init = function (player) {
+		
+		
         // Create player mesh
         player.mesh = new THREE.Mesh(
             new THREE.PlaneGeometry(PLAYER_SIZE.w, PLAYER_SIZE.h),
@@ -108,6 +120,30 @@ function Player (game) {
         player.mesh.position.set(PLAYER_SIZE.w / 2, PLAYER_SIZE.h / 2, PLAYER_Z);
         player.position = player.mesh.position;
         player.velocity = new THREE.Vector3(0,0,0);
+		
+	
+		// Create Box2D representation
+		player.width = PLAYER_SIZE.w;
+		player.height = PLAYER_SIZE.h;
+		self.box2dObject = new box2dObject(game, player);
+		
+		/*
+		var bodyDef = new b2BodyDef;
+		bodyDef.type = b2Body.b2_dynamicBody;
+		bodyDef.allowSleep = true;
+		bodyDef.position.Set(player.position.x, player.position.y);
+		player.body = game.box2d.world.CreateBody(bodyDef);
+		player.body.userData = player;
+		
+		var fixDef = new b2FixtureDef;
+		fixDef.shape = new b2PolygonShape();
+		fixDef.shape.SetAsBox(PLAYER_SIZE.w, PLAYER_SIZE.h);
+		fixDef.friction = player.friction;
+		fixDef.restitution = player.restitution;
+		fixDef.density = player.density;
+		player.fixture = player.body.CreateFixture(fixDef);
+		*/
+	
 
         // Create "breathing" animation
         var BREATHE_TIME = 1000,

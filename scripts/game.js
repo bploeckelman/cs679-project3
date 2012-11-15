@@ -1,3 +1,4 @@
+
 // ----------------------------------------------------------------------------
 // Game object 
 // ----------------------------------------------------------------------------
@@ -10,6 +11,12 @@ function Game(canvas, renderer) {
     this.level  = null;
     this.player = null;
     this.enemies = null;
+	this.box2d = {
+		world: null,
+		bodyDef: null,
+		fixDef: null,
+	};
+		
     this.input  = {
         panUp:    false,
         panDown:  false,
@@ -43,9 +50,15 @@ function Game(canvas, renderer) {
 
 
     // Game methods -----------------------------------------------------------
-    this.update = function () { 
+    this.update = function () {
+		//FIXME:
+		//we need to centralize position and velocity update
+		//shouldn't do it twice, once in box2d, and once in our game logic
+		self.box2d.world.Step(1/60, 10, 10);
+    	self.box2d.world.ClearForces();
+		
         self.level.update();
-        self.player.update(); 
+        self.player.update();
 
         for(var i = 0; i < self.enemies.length; ++i) {
             self.enemies[i].update();
@@ -102,6 +115,22 @@ function Game(canvas, renderer) {
     };
 
 
+	this.initBox2d = function (){
+		//zero gravity for the world
+		self.box2d.world = new b2World(new b2Vec2(0,0), false);
+		/*
+		self.box2d.bodyDef = new b2BodyDef;
+		self.box2d.bodyDef.allowSleep = true;
+		self.box2d.bodyDef.type = b2Body.b2_dynamicBody;
+		self.box2d.fixDef = new b2FixtureDef;
+		self.box2d.fixDef.density = ddensity;
+		self.box2d.fixDef.friction = dfriction;
+		self.box2d.fixDef.resitution = drestituion;
+		self.box2d.fixDef.shape = new b2PolygonShape();
+		*/
+	}
+	
+	
     // Input handlers ---------------------------------------------------------
     // Key Down
     function handleKeydown (event) {
@@ -149,6 +178,7 @@ function Game(canvas, renderer) {
 
     // TODO: mouse handling
 
+	
 
     // Constructor ------------------------------------------------------------
     (this.init = function (game) {
@@ -157,6 +187,9 @@ function Game(canvas, renderer) {
         // Setup input handlers
         document.addEventListener("keyup",   handleKeyup,   false);
         document.addEventListener("keydown", handleKeydown, false);
+		
+		// Initialize the physics using Box2D
+		game.initBox2d();
 
         // Initialize the camera
         game.camera = new THREE.PerspectiveCamera(FOV, ASPECT, NEAR, FAR);
