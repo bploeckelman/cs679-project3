@@ -8,6 +8,7 @@ function Player (game) {
     this.position = null;
     this.velocity = null;
     this.isSpinning = false;
+    this.damageAmount = 5;
 
 
     // Private variables ------------------------------------------------------
@@ -15,7 +16,8 @@ function Player (game) {
         PLAYER_SIZE = { w: 9, h: 9 },
         MOVE_SPEED  = { x: 0.25, y: 0.25 },
         MAX_SPEED   = { x: 3, y: 3 },
-        PLAYER_Z    = 0.2;
+        PLAYER_Z    = 0.2,
+        SPIN_SLOWDOWN = 0.85;
 
 
     // Player methods ---------------------------------------------------------
@@ -28,6 +30,12 @@ function Player (game) {
         if      (game.input.panUp)    this.velocity.y += MOVE_SPEED.y;
         else if (game.input.panDown)  this.velocity.y -= MOVE_SPEED.y;
         else                          this.velocity.y  = 0;
+
+        // Slow the player down if they are spinning
+        if (this.isSpinning) {
+            this.velocity.x *= SPIN_SLOWDOWN;
+            this.velocity.y *= SPIN_SLOWDOWN;
+        }
 
         // Limit the players maximum velocity
         if (this.velocity.x >  MAX_SPEED.x) this.velocity.x =  MAX_SPEED.x;
@@ -49,7 +57,7 @@ function Player (game) {
             
             // Rotate the player
             var ROT_AMOUNT = -8 * Math.PI,
-                ROT_TIME   = 2000;
+                ROT_TIME   = 1000;
 
             new TWEEN.Tween({ rot: 0 })
                 .to({ rot: ROT_AMOUNT }, ROT_TIME)
@@ -57,47 +65,6 @@ function Player (game) {
                 .onUpdate(function () { self.mesh.rotation.z = this.rot; })
                 .onComplete(function () { self.isSpinning = false; })
                 .start();
-
-            // NOTE: just messing around here, don't need to keep this....
-//            var ZOOM_IN          = 100,
-//                ZOOM_OUT         = 100,
-//                ZOOM_IN_TIME     = 1500,
-//                ZOOM_OUT_TIME    = 700,
-//                ZOOM_RETURN_TIME = 400;
-
-//            // Zoom the camera in...
-//            new TWEEN.Tween({ zoom: currentZoom })
-//                .to({ zoom: currentZoom - ZOOM_IN }, ZOOM_IN_TIME)
-//                .easing(TWEEN.Easing.Elastic.Out)
-//                .onUpdate(function () { game.camera.position.z = this.zoom; })
-//                .onComplete(function () {
-//                    game.camera.position.z = currentZoom - ZOOM_IN;
-//                    // ...Then zoom farther out...
-//                    new TWEEN.Tween({ zoom: currentZoom - ZOOM_IN})
-//                        .to({ zoom: currentZoom + ZOOM_OUT }, ZOOM_OUT_TIME)
-//                        .easing(TWEEN.Easing.Quadratic.Out)
-//                        .onUpdate(function () {
-//                            game.camera.position.z = this.zoom;
-//                        })
-//                        .onComplete(function () {
-//                            game.camera.position.z = currentZoom + ZOOM_OUT;
-//                            // ...Then zoom back to the starting level...
-//                            new TWEEN.Tween({ zoom: currentZoom + ZOOM_OUT})
-//                                .to({ zoom: currentZoom }, ZOOM_RETURN_TIME)
-//                                .easing(TWEEN.Easing.Cubic.In)
-//                                .onUpdate(function () {
-//                                    game.camera.position.z = this.zoom;
-//                                })
-//                                .onComplete(function () {
-//                                    game.camera.position.z = currentZoom;
-//                                    self.isSpinning = false;
-//                                })
-//                                .start();
-//                        })
-//                        .start();
-//                })
-//                .start();
-//            //*/
         }
     };
 

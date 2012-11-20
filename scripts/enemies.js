@@ -11,6 +11,7 @@ function Enemy (description) {
     this.speed    = null;
     this.maxspeed = null;
     this.target   = null;
+    this.health   = null;
 
 
     // Private variables ------------------------------------------------------
@@ -45,6 +46,20 @@ function Enemy (description) {
         if (object instanceof Player) {
             self.target = object;
         }
+    };
+
+
+    this.takeDamage = function (amount) { 
+        if ((self.health = self.health - amount) <= 0) {
+            self.die();
+        } else {
+            // TODO: handle non-lethal damage
+        }
+    };
+
+
+    this.die = function () {
+        // TODO: add any special handling for enemy death here
     };
 
 
@@ -92,6 +107,8 @@ function Enemy (description) {
             })
         );
         enemy.mesh.position = enemy.position;
+
+        enemy.health = 100;
 
         // Create "breathing" animation
         var BREATHE_TIME = 150 * Math.max(enemy.size.x, enemy.size.y),

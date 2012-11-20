@@ -10,6 +10,7 @@ function Game(canvas, renderer) {
     this.level  = null;
     this.player = null;
     this.enemies = null;
+    this.particles = null;
     this.input  = {
         panUp:    false,
         panDown:  false,
@@ -48,8 +49,59 @@ function Game(canvas, renderer) {
         self.level.update();
         self.player.update(); 
 
-        for(var i = 0; i < self.enemies.length; ++i) {
-            self.enemies[i].update();
+        // Update enemies
+        for(var i = self.enemies.length - 1; i >= 0; --i) {
+            var enemy = self.enemies[i];
+            enemy.update();
+
+            // Handle dead enemies
+            if (enemy.health <= 0) {
+                // Spawn a particle system
+                // TODO: Make particle system spawning functions in utilities.js
+                var pgeom = new THREE.Geometry();
+                for (var j = 0; j < 100; ++j) { // TODO remove magic #
+                    var particle = new THREE.Vector3(
+                            enemy.mesh.position.x,
+                            enemy.mesh.position.y,
+                            enemy.mesh.position.z
+                        );
+                    particle.velocity = new THREE.Vector3(
+                        Math.random() * 0.5 - 0.25,
+                        Math.random() * 0.5 - 0.25,
+                        0);
+                    pgeom.vertices.push(particle);
+                }
+
+                var pmat = new THREE.ParticleBasicMaterial({
+                    size: 10,
+                    sizeAttenuation: true,
+                    blending: THREE.NormalBlending, //AdditiveBlending,
+                    color: enemy.color
+                });
+
+                var psys = new THREE.ParticleSystem(pgeom, pmat);
+                psys.sortParticles = true;
+                psys.complete = false;
+
+                // Shrink the size of the particles in the system over time
+                var tween = new TWEEN.Tween({ size: psys.material.size })
+                    .to({ size: 0.0 }, 3000)
+                    .easing(TWEEN.Easing.Circular.Out)
+                    .onUpdate(function () {
+                        psys.material.size = this.size;
+                    })
+                    .onComplete(function () {
+                        psys.complete = true;
+                    })
+                    .start();
+
+                self.particles.push(psys);
+                self.scene.add(psys);
+
+                // Remove the dead enemy from the game
+                self.scene.remove(enemy.mesh);
+                self.enemies.splice(i, 1);
+            }
         }
 
         handleCollisions(self);
@@ -94,6 +146,26 @@ function Game(canvas, renderer) {
         // Force camera to center on the player
         self.camera.lookAt(self.player.mesh.position);
 
+        // Update particle systems
+        for (var i = self.particles.length - 1; i >= 0; --i) {
+            var system = self.particles[i];
+
+            // Remove old systems
+            if (system.complete) {
+                self.scene.remove(system);
+                self.particles.splice(i, 1);
+            } else {
+                // Update the particles
+                for (var j = 0; j < system.geometry.vertices.length; ++j) {
+                    var particle = system.geometry.vertices[j];
+                    particle.x += particle.velocity.x;
+                    particle.y += particle.velocity.y;
+                    particle.z += particle.velocity.z;
+                }
+                system.geometry.__dirtyVertices = true;
+            }
+        }
+
         TWEEN.update();
     };
 
@@ -131,6 +203,8 @@ function Game(canvas, renderer) {
             } else {
                 if (player.isSpinning) {
                     enemy.mesh.material.wireframe = false;
+                    // Damage enemy
+                    enemy.takeDamage(player.damageAmount);
                 }
             }
         }
@@ -242,6 +316,9 @@ function Game(canvas, renderer) {
 
             game.enemies.push(enemy);
         }
+
+        // Initialize particle system container
+        game.particles = [];
 
         console.log("Game initialized.");
     })(self);
