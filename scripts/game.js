@@ -2,9 +2,12 @@
 // Game object 
 // ----------------------------------------------------------------------------
 function Game(canvas, renderer) {
+    // Quasi-Enumerations -----------------------------------------------------
+    var GAME_MODE = { BUILD: "build", DEFEND: "defend" };
 
     // Public properties ------------------------------------------------------
     this.frames = 0;            // number of frames drawn
+    this.mode   = null;
     this.scene  = null; 
     this.camera = null;
     this.level  = null;
@@ -30,7 +33,6 @@ function Game(canvas, renderer) {
     };
 
 
-
     // Private variables ------------------------------------------------------
     var self = this,
         GLOBAL_LIGHT0 = new THREE.AmbientLight(0x4f4f4f),
@@ -49,122 +51,10 @@ function Game(canvas, renderer) {
         self.level.update();
         self.player.update(); 
 
-        // Update enemies
-        for(var i = self.enemies.length - 1; i >= 0; --i) {
-            var enemy = self.enemies[i];
-            enemy.update();
-
-            // Handle dead enemies
-            if (enemy.health <= 0) {
-                // Spawn a particle system
-                // TODO: Make particle system spawning functions in utilities.js
-                var pgeom = new THREE.Geometry();
-                for (var j = 0; j < 100; ++j) { // TODO remove magic #
-                    var particle = new THREE.Vector3(
-                            enemy.mesh.position.x,
-                            enemy.mesh.position.y,
-                            enemy.mesh.position.z
-                        );
-                    particle.velocity = new THREE.Vector3(
-                        Math.random() * 0.5 - 0.25,
-                        Math.random() * 0.5 - 0.25,
-                        0);
-                    pgeom.vertices.push(particle);
-                }
-
-                var pmat = new THREE.ParticleBasicMaterial({
-                    size: 10,
-                    sizeAttenuation: true,
-                    blending: THREE.NormalBlending, //AdditiveBlending,
-                    color: enemy.color
-                });
-
-                var psys = new THREE.ParticleSystem(pgeom, pmat);
-                psys.sortParticles = true;
-                psys.complete = false;
-
-                // Shrink the size of the particles in the system over time
-                var tween = new TWEEN.Tween({ size: psys.material.size })
-                    .to({ size: 0.0 }, 3000)
-                    .easing(TWEEN.Easing.Circular.Out)
-                    .onUpdate(function () {
-                        psys.material.size = this.size;
-                    })
-                    .onComplete(function () {
-                        psys.complete = true;
-                    })
-                    .start();
-
-                self.particles.push(psys);
-                self.scene.add(psys);
-
-                // Remove the dead enemy from the game
-                self.scene.remove(enemy.mesh);
-                self.enemies.splice(i, 1);
-            }
-        }
-
+        updateCamera(self);
+        updateEnemies(self);
         handleCollisions(self);
-
-        // Zoom the camera
-        if (self.input.zoom) {
-            if (self.input.zoomMod) {
-                self.camera.position.z += ZOOM_SPEED;
-            } else {
-                self.camera.position.z -= ZOOM_SPEED;
-            }
-        }
-
-        // Update the camera to follow the player
-        var dx = self.player.position.x - self.camera.position.x,
-            dy = self.player.position.y - self.camera.position.y,
-            d  = Math.sqrt(dx*dx + dy*dy);
-
-        if (d < 100) {
-            self.camera.position.x = self.player.mesh.position.x - 50;
-            self.camera.position.y = self.player.mesh.position.y - 50;
-        } else {
-            if (self.player.velocity.x != 0) {
-                self.camera.velocity.x = self.player.velocity.x;
-            } else {
-                self.camera.velocity.x = dx / d;
-            }
-
-            if (self.player.velocity.y != 0) {
-                self.camera.velocity.y = self.player.velocity.y;
-            } else {
-                self.camera.velocity.y = dy / d;
-            }
-
-            self.camera.velocity.x *= CAMERA_FRICTION.x;
-            self.camera.velocity.y *= CAMERA_FRICTION.y;
-
-            self.camera.position.x += self.camera.velocity.x;
-            self.camera.position.y += self.camera.velocity.y;
-        }
-
-        // Force camera to center on the player
-        self.camera.lookAt(self.player.mesh.position);
-
-        // Update particle systems
-        for (var i = self.particles.length - 1; i >= 0; --i) {
-            var system = self.particles[i];
-
-            // Remove old systems
-            if (system.complete) {
-                self.scene.remove(system);
-                self.particles.splice(i, 1);
-            } else {
-                // Update the particles
-                for (var j = 0; j < system.geometry.vertices.length; ++j) {
-                    var particle = system.geometry.vertices[j];
-                    particle.x += particle.velocity.x;
-                    particle.y += particle.velocity.y;
-                    particle.z += particle.velocity.z;
-                }
-                system.geometry.__dirtyVertices = true;
-            }
-        }
+        updateParticles(self);
 
         TWEEN.update();
     };
@@ -175,40 +65,6 @@ function Game(canvas, renderer) {
         renderer.render(self.scene, self.camera);
         ++self.frames;
     };
-
-    // Handle Collisions
-    function handleCollisions (game) {
-        var player = game.player,
-            playerMin = new THREE.Vector2(
-                player.position.x - 9 / 2,
-                player.position.y - 9 / 2),
-            playerMax = new THREE.Vector2(
-                player.position.x + 9 / 2,
-                player.position.y + 9 / 2);
-
-        for(var i = 0; i < game.enemies.length; ++i) {
-            var enemy = game.enemies[i],
-                enemyMin = new THREE.Vector2(
-                    enemy.position.x - enemy.size.x / 2,
-                    enemy.position.y - enemy.size.y / 2),
-                enemyMax = new THREE.Vector2(
-                    enemy.position.x + enemy.size.x / 2,
-                    enemy.position.y + enemy.size.y / 2);
-
-            if (playerMin.x > enemyMax.x 
-             || playerMax.x < enemyMin.x
-             || playerMin.y > enemyMax.y
-             || playerMax.y < enemyMin.y) {
-                enemy.mesh.material.wireframe = true;
-            } else {
-                if (player.isSpinning) {
-                    enemy.mesh.material.wireframe = false;
-                    // Damage enemy
-                    enemy.takeDamage(player.damageAmount);
-                }
-            }
-        }
-    }
 
 
     // Input handlers ---------------------------------------------------------
@@ -267,6 +123,9 @@ function Game(canvas, renderer) {
         document.addEventListener("keyup",   handleKeyup,   false);
         document.addEventListener("keydown", handleKeydown, false);
 
+        // Set the initial game mode
+        game.mode = GAME_MODE.DEFEND;
+
         // Initialize the camera
         game.camera = new THREE.PerspectiveCamera(FOV, ASPECT, NEAR, FAR);
         game.camera.position.set(0, 0, 200);
@@ -324,4 +183,170 @@ function Game(canvas, renderer) {
     })(self);
 
 } // end Game object
+
+
+// ----------------------------------------------------------------------------
+// Update Functions -----------------------------------------------------------
+// ----------------------------------------------------------------------------
+
+
+// Update Enemies -------------------------------------------------------------
+function updateEnemies (game) {
+    for(var i = game.enemies.length - 1; i >= 0; --i) {
+        var enemy = game.enemies[i];
+        enemy.update();
+
+        // Handle dead enemies
+        if (enemy.health <= 0) {
+            // Spawn a particle system
+            // TODO: Make particle system spawning functions in utilities.js
+            var pgeom = new THREE.Geometry();
+            for (var j = 0; j < 100; ++j) { // TODO remove magic #
+                var particle = new THREE.Vector3(
+                        enemy.mesh.position.x,
+                        enemy.mesh.position.y,
+                        enemy.mesh.position.z
+                    );
+                particle.velocity = new THREE.Vector3(
+                    Math.random() * 0.5 - 0.25,
+                    Math.random() * 0.5 - 0.25,
+                    0);
+                pgeom.vertices.push(particle);
+            }
+
+            var pmat = new THREE.ParticleBasicMaterial({
+                size: 10,
+                sizeAttenuation: true,
+                blending: THREE.NormalBlending, //AdditiveBlending,
+                color: enemy.color
+            });
+
+            var psys = new THREE.ParticleSystem(pgeom, pmat);
+            psys.sortParticles = true;
+            psys.complete = false;
+
+            // Shrink the size of the particles in the system over time
+            new TWEEN.Tween({ size: psys.material.size })
+                .to({ size: 0.0 }, 3000)
+                .easing(TWEEN.Easing.Circular.Out)
+                .onUpdate(function () {
+                    psys.material.size = this.size;
+                })
+                .onComplete(function () {
+                    psys.complete = true;
+                })
+                .start();
+
+            game.particles.push(psys);
+            game.scene.add(psys);
+
+            // Remove the dead enemy from the game
+            game.scene.remove(enemy.mesh);
+            game.enemies.splice(i, 1);
+        }
+    }
+}
+
+
+// Handle Collisions ----------------------------------------------------------
+function handleCollisions (game) {
+    var player = game.player,
+        playerMin = new THREE.Vector2(
+            player.position.x - 9 / 2,
+            player.position.y - 9 / 2),
+        playerMax = new THREE.Vector2(
+            player.position.x + 9 / 2,
+            player.position.y + 9 / 2);
+
+    for(var i = 0; i < game.enemies.length; ++i) {
+        var enemy = game.enemies[i],
+            enemyMin = new THREE.Vector2(
+                enemy.position.x - enemy.size.x / 2,
+                enemy.position.y - enemy.size.y / 2),
+            enemyMax = new THREE.Vector2(
+                enemy.position.x + enemy.size.x / 2,
+                enemy.position.y + enemy.size.y / 2);
+
+        if (playerMin.x > enemyMax.x 
+         || playerMax.x < enemyMin.x
+         || playerMin.y > enemyMax.y
+         || playerMax.y < enemyMin.y) {
+            enemy.mesh.material.wireframe = true;
+        } else {
+            if (player.isSpinning) {
+                enemy.mesh.material.wireframe = false;
+                // Damage enemy
+                enemy.takeDamage(player.damageAmount);
+            }
+        }
+    }
+}
+
+
+// Update the camera ----------------------------------------------------------
+// TODO: switch behavior based on game.mode
+function updateCamera (game) {
+    // Zoom the camera
+    if (game.input.zoom) {
+        if (game.input.zoomMod) {
+            game.camera.position.z += ZOOM_SPEED;
+        } else {
+            game.camera.position.z -= ZOOM_SPEED;
+        }
+    }
+
+    // Update the camera to follow the player
+    var dx = game.player.position.x - game.camera.position.x,
+        dy = game.player.position.y - game.camera.position.y,
+        d  = Math.sqrt(dx*dx + dy*dy);
+
+    if (d < 100) {
+        game.camera.position.x = game.player.mesh.position.x - 50;
+        game.camera.position.y = game.player.mesh.position.y - 50;
+    } else {
+        if (game.player.velocity.x != 0) {
+            game.camera.velocity.x = game.player.velocity.x;
+        } else {
+            game.camera.velocity.x = dx / d;
+        }
+
+        if (game.player.velocity.y != 0) {
+            game.camera.velocity.y = game.player.velocity.y;
+        } else {
+            game.camera.velocity.y = dy / d;
+        }
+
+        game.camera.velocity.x *= CAMERA_FRICTION.x;
+        game.camera.velocity.y *= CAMERA_FRICTION.y;
+
+        game.camera.position.x += game.camera.velocity.x;
+        game.camera.position.y += game.camera.velocity.y;
+    }
+
+    // Force camera to center on the player
+    game.camera.lookAt(game.player.mesh.position);
+}
+
+
+// Update particle systems ----------------------------------------------------
+function updateParticles (game) {
+    for (var i = game.particles.length - 1; i >= 0; --i) {
+        var system = game.particles[i];
+
+        // Remove old systems
+        if (system.complete) {
+            game.scene.remove(system);
+            game.particles.splice(i, 1);
+        } else {
+            // Update the particles
+            for (var j = 0; j < system.geometry.vertices.length; ++j) {
+                var particle = system.geometry.vertices[j];
+                particle.x += particle.velocity.x;
+                particle.y += particle.velocity.y;
+                particle.z += particle.velocity.z;
+            }
+            system.geometry.__dirtyVertices = true;
+        }
+    }
+}
 
