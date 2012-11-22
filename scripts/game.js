@@ -10,7 +10,7 @@ function Game(canvas, renderer) {
     this.camera = null;
     this.level  = null;
     this.player = null;
-    this.enemies = null;
+    this.wave   = null;
     this.particles = null;
     this.input  = {
         panUp:    false,
@@ -51,7 +51,7 @@ function Game(canvas, renderer) {
 
         if (self.mode === GAME_MODE.DEFEND) {
             self.player.update(); 
-            updateEnemies(self);
+            self.wave.update();
             handleCollisions(self);
             updateParticles(self);
         } else if (self.mode === GAME_MODE.BUILD) {
@@ -79,32 +79,8 @@ function Game(canvas, renderer) {
             self.player = new Player(self);
             self.scene.add(self.player.mesh);
 
-            // TODO : Move this to some Config file maybe Wave.js
             // Create a new wave of enemies
-            // self.wave = new Wave(20);
-            var NUM_ENEMIES = 20;
-            self.enemies = [];
-            for(var i = 0; i < NUM_ENEMIES; ++i){
-                var enemy = new Enemy({
-                    color:    new THREE.Vector3(
-                                    Math.random(),
-                                    Math.random(),
-                                    Math.random()),
-                    position: new THREE.Vector3(
-                                    Math.floor(Math.random() * 1000),
-                                    Math.floor(Math.random() * 1000), 0.1),
-                    size:     new THREE.Vector2(
-                                    Math.floor(Math.random() * 40) + 10,
-                                    Math.floor(Math.random() * 40) + 10),
-                    speed:    new THREE.Vector2(
-                                    Math.random() * 1.5,
-                                    Math.random() * 1.5),
-                    maxspeed: new THREE.Vector2(5,5)
-                });
-                enemy.setFollowTarget(self.player);
-                self.enemies.push(enemy);
-                self.scene.add(enemy.mesh);
-            }
+            self.wave = new Wave(20, self);
 
             // Reposition camera
             self.camera.position.x = self.player.mesh.position.x - 50;
@@ -118,10 +94,7 @@ function Game(canvas, renderer) {
             self.scene.remove(self.player.mesh);
 
             // Remove any remaining enemies
-            for (var i = 0; i < self.enemies.length; ++i) {
-                self.scene.remove(self.enemies[i].mesh);
-            }
-            self.enemies = [];
+            self.wave.remove();
 
             // Remove any remaining particle systems
             for (var i = 0; i < self.particles.length; ++i) {
@@ -220,32 +193,8 @@ function Game(canvas, renderer) {
         game.player = new Player(game);
         game.scene.add(game.player.mesh);
 
-        // TODO : Move this to some Config file maybe Wave.js
-        var NUM_ENEMIES = 20;
-
-        game.enemies = [];
-        for(var i = 0; i < NUM_ENEMIES; ++i){
-            var enemy = new Enemy({
-                color:    new THREE.Vector3(
-                                Math.random(),
-                                Math.random(),
-                                Math.random()),
-                position: new THREE.Vector3(
-                                Math.floor(Math.random() * 1000),
-                                Math.floor(Math.random() * 1000), 0.1),
-                size:     new THREE.Vector2(
-                                Math.floor(Math.random() * 40) + 10,
-                                Math.floor(Math.random() * 40) + 10),
-                speed:    new THREE.Vector2(
-                                Math.random() * 1.5,
-                                Math.random() * 1.5),
-                maxspeed: new THREE.Vector2(5,5)
-            });
-            enemy.setFollowTarget(game.player);
-            game.scene.add(enemy.mesh);
-
-            game.enemies.push(enemy);
-        }
+        // Initialize a new wave of enemies
+        game.wave = new Wave(20, game);
 
         // Initialize particle system container
         game.particles = [];
@@ -261,64 +210,6 @@ function Game(canvas, renderer) {
 // ----------------------------------------------------------------------------
 
 
-// Update Enemies -------------------------------------------------------------
-function updateEnemies (game) {
-    for(var i = game.enemies.length - 1; i >= 0; --i) {
-        var enemy = game.enemies[i];
-        enemy.update();
-
-        // Handle dead enemies
-        if (enemy.health <= 0) {
-            // Spawn a particle system
-            // TODO: Make particle system spawning functions in utilities.js
-            var pgeom = new THREE.Geometry();
-            for (var j = 0; j < 100; ++j) { // TODO remove magic #
-                var particle = new THREE.Vector3(
-                        enemy.mesh.position.x,
-                        enemy.mesh.position.y,
-                        enemy.mesh.position.z
-                    );
-                particle.velocity = new THREE.Vector3(
-                    Math.random() * 0.5 - 0.25,
-                    Math.random() * 0.5 - 0.25,
-                    0);
-                pgeom.vertices.push(particle);
-            }
-
-            var pmat = new THREE.ParticleBasicMaterial({
-                size: 10,
-                sizeAttenuation: true,
-                blending: THREE.NormalBlending, //AdditiveBlending,
-                color: enemy.color
-            });
-
-            var psys = new THREE.ParticleSystem(pgeom, pmat);
-            psys.sortParticles = true;
-            psys.complete = false;
-
-            // Shrink the size of the particles in the system over time
-            new TWEEN.Tween({ size: psys.material.size })
-                .to({ size: 0.0 }, 3000)
-                .easing(TWEEN.Easing.Circular.Out)
-                .onUpdate(function () {
-                    psys.material.size = this.size;
-                })
-                .onComplete(function () {
-                    psys.complete = true;
-                })
-                .start();
-
-            game.particles.push(psys);
-            game.scene.add(psys);
-
-            // Remove the dead enemy from the game
-            game.scene.remove(enemy.mesh);
-            game.enemies.splice(i, 1);
-        }
-    }
-}
-
-
 // Handle Collisions ----------------------------------------------------------
 function handleCollisions (game) {
     var player = game.player,
@@ -329,8 +220,9 @@ function handleCollisions (game) {
             player.position.x + 9 / 2,
             player.position.y + 9 / 2);
 
-    for(var i = 0; i < game.enemies.length; ++i) {
-        var enemy = game.enemies[i],
+    // TODO: move player/enemy collision test to Wave object?
+    for(var i = 0; i < game.wave.enemies.length; ++i) {
+        var enemy = game.wave.enemies[i],
             enemyMin = new THREE.Vector2(
                 enemy.position.x - enemy.size.x / 2,
                 enemy.position.y - enemy.size.y / 2),
