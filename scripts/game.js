@@ -1,10 +1,8 @@
+var GAME_MODE = { BUILD: "build", DEFEND: "defend" };
 // ----------------------------------------------------------------------------
 // Game object 
 // ----------------------------------------------------------------------------
 function Game(canvas, renderer) {
-    // Quasi-Enumerations -----------------------------------------------------
-    var GAME_MODE = { BUILD: "build", DEFEND: "defend" };
-
     // Public properties ------------------------------------------------------
     this.frames = 0;            // number of frames drawn
     this.mode   = null;
@@ -22,6 +20,7 @@ function Game(canvas, renderer) {
         zoom:     false,
         zoomMod:  false,
         spin:     false,
+        mode:     false,
     };
     this.keymap = {
         panUp:    87, // W
@@ -30,6 +29,7 @@ function Game(canvas, renderer) {
         panRight: 68, // D
         zoom:     90, // Z (shift switches between in/out)
         spin:     32, // Space
+        mode:     49, // 1
     };
 
 
@@ -40,21 +40,23 @@ function Game(canvas, renderer) {
         FOV    = 67,
         ASPECT = canvas.width / canvas.height,
         NEAR   = 1,
-        FAR    = 1000,
-        ZOOM_SPEED = 1,
-        CAMERA_FRICTION = { x: 0.9, y: 0.9 };
+        FAR    = 1000;
 
 
     // Game methods -----------------------------------------------------------
     // Update
     this.update = function () { 
         self.level.update();
-        self.player.update(); 
-
         updateCamera(self);
-        updateEnemies(self);
-        handleCollisions(self);
-        updateParticles(self);
+
+        if (self.mode === GAME_MODE.DEFEND) {
+            self.player.update(); 
+            updateEnemies(self);
+            handleCollisions(self);
+            updateParticles(self);
+        } else if (self.mode === GAME_MODE.BUILD) {
+            // TODO
+        }
 
         TWEEN.update();
     };
@@ -66,6 +68,70 @@ function Game(canvas, renderer) {
         ++self.frames;
     };
 
+
+    // Switch modes
+    this.switchMode = function () {
+        // Build -> Defend
+        if (self.mode === GAME_MODE.BUILD) {
+            self.mode = GAME_MODE.DEFEND;
+
+            // Add the player
+            self.player = new Player(self);
+            self.scene.add(self.player.mesh);
+
+            // TODO : Move this to some Config file maybe Wave.js
+            // Create a new wave of enemies
+            // self.wave = new Wave(20);
+            var NUM_ENEMIES = 20;
+            self.enemies = [];
+            for(var i = 0; i < NUM_ENEMIES; ++i){
+                var enemy = new Enemy({
+                    color:    new THREE.Vector3(
+                                    Math.random(),
+                                    Math.random(),
+                                    Math.random()),
+                    position: new THREE.Vector3(
+                                    Math.floor(Math.random() * 1000),
+                                    Math.floor(Math.random() * 1000), 0.1),
+                    size:     new THREE.Vector2(
+                                    Math.floor(Math.random() * 40) + 10,
+                                    Math.floor(Math.random() * 40) + 10),
+                    speed:    new THREE.Vector2(
+                                    Math.random() * 1.5,
+                                    Math.random() * 1.5),
+                    maxspeed: new THREE.Vector2(5,5)
+                });
+                enemy.setFollowTarget(self.player);
+                self.enemies.push(enemy);
+                self.scene.add(enemy.mesh);
+            }
+
+            // Reposition camera
+            self.camera.position.x = self.player.mesh.position.x - 50;
+            self.camera.position.y = self.player.mesh.position.y - 50;
+        }
+        // Defend -> Build
+        else if (self.mode === GAME_MODE.DEFEND) {
+            self.mode = GAME_MODE.BUILD;
+
+            // Remove the player mesh
+            self.scene.remove(self.player.mesh);
+
+            // Remove any remaining enemies
+            for (var i = 0; i < self.enemies.length; ++i) {
+                self.scene.remove(self.enemies[i].mesh);
+            }
+            self.enemies = [];
+
+            // Remove any remaining particle systems
+            for (var i = 0; i < self.particles.length; ++i) {
+                self.scene.remove(self.particles[i]);
+            }
+            self.particles = [];
+
+            // TODO: position camera above treasure/artifact @ center of base
+        }
+    };
 
     // Input handlers ---------------------------------------------------------
     // Key Down
@@ -95,6 +161,10 @@ function Game(canvas, renderer) {
             case self.keymap.spin:
                 self.input.spin = true;
             break;
+            case self.keymap.mode:
+                self.input.mode = true;
+                self.switchMode();
+            break;
         };
     };
 
@@ -109,6 +179,7 @@ function Game(canvas, renderer) {
             case self.keymap.panRight: self.input.panRight = false; break;
             case self.keymap.zoom:     self.input.zoom     = false; break;
             case self.keymap.spin:     self.input.spin     = false; break;
+            case self.keymap.mode:     self.input.mode     = false; break;
         };
     };
 
@@ -286,6 +357,10 @@ function handleCollisions (game) {
 // Update the camera ----------------------------------------------------------
 // TODO: switch behavior based on game.mode
 function updateCamera (game) {
+    var ZOOM_SPEED = 1,
+        PAN_SPEED  = 3,
+        CAMERA_FRICTION = { x: 0.9, y: 0.9 };
+
     // Zoom the camera
     if (game.input.zoom) {
         if (game.input.zoomMod) {
@@ -295,36 +370,52 @@ function updateCamera (game) {
         }
     }
 
-    // Update the camera to follow the player
-    var dx = game.player.position.x - game.camera.position.x,
-        dy = game.player.position.y - game.camera.position.y,
-        d  = Math.sqrt(dx*dx + dy*dy);
+    if (game.mode === GAME_MODE.DEFEND) {
+        // Update the camera to follow the player
+        var dx = game.player.position.x - game.camera.position.x,
+            dy = game.player.position.y - game.camera.position.y,
+            d  = Math.sqrt(dx*dx + dy*dy);
 
-    if (d < 100) {
-        game.camera.position.x = game.player.mesh.position.x - 50;
-        game.camera.position.y = game.player.mesh.position.y - 50;
-    } else {
-        if (game.player.velocity.x != 0) {
-            game.camera.velocity.x = game.player.velocity.x;
+        if (d < 100) {
+            game.camera.position.x = game.player.mesh.position.x - 50;
+            game.camera.position.y = game.player.mesh.position.y - 50;
         } else {
-            game.camera.velocity.x = dx / d;
+            if (game.player.velocity.x != 0) {
+                game.camera.velocity.x = game.player.velocity.x;
+            } else {
+                game.camera.velocity.x = dx / d;
+            }
+
+            if (game.player.velocity.y != 0) {
+                game.camera.velocity.y = game.player.velocity.y;
+            } else {
+                game.camera.velocity.y = dy / d;
+            }
+
+            game.camera.velocity.x *= CAMERA_FRICTION.x;
+            game.camera.velocity.y *= CAMERA_FRICTION.y;
+
+            game.camera.position.x += game.camera.velocity.x;
+            game.camera.position.y += game.camera.velocity.y;
         }
 
-        if (game.player.velocity.y != 0) {
-            game.camera.velocity.y = game.player.velocity.y;
-        } else {
-            game.camera.velocity.y = dy / d;
-        }
+        // Force camera to center on the player
+        game.camera.up = new THREE.Vector3(0,0,1);
+        game.camera.lookAt(game.player.mesh.position);
+    } else if (game.mode === GAME_MODE.BUILD) {
+        // Pan camera directly with keyboard input
+        if      (game.input.panUp)    game.camera.position.y += PAN_SPEED;
+        else if (game.input.panDown)  game.camera.position.y -= PAN_SPEED;
+        if      (game.input.panLeft)  game.camera.position.x -= PAN_SPEED;
+        else if (game.input.panRight) game.camera.position.x += PAN_SPEED;
 
-        game.camera.velocity.x *= CAMERA_FRICTION.x;
-        game.camera.velocity.y *= CAMERA_FRICTION.y;
+        // Look straight down
+        var look = game.camera.position.clone();
+        look.z = 0;
 
-        game.camera.position.x += game.camera.velocity.x;
-        game.camera.position.y += game.camera.velocity.y;
+        game.camera.up = new THREE.Vector3(0,1,0);
+        game.camera.lookAt(look);
     }
-
-    // Force camera to center on the player
-    game.camera.lookAt(game.player.mesh.position);
 }
 
 
