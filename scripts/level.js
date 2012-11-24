@@ -34,6 +34,7 @@ function Level (game) {
             xcells: 100,
             ycells: 100
         };
+        level.size = Object.freeze(level.size);
 
         // Create level meshes
         level.grid1 = new THREE.Mesh(
