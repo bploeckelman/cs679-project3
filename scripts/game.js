@@ -83,8 +83,8 @@ function Game(canvas, renderer) {
         }
 
         // Update the camera to follow the player
-        var dx = self.player.position.x - self.camera.position.x,
-            dy = self.player.position.y - self.camera.position.y,
+        var dx = self.player.getPosition().x - self.camera.position.x,
+            dy = self.player.getPosition().y - self.camera.position.y,
             d  = Math.sqrt(dx*dx + dy*dy);
 
         if (d < 150) {
@@ -239,7 +239,7 @@ function Game(canvas, renderer) {
 
         game.enemies = [];
         for(var i = 0; i < NUM_ENEMIES; ++i){
-            enemy = new Enemy({
+            enemy = new Enemy(game, {
                 color:    new THREE.Vector3(
                                 Math.random(),
                                 Math.random(),

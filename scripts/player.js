@@ -7,8 +7,7 @@ function Player (game) {
     this.mesh     = null;
     this.isSpinning = false;
 	this.box2dObject = null;
-	//this.position = null;
-	//this.velocity = null;
+	
 	//used by box2D
 	this.width = null;
 	this.height = null;
@@ -24,6 +23,7 @@ function Player (game) {
 
     // Player methods ---------------------------------------------------------
 	this.getPosition = function (){
+		//alert("player position" + self.box2dObject.body.GetPosition().x);
 		return self.box2dObject.body.GetPosition();
 	}
 	
@@ -56,17 +56,17 @@ function Player (game) {
 		
 		
 	
-		var scale = 100.0;
+		var scale = 400.0;
 		velocity.x = velocity.x * scale;
 		velocity.y = velocity.y * scale;
 		self.box2dObject.body.SetLinearVelocity(velocity);
-		//self.velocity = velocity;
+
 		
         // Position the mesh to correspond with players updated position
 		var position = self.box2dObject.body.GetPosition();
 		this.mesh.position.set(position.x, position.y, this.mesh.position.z);
 		//this.position = this.mesh.position;
-		console.log(position);
+		//console.log(position);
 
         // Handle spin move
         if (game.input.spin && !this.isSpinning) {
@@ -135,7 +135,6 @@ function Player (game) {
 		player.height = PLAYER_SIZE.h;
 		self.box2dObject = new box2dObject(game, player);
 		var position = new b2Vec2(PLAYER_SIZE.w / 2, PLAYER_SIZE.h / 2);
-		self.position = position;
 		self.box2dObject.body.SetPosition(position);
 		
         // Create player mesh

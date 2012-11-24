@@ -1,17 +1,21 @@
 // ----------------------------------------------------------------------------
 // Enemy object
 // ----------------------------------------------------------------------------
-function Enemy (description) {
+function Enemy (game, description) {
 
     // Public properties ------------------------------------------------------
     this.mesh     = null;
-    this.position = null;
-    this.velocity = null;
+  //  this.position = null;
+  //  this.velocity = null;
     this.size     = null;
     this.speed    = null;
     this.maxspeed = null;
     this.target   = null;
+	this.box2dObject = null;
+	
 	//used by box2D
+	this.width = null;
+	this.height = null;
 
 
     // Private variables ------------------------------------------------------
@@ -19,31 +23,43 @@ function Enemy (description) {
 
 
     // Player methods ---------------------------------------------------------
-    this.update = function () {
-        // Follow the target
-        if (self.target !== null) {
-            // Velocity is a vector to the target in the xy plane
-           // self.velocity.x = self.target.position.x - self.position.x;
-		   self.velocity.x = self.target.getPosition().x - self.position.x;
-         //   self.velocity.y = self.target.position.y - self.position.y;
-		  self.velocity.y = self.target.getPosition().y - self.position.y;
-            self.velocity.z = 0;
-
-            // Normalize the velocity 
-            var d = Math.sqrt(self.velocity.x * self.velocity.x
-                            + self.velocity.y * self.velocity.y);
-            if (d < 0.1) d = 1;
-
-            // Update the enemy's velocity
-            self.velocity.x *= self.speed.x / d;
-            self.velocity.y *= self.speed.y / d;
-        }
-
-        // Integrate velocity
-        self.position.addSelf(self.velocity);
-    };
-
-
+    this.getPosition = function () {
+		//alert("enem position" + self.box2dObject.body.GetPosition().x);
+		return self.box2dObject.body.GetPosition();
+	};
+	
+	this.getVelocity = function () {
+		return self.box2dObject.body.GetLinearVelocity();
+	};
+	
+	this.update = function () {
+		var velocity = new b2Vec2
+		
+		// Follow the target
+		if(self.target !== null) {
+			velocity.x = self.target.getPosition().x - self.getPosition().x;
+			velocity.y = self.target.getPosition().y - self.getPosition().y;
+			velocity.z = 0;
+			
+			
+			//Normalize the velocity
+			var d = Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
+			if(d < 0.1) d = 1;
+			// Update the enemy's velocity
+            velocity.x *= self.speed.x / d;
+            velocity.y *= self.speed.y / d;
+			
+			var scale = 300.0;
+			velocity.x = velocity.x * scale;
+			velocity.y = velocity.y * scale;
+			self.box2dObject.body.SetLinearVelocity(velocity);
+			//console.log(self.getVelocity());
+		}
+		
+		var position = self.box2dObject.body.GetPosition();
+		this.mesh.position.set(position.x, position.y, this.mesh.position.z);
+	}
+			
     this.setFollowTarget = function (object) {
         if (object instanceof Player) {
             self.target = object;
@@ -53,9 +69,15 @@ function Enemy (description) {
 
     // Constructor ------------------------------------------------------------
     (this.init = function (enemy, description) {
-
-        enemy.position = new THREE.Vector3(0,0,0.1);
-        enemy.velocity = new THREE.Vector2(0,0);
+		
+		var range = 100.0;
+		/*var position = new THREE.Vector3(Math.random()*range,
+					Math.random()*range, Math.random()*range);
+					*/
+		var position = new THREE.Vector3(0,0,0.1);
+		var velocity = new THREE.Vector2(0,0);
+       // enemy.position = new THREE.Vector3(0,0,0.1);
+       // enemy.velocity = new THREE.Vector2(0,0);
 
         // Initialize properties from description object
         for(var prop in description) {
@@ -67,7 +89,8 @@ function Enemy (description) {
                 }
             } else if (prop === "position") {
                 if (description[prop] instanceof THREE.Vector3) {
-                    enemy.position = description[prop].clone();
+                    //enemy.position = description[prop].clone();
+					position = description[prop].clone();
                 }
             } else if (prop === "size") {
                 if (description[prop] instanceof THREE.Vector2) {
@@ -84,6 +107,7 @@ function Enemy (description) {
             }
         }
 
+		
         // Generate a simple plane mesh for now
         // TODO: pass an enemy type value in the description object
         //       and pick from predefined geometry based on that 
@@ -94,8 +118,18 @@ function Enemy (description) {
                 wireframe: true
             })
         );
-        enemy.mesh.position = enemy.position;
-
+       // enemy.mesh.position = enemy.position;
+        enemy.mesh.position = position;
+		
+		// Create box2D representation
+		self.width = self.size.x;
+		self.height = self.size.y;
+		self.box2dObject = new box2dObject(game, enemy);
+		self.box2dObject.body.SetPosition(new b2Vec2(position.x, position.y));
+		self.box2dObject.body.SetLinearVelocity(velocity);
+		
+		
+		
         // Create "breathing" animation
         var BREATHE_TIME = 150 * Math.max(enemy.size.x, enemy.size.y),
             MAX_SCALE = 1.35,
