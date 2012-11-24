@@ -12,6 +12,7 @@ function Game(canvas, renderer) {
     this.player = null;
     this.wave   = null;
     this.particles = null;
+    this.projector = null;
     this.input  = {
         panUp:    false,
         panDown:  false,
@@ -42,7 +43,7 @@ function Game(canvas, renderer) {
         GLOBAL_LIGHT0 = new THREE.AmbientLight(0x4f4f4f),
         GLOBAL_FOG0   = new THREE.Fog(0xa0a0a0, 1, 1000),
         FOV    = 67,
-        ASPECT = canvas.width / canvas.height,
+        ASPECT = window.innerWidth / window.innerHeight,
         NEAR   = 1,
         FAR    = 1000;
 
@@ -170,6 +171,11 @@ function Game(canvas, renderer) {
     // Mouse Click
     function handleMouseClick (event) {
         self.input.mouseButtonClicked = event.button;
+        if (self.mode === GAME_MODE.BUILD
+         && self.level.structures.length === 0) {
+            self.level.structures.push(
+                new Structure(STRUCTURE_TYPES.ONE_BY_ONE, self));
+        }
         //console.log("Mouse button clicked: " + self.input.mouseButtonClicked);
     };
 
@@ -194,6 +200,8 @@ function Game(canvas, renderer) {
         document.addEventListener("click",   handleMouseClick, false);
         document.addEventListener("mousemove", handleMouseMove, false);
         document.addEventListener("mousewheel", handleMouseWheel, false);
+
+        game.projector = new THREE.Projector();
 
         // Set the initial game mode
         game.mode = GAME_MODE.DEFEND;
