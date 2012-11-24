@@ -11,6 +11,7 @@ function Enemy (description) {
     this.speed    = null;
     this.maxspeed = null;
     this.target   = null;
+	//used by box2D
 
 
     // Private variables ------------------------------------------------------
@@ -22,8 +23,10 @@ function Enemy (description) {
         // Follow the target
         if (self.target !== null) {
             // Velocity is a vector to the target in the xy plane
-            self.velocity.x = self.target.position.x - self.position.x;
-            self.velocity.y = self.target.position.y - self.position.y;
+           // self.velocity.x = self.target.position.x - self.position.x;
+		   self.velocity.x = self.target.getPosition().x - self.position.x;
+         //   self.velocity.y = self.target.position.y - self.position.y;
+		  self.velocity.y = self.target.getPosition().y - self.position.y;
             self.velocity.z = 0;
 
             // Normalize the velocity 

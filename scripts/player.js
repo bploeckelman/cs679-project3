@@ -7,8 +7,8 @@ function Player (game) {
     this.mesh     = null;
     this.isSpinning = false;
 	this.box2dObject = null;
-	this.position = null;
-	this.velocity = null;
+	//this.position = null;
+	//this.velocity = null;
 	//used by box2D
 	this.width = null;
 	this.height = null;
@@ -23,6 +23,14 @@ function Player (game) {
 
 
     // Player methods ---------------------------------------------------------
+	this.getPosition = function (){
+		return self.box2dObject.body.GetPosition();
+	}
+	
+	this.getVelocity = function() {
+		return self.box2dObject.body.GetLinearVelocity();
+	}
+	
     this.update = function () {
 	
 	    //FIXME:
@@ -52,12 +60,12 @@ function Player (game) {
 		velocity.x = velocity.x * scale;
 		velocity.y = velocity.y * scale;
 		self.box2dObject.body.SetLinearVelocity(velocity);
-		self.velocity = velocity;
+		//self.velocity = velocity;
 		
         // Position the mesh to correspond with players updated position
 		var position = self.box2dObject.body.GetPosition();
 		this.mesh.position.set(position.x, position.y, this.mesh.position.z);
-		this.position = this.mesh.position;
+		//this.position = this.mesh.position;
 		console.log(position);
 
         // Handle spin move
