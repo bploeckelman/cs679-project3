@@ -21,6 +21,10 @@ function Game(canvas, renderer) {
         zoomMod:  false,
         spin:     false,
         mode:     false,
+        mousePos:  null,
+        mousePrev: null,
+        mouseButtonClicked:  -1,
+        mouseWheelLastDelta: 0,
     };
     this.keymap = {
         panUp:    87, // W
@@ -103,6 +107,7 @@ function Game(canvas, renderer) {
             self.particles = [];
 
             // TODO: position camera above treasure/artifact @ center of base
+            //self.camera.position.set(500,500,100);
         }
     };
 
@@ -156,16 +161,39 @@ function Game(canvas, renderer) {
         };
     };
 
-    // TODO: mouse handling
+    // Mouse Wheel
+    function handleMouseWheel (event) {
+        self.input.mouseWheelLastDelta = event.wheelDelta;
+        //console.log("Mouse wheel moved: " + self.input.mouseWheelLastDelta);
+    };
+
+    // Mouse Click
+    function handleMouseClick (event) {
+        self.input.mouseButtonClicked = event.button;
+        //console.log("Mouse button clicked: " + self.input.mouseButtonClicked);
+    };
+
+    // Mouse Move
+    function handleMouseMove (event) {
+        self.input.mousePrev = self.input.mousePos.clone();
+        self.input.mousePos.set(event.clientX, event.clientY);
+        //console.log("Mouse moved: " + self.input.mouseX + ", " + self.input.mouseY);
+    };
 
 
     // Constructor ------------------------------------------------------------
     (this.init = function (game) {
         console.log("Game initializing..."); 
 
+        game.input.mousePos  = new THREE.Vector2();
+        game.input.mousePrev = new THREE.Vector2();
+
         // Setup input handlers
         document.addEventListener("keyup",   handleKeyup,   false);
         document.addEventListener("keydown", handleKeydown, false);
+        document.addEventListener("click",   handleMouseClick, false);
+        document.addEventListener("mousemove", handleMouseMove, false);
+        document.addEventListener("mousewheel", handleMouseWheel, false);
 
         // Set the initial game mode
         game.mode = GAME_MODE.DEFEND;
@@ -247,10 +275,9 @@ function handleCollisions (game) {
 
 
 // Update the camera ----------------------------------------------------------
-// TODO: switch behavior based on game.mode
 function updateCamera (game) {
     var ZOOM_SPEED = 1,
-        PAN_SPEED  = 3,
+        KEY_PAN_SPEED  = 3,
         CAMERA_FRICTION = { x: 0.9, y: 0.9 };
 
     // Zoom the camera
@@ -262,12 +289,14 @@ function updateCamera (game) {
         }
     }
 
+    // DEFEND MODE - Camera Handling ------------------------------------------
     if (game.mode === GAME_MODE.DEFEND) {
         // Update the camera to follow the player
         var dx = game.player.position.x - game.camera.position.x,
             dy = game.player.position.y - game.camera.position.y,
             d  = Math.sqrt(dx*dx + dy*dy);
 
+        // Note: this is a bit hacky, could be done better
         if (d < 100) {
             game.camera.position.x = game.player.mesh.position.x - 50;
             game.camera.position.y = game.player.mesh.position.y - 50;
@@ -294,19 +323,60 @@ function updateCamera (game) {
         // Force camera to center on the player
         game.camera.up = new THREE.Vector3(0,0,1);
         game.camera.lookAt(game.player.mesh.position);
-    } else if (game.mode === GAME_MODE.BUILD) {
+    }
+
+    // BUILD MODE - Camera Handling -------------------------------------------
+    else if (game.mode === GAME_MODE.BUILD) {
         // Pan camera directly with keyboard input
-        if      (game.input.panUp)    game.camera.position.y += PAN_SPEED;
-        else if (game.input.panDown)  game.camera.position.y -= PAN_SPEED;
-        if      (game.input.panLeft)  game.camera.position.x -= PAN_SPEED;
-        else if (game.input.panRight) game.camera.position.x += PAN_SPEED;
+        if      (game.input.panUp)    game.camera.position.y += KEY_PAN_SPEED;
+        else if (game.input.panDown)  game.camera.position.y -= KEY_PAN_SPEED;
+        if      (game.input.panLeft)  game.camera.position.x -= KEY_PAN_SPEED;
+        else if (game.input.panRight) game.camera.position.x += KEY_PAN_SPEED;
 
-        // Look straight down
-        var look = game.camera.position.clone();
-        look.z = 0;
+        // Pan camera by moving mouse to edges of screen
+        var minEdge = new THREE.Vector2(
+                window.innerWidth  / 4,  
+                window.innerHeight / 4),
+            maxEdge = new THREE.Vector2(
+                window.innerWidth  * 3 / 4,
+                window.innerHeight * 3 / 4),
+            // TODO: recalculate min/max edges on window resize
+            MOUSE_PAN_SPEED = 50,
+            dx = 0,
+            dy = 0;
 
+        // Calculate delta for x edges
+        if (game.input.mousePos.x < minEdge.x) {
+            dx = (game.input.mousePos.x - minEdge.x) / MOUSE_PAN_SPEED;
+        } else if (game.input.mousePos.x > maxEdge.x) {
+            dx = (game.input.mousePos.x - maxEdge.x) / MOUSE_PAN_SPEED;
+        }
+
+        // Calculate delta for y edges
+        if (game.input.mousePos.y < minEdge.y) {
+            dy = -1 * (game.input.mousePos.y - minEdge.y) / MOUSE_PAN_SPEED;
+        } else if (game.input.mousePos.y > maxEdge.y) {
+            dy = -1 * (game.input.mousePos.y - maxEdge.y) / MOUSE_PAN_SPEED;
+        }
+
+        // Pan camera based on mouse movements
+        game.camera.position.addSelf(new THREE.Vector3(dx, dy, 0));
+
+        // Keep camera in level bounds
+        // TODO: don't hardcode bounds, expose them in Level object instead
+        if (game.camera.position.x < 0)    game.camera.position.x = 0;
+        if (game.camera.position.x > 1000) game.camera.position.x = 1000;
+        if (game.camera.position.y < 0)    game.camera.position.y = 0;
+        if (game.camera.position.y > 1000) game.camera.position.y = 1000;
+
+        // Look straight down from camera position, up vector -> +y
         game.camera.up = new THREE.Vector3(0,1,0);
-        game.camera.lookAt(look);
+        game.camera.lookAt(
+            new THREE.Vector3(
+                game.camera.position.x,
+                game.camera.position.y,
+                0)
+        );
     }
 }
 
