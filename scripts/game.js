@@ -174,10 +174,10 @@ function Game(canvas, renderer) {
         if (self.mode === GAME_MODE.BUILD
          && self.level.structures.length === 0) {
             self.level.structures.push(
-                new Structure(STRUCTURE_TYPES.ONE_BY_ONE, self));
+                new Structure(STRUCTURE_TYPES.FOUR_BY_FOUR, self));
         }
         //console.log("Mouse button clicked: " + self.input.mouseButtonClicked);
-    };
+    }
 
     // Mouse Move
     function handleMouseMove (event) {

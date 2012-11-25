@@ -1,7 +1,8 @@
 var STRUCTURE_TYPES = {
-        ONE_BY_ONE: 0,
-        TWO_BY_TWO: 1,
-        THREE_BY_THREE: 2
+        ONE_BY_ONE:     0,
+        TWO_BY_TWO:     1,
+        THREE_BY_THREE: 2,
+        FOUR_BY_FOUR:   3
     };
 // ----------------------------------------------------------------------------
 // Structure object
@@ -55,9 +56,8 @@ function Structure (type, game) {
         structure.type = type;
 
         // Calculate the structure's size
-        // -2 makes it fit inside a cell instead of partially overlapping
-        var width  = game.level.size.cellw - 2,
-            height = game.level.size.cellh - 2;
+        var width  = game.level.size.cellw,
+            height = game.level.size.cellh;
         switch (structure.type) {
             case STRUCTURE_TYPES.ONE_BY_ONE: // for completeness...
                 width  *= 1;
@@ -71,9 +71,16 @@ function Structure (type, game) {
                 width  *= 3;
                 height *= 3;
                 break;
+            case STRUCTURE_TYPES.FOUR_BY_FOUR:
+                width  *= 4;
+                height *= 4;
+                break;
             default:
                 console.log("Error: unhandled structure type!");
         }
+        // -2 makes it fit inside a cell instead of partially overlapping
+        width  -= 2;
+        height -= 2;
 
         // Create structure mesh
         structure.mesh = new THREE.Mesh(
