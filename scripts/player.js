@@ -7,6 +7,7 @@ function Player (game) {
     this.mesh     = null;
     this.isSpinning = false;
 	this.box2dObject = null;
+	this.type = playerType;
 	
 	//used by box2D
 	this.width = null;
@@ -25,11 +26,20 @@ function Player (game) {
 	this.getPosition = function (){
 		//alert("player position" + self.box2dObject.body.GetPosition().x);
 		return self.box2dObject.body.GetPosition();
-	}
+	};
 	
 	this.getVelocity = function() {
 		return self.box2dObject.body.GetLinearVelocity();
-	}
+	};
+	
+	this.collide = function(obj){
+		if(obj.type == enemyType) {
+			alert("Player collides with enemy!");
+		}else{
+			//collide with unknow object
+			//do nothing
+		}
+	};
 	
     this.update = function () {
 	

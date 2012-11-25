@@ -37,7 +37,7 @@ function box2dObject (game, obj) {
 		bodyDef.allowSleep = true;
 		bodyDef.type = b2Body.b2_dynamicBody;
 		self.body = game.box2d.world.CreateBody(bodyDef);
-		self.body.userData = obj;
+		self.body.SetUserData(obj);
 			
 			
 		var fixDef = new b2FixtureDef;

@@ -1,4 +1,3 @@
-
 // ----------------------------------------------------------------------------
 // Game object 
 // ----------------------------------------------------------------------------
@@ -91,14 +90,14 @@ function Game(canvas, renderer) {
             self.camera.position.x = self.player.mesh.position.x - 100;
             self.camera.position.y = self.player.mesh.position.y - 100;
         } else {
-            if (self.player.velocity.x != 0) {
-                self.camera.velocity.x = self.player.velocity.x;
+            if (self.player.getVelocity().x != 0) {
+                self.camera.velocity.x = self.player.getVelocity().x;
             } else {
                 self.camera.velocity.x = dx / d;
             }
 
-            if (self.player.velocity.y != 0) {
-                self.camera.velocity.y = self.player.velocity.y;
+            if (self.player.getVelocity().y != 0) {
+                self.camera.velocity.y = self.player.getVelocity().y;
             } else {
                 self.camera.velocity.y = dy / d;
             }
@@ -126,17 +125,33 @@ function Game(canvas, renderer) {
 	this.initBox2d = function (){
 		//zero gravity for the world
 		self.box2d.world = new b2World(new b2Vec2(0,0), false);
-		/*
-		self.box2d.bodyDef = new b2BodyDef;
-		self.box2d.bodyDef.allowSleep = true;
-		self.box2d.bodyDef.type = b2Body.b2_dynamicBody;
-		self.box2d.fixDef = new b2FixtureDef;
-		self.box2d.fixDef.density = ddensity;
-		self.box2d.fixDef.friction = dfriction;
-		self.box2d.fixDef.resitution = drestituion;
-		self.box2d.fixDef.shape = new b2PolygonShape();
-		*/
-	}
+		
+		//set collision listener
+		
+		var collider = new b2ContactListener;
+		collider.BeginContact = function(contact) {}
+		collider.EndContact = function(contact) {
+			alert("call colling function!");
+			obj1 = contact.GetFixtureA().GetBody().GetUserData();
+			obj2 = contact.GetFixtureB().GetBody().GetUserData();
+			alert(contact.GetFixtureA().GetBody());
+			alert(contact.GetFixtureB().GetBody());
+			if (obj1 != null && obj2 != null){
+				obj1.collide(obj2);
+			}}
+		collider.PostSolve = function(contact, impulse) {
+			/*
+			alert("call colling function!");
+			obj1 = contact.GetFixtureA().GetBody().GetUserData();
+			obj2 = contact.GetFixtureB().GetBody().GetUserData();
+			if (obj1 != null && obj2 != null){
+				obj1.collide(obj2);
+			}*/
+		}
+		collider.PreSolve = function(contact, oldManifold) {}
+		self.box2d.world.SetContactListener(collider);
+		
+	};
 	
 	
     // Input handlers ---------------------------------------------------------
@@ -234,7 +249,7 @@ function Game(canvas, renderer) {
         game.scene.add(game.player.mesh);
 
         // Initialize an enemy
-        var NUM_ENEMIES = 5,
+        var NUM_ENEMIES = 1,
             enemy = null;
 
         game.enemies = [];

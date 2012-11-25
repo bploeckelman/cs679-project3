@@ -12,6 +12,7 @@ function Enemy (game, description) {
     this.maxspeed = null;
     this.target   = null;
 	this.box2dObject = null;
+	this.type = enemyType;
 	
 	//used by box2D
 	this.width = null;
@@ -30,6 +31,17 @@ function Enemy (game, description) {
 	
 	this.getVelocity = function () {
 		return self.box2dObject.body.GetLinearVelocity();
+	};
+	
+	this.collide = function(obj){
+		if(obj.type == playerType) {
+			alert("Enemy collides with player!");
+		}else if(obj.type == playerType){
+			alert("Enemy collides with enemy!");
+		}else{
+			//collide with unknow object
+			//do nothing
+		}
 	};
 	
 	this.update = function () {
