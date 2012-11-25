@@ -40,14 +40,12 @@ function Structure (type, game) {
             if (mouseWorldPos.y > game.level.size.height - self.mesh.height)
                 mouseWorldPos.y = game.level.size.height - self.mesh.height;
 
-            /*
-            self.mesh.position.x = mouseWorldPos.x;
-            self.mesh.position.y = mouseWorldPos.y;
-            self.mesh.position.z = 1; // Above grid
-            */
-            self.node.position.x = mouseWorldPos.x;
-            self.node.position.y = mouseWorldPos.y;
-            self.node.position.z = 1; // Above grid
+            // Snap to grid
+            var gridX = Math.floor(mouseWorldPos.x / game.level.size.cellw),
+                gridY = Math.floor(mouseWorldPos.y / game.level.size.cellh);
+            self.node.position.x = gridX * game.level.size.cellw; 
+            self.node.position.y = gridY * game.level.size.cellh;
+            self.node.position.z = 0.1; // Above grid
         }
     };
 
@@ -57,8 +55,9 @@ function Structure (type, game) {
         structure.type = type;
 
         // Calculate the structure's size
-        var width  = game.level.size.cellw,
-            height = game.level.size.cellh;
+        // -2 makes it fit inside a cell instead of partially overlapping
+        var width  = game.level.size.cellw - 2,
+            height = game.level.size.cellh - 2;
         switch (structure.type) {
             case STRUCTURE_TYPES.ONE_BY_ONE: // for completeness...
                 width  *= 1;
@@ -81,20 +80,23 @@ function Structure (type, game) {
             new THREE.PlaneGeometry(width, height),
             new THREE.MeshBasicMaterial({ color: 0xff00ff })
         );
-        structure.mesh.position.x = width  / 2;//0;
-        structure.mesh.position.y = height / 2;//0;
-        structure.mesh.position.z = 1;
-
-        // Add some helpful properties to the mesh for later use
-        structure.mesh.width  = width;
-        structure.mesh.height = height;
 
         // Create a node to offset the mesh "center" to bottom left
         structure.node = new THREE.Object3D();
         structure.node.add(structure.mesh);
 
+        // Offset the mesh center to bottom left of mesh
+        // +1 makes it fit inside a cell instead of partially overlapping
+        structure.mesh.position.x = width  / 2 + 1;
+        structure.mesh.position.y = height / 2 + 1;
+        structure.mesh.position.z = 0;
+
+        // Add some helpful properties to the mesh for later use
+        structure.mesh.width  = width;
+        structure.mesh.height = height;
+
         // Add the mesh to the scene
-        game.scene.add(structure.node);//structure.mesh);
+        game.scene.add(structure.node);
 
         console.log("Structure initialized.");
     })(self);
