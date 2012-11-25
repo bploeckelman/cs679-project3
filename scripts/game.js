@@ -234,7 +234,7 @@ function Game(canvas, renderer) {
         game.scene.add(game.player.mesh);
 
         // Initialize an enemy
-        var NUM_ENEMIES = 20,
+        var NUM_ENEMIES = 5,
             enemy = null;
 
         game.enemies = [];

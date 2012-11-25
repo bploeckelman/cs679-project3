@@ -122,8 +122,9 @@ function Enemy (game, description) {
         enemy.mesh.position = position;
 		
 		// Create box2D representation
-		self.width = self.size.x;
-		self.height = self.size.y;
+		var SCALE = 5;
+		self.width = self.size.x * 1.35 / SCALE;
+		self.height = self.size.y * 1.35 / SCALE;
 		self.box2dObject = new box2dObject(game, enemy);
 		self.box2dObject.body.SetPosition(new b2Vec2(position.x, position.y));
 		self.box2dObject.body.SetLinearVelocity(velocity);

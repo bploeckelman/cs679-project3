@@ -17,7 +17,7 @@ function Player (game) {
     var self = this,
         PLAYER_SIZE = { w: 9, h: 9 },
         MOVE_SPEED  = { x: 0.25, y: 0.25 },
-        MAX_SPEED   = { x: 3, y: 3 },
+        MAX_SPEED   = { x: 6, y: 6 },
         PLAYER_Z    = 0.2;
 
 
@@ -130,9 +130,10 @@ function Player (game) {
     // Constructor ------------------------------------------------------------
     (this.init = function (player) {
 		
+		var SCALE = 5;
 		// Create Box2D representation
-		player.width = PLAYER_SIZE.w;
-		player.height = PLAYER_SIZE.h;
+		player.width = PLAYER_SIZE.w * 1.25 / SCALE;
+		player.height = PLAYER_SIZE.h * 1.25 / SCALE;
 		self.box2dObject = new box2dObject(game, player);
 		var position = new b2Vec2(PLAYER_SIZE.w / 2, PLAYER_SIZE.h / 2);
 		self.box2dObject.body.SetPosition(position);
