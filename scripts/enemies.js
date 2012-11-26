@@ -1,3 +1,13 @@
+// Cylinder: topRadius, bottomRadius, height, radiusSegments, heightSegments
+var PYRAMID = new THREE.CylinderGeometry(0, 10, 10, 4, 1),
+    TRIANGLE = (function initializeTriangleGeometry () {
+        var geometry = new THREE.Geometry();
+        geometry.vertices.push(new THREE.Vector3(-5, -5, 0.2));
+        geometry.vertices.push(new THREE.Vector3( 5, -5, 0.2));
+        geometry.vertices.push(new THREE.Vector3( 0,  5, 0.2));
+        geometry.faces.push(new THREE.Face3(0, 1, 2));
+        return geometry;
+    }) ();
 // ----------------------------------------------------------------------------
 // Enemy object
 // ----------------------------------------------------------------------------
@@ -39,6 +49,11 @@ function Enemy (description) {
 
         // Integrate velocity
         self.position.addSelf(self.velocity);
+
+        // Rotate towards target
+        self.mesh.rotation.z = Math.atan2(
+            self.target.position.y - self.mesh.position.y,
+            self.target.position.x - self.mesh.position.x);
     };
 
 
@@ -96,11 +111,12 @@ function Enemy (description) {
             }
         }
 
-        // Generate a simple plane mesh for now
+        // Generate a mesh for the enemy
         // TODO: pass an enemy type value in the description object
         //       and pick from predefined geometry based on that 
         enemy.mesh = new THREE.Mesh(
-            new THREE.PlaneGeometry(enemy.size.x, enemy.size.y),
+            // PYRAMID, // Note: 3d geometry requires rotation/translation
+            TRIANGLE,
             new THREE.MeshBasicMaterial({
                 color: enemy.color.getHex(),
                 wireframe: true
