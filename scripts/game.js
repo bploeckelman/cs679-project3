@@ -11,6 +11,7 @@ function Game(canvas, renderer) {
     this.level  = null;
     this.player = null;
     this.wave   = null;
+    this.build  = null;
     this.particles = null;
     this.projector = null;
     this.input  = {
@@ -60,7 +61,10 @@ function Game(canvas, renderer) {
             handleCollisions(self);
             updateParticles(self);
         } else if (self.mode === GAME_MODE.BUILD) {
-            // TODO
+            // Move new structure around if one is waiting to be placed
+            if (self.build.structure !== null) {
+                self.build.structure.move();
+            }
         }
 
         TWEEN.update();
@@ -171,10 +175,20 @@ function Game(canvas, renderer) {
     // Mouse Click
     function handleMouseClick (event) {
         self.input.mouseButtonClicked = event.button;
-        if (self.mode === GAME_MODE.BUILD
-         && self.level.structures.length === 0) {
-            self.level.structures.push(
-                new Structure(STRUCTURE_TYPES.FOUR_BY_FOUR, self));
+
+        if (self.mode === GAME_MODE.BUILD) {
+            // Create new structure to be placed (attached to mouse)
+            if (self.build.structure === null) {
+                // TODO: pick new structure type from a menu
+                self.build.structure = new Structure(
+                    STRUCTURE_TYPES.FOUR_BY_FOUR, self);
+            }
+            // Place current structure and clear placeholder object
+            else {
+                self.build.structure.place();
+                self.level.structures.push(self.build.structure);
+                self.build.structure = null;
+            }
         }
         //console.log("Mouse button clicked: " + self.input.mouseButtonClicked);
     }
@@ -234,6 +248,13 @@ function Game(canvas, renderer) {
 
         // Initialize particle system container
         game.particles = [];
+
+        // Initialize the build mode object
+        // Note: add other properties for current structure type
+        //       and build menu and other stuff like that
+        game.build = {
+            structure: null
+        };
 
         console.log("Game initialized.");
     })(self);

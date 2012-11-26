@@ -13,7 +13,9 @@ function Structure (type, game) {
     this.type     = null;
     this.mesh     = null;
     this.node     = null;
+    this.placed   = null;
     this.position = null;
+    this.gridindices = null;
 
 
     // Private variables ------------------------------------------------------
@@ -22,6 +24,21 @@ function Structure (type, game) {
 
     // Structure methods ------------------------------------------------------
     this.update = function () {
+        // TODO...
+    };
+
+
+    this.place = function () {
+        self.placed = true;
+        self.gridindices = Object.freeze(self.gridindices);
+    };
+
+
+    this.move = function () {
+        if (self.placed) {
+            return;
+        }
+
         if (game.mode === GAME_MODE.BUILD) {
             // Unproject mouse pos from normalized device coords to world coords
             var mouseWorldPos = new THREE.Vector3(
@@ -42,10 +59,11 @@ function Structure (type, game) {
                 mouseWorldPos.y = game.level.size.height - self.mesh.height;
 
             // Snap to grid
-            var gridX = Math.floor(mouseWorldPos.x / game.level.size.cellw),
-                gridY = Math.floor(mouseWorldPos.y / game.level.size.cellh);
-            self.node.position.x = gridX * game.level.size.cellw; 
-            self.node.position.y = gridY * game.level.size.cellh;
+            self.gridindices.x = Math.floor(mouseWorldPos.x / game.level.size.cellw);
+            self.gridindices.y = Math.floor(mouseWorldPos.y / game.level.size.cellh);
+
+            self.node.position.x = self.gridindices.x * game.level.size.cellw; 
+            self.node.position.y = self.gridindices.y * game.level.size.cellh;
             self.node.position.z = 0.1; // Above grid
         }
     };
@@ -101,6 +119,9 @@ function Structure (type, game) {
         // Add some helpful properties to the mesh for later use
         structure.mesh.width  = width;
         structure.mesh.height = height;
+
+        structure.gridindices = new THREE.Vector2(-1,-1);
+        structure.placed = false;
 
         // Add the mesh to the scene
         game.scene.add(structure.node);
