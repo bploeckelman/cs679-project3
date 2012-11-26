@@ -285,14 +285,17 @@ function handleCollisions (game) {
                 enemy.position.y - enemy.size.y / 2),
             enemyMax = new THREE.Vector2(
                 enemy.position.x + enemy.size.x / 2,
-                enemy.position.y + enemy.size.y / 2);
+                enemy.position.y + enemy.size.y / 2),
+            FEATHER = 4;
 
-        if (playerMin.x > enemyMax.x 
-         || playerMax.x < enemyMin.x
-         || playerMin.y > enemyMax.y
-         || playerMax.y < enemyMin.y) {
+        if (playerMin.x + FEATHER > enemyMax.x - FEATHER
+         || playerMax.x - FEATHER < enemyMin.x + FEATHER
+         || playerMin.y + FEATHER > enemyMax.y - FEATHER
+         || playerMax.y - FEATHER < enemyMin.y + FEATHER) {
+            enemy.intersects = false;
             enemy.mesh.material.wireframe = true;
         } else {
+            enemy.intersects = true;
             if (player.isSpinning) {
                 enemy.mesh.material.wireframe = false;
                 // Damage enemy

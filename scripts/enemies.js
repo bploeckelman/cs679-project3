@@ -22,6 +22,7 @@ function Enemy (description) {
     this.maxspeed = null;
     this.target   = null;
     this.health   = null;
+    this.intersects = null;
 
 
     // Private variables ------------------------------------------------------
@@ -48,12 +49,15 @@ function Enemy (description) {
         }
 
         // Integrate velocity
-        self.position.addSelf(self.velocity);
+        if (!self.intersects) {
+            self.position.addSelf(self.velocity);
 
-        // Rotate towards target
-        self.mesh.rotation.z = Math.atan2(
-            self.target.position.y - self.mesh.position.y,
-            self.target.position.x - self.mesh.position.x);
+            // Rotate towards target
+            self.mesh.rotation.z = Math.atan2(
+                self.target.position.y - self.mesh.position.y,
+                self.target.position.x - self.mesh.position.x);
+        }
+
     };
 
 
@@ -125,6 +129,8 @@ function Enemy (description) {
         enemy.mesh.position = enemy.position;
 
         enemy.health = 100;
+
+        enemy.intersects = false;
 
         // Create "breathing" animation
         var BREATHE_TIME = 150 * Math.max(enemy.size.x, enemy.size.y),
