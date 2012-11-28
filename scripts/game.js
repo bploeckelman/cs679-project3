@@ -6,6 +6,7 @@ function Game(canvas, renderer) {
     // Public properties ------------------------------------------------------
     this.frames = 0;            // number of frames drawn
     this.mode   = null;
+    this.round  = null;
     this.scene  = null; 
     this.camera = null;
     this.level  = null;
@@ -23,6 +24,10 @@ function Game(canvas, renderer) {
         zoomMod:  false,
         spin:     false,
         mode:     false,
+        action1:  false,
+        action2:  false,
+        action3:  false,
+        action4:  false,
         mousePos:  null,
         mousePrev: null,
         mouseButtonClicked:  -1,
@@ -35,7 +40,11 @@ function Game(canvas, renderer) {
         panRight: 68, // D
         zoom:     90, // Z (shift switches between in/out)
         spin:     32, // Space
-        mode:     49, // 1
+        mode:     48, // 0
+        action1:  49, // 1
+        action2:  50, // 2
+        action3:  51, // 3
+        action4:  52, // 4
     };
 
 
@@ -60,10 +69,19 @@ function Game(canvas, renderer) {
             self.wave.update();
             handleCollisions(self);
             updateParticles(self);
+
+            if (self.wave.enemies.length == 0) {
+                self.switchMode();
+            }
         } else if (self.mode === GAME_MODE.BUILD) {
             // Move new structure around if one is waiting to be placed
             if (self.build.structure !== null) {
                 self.build.structure.move();
+            } else {
+                if (self.player.money <= 0) {
+                    self.switchMode();
+                    self.round++;
+                }
             }
         }
 
@@ -148,6 +166,25 @@ function Game(canvas, renderer) {
                 self.input.mode = true;
                 self.switchMode();
             break;
+            case self.keymap.action1:
+                self.input.action1 = true;
+                createStructure(STRUCTURE_TYPES.ONE_BY_ONE, self);
+            break;
+            case self.keymap.action2:
+                self.input.action2 = true;
+                createStructure(STRUCTURE_TYPES.TWO_BY_TWO, self);
+            break;
+            break;
+            case self.keymap.action3:
+                self.input.action3 = true;
+                createStructure(STRUCTURE_TYPES.THREE_BY_THREE, self);
+            break;
+            break;
+            case self.keymap.action4:
+                self.input.action4 = true;
+                createStructure(STRUCTURE_TYPES.FOUR_BY_FOUR, self);
+            break;
+            break;
         };
     };
 
@@ -163,6 +200,10 @@ function Game(canvas, renderer) {
             case self.keymap.zoom:     self.input.zoom     = false; break;
             case self.keymap.spin:     self.input.spin     = false; break;
             case self.keymap.mode:     self.input.mode     = false; break;
+            case self.keymap.action1:  self.input.action1  = false; break;
+            case self.keymap.action2:  self.input.action2  = false; break;
+            case self.keymap.action3:  self.input.action3  = false; break;
+            case self.keymap.action4:  self.input.action4  = false; break;
         };
     };
 
@@ -178,13 +219,17 @@ function Game(canvas, renderer) {
 
         if (self.mode === GAME_MODE.BUILD) {
             // Create new structure to be placed (attached to mouse)
-            if (self.build.structure === null) {
+            /*
+            if (self.build.structure === null
+             && self.player.money > 10) {
                 // TODO: pick new structure type from a menu
                 self.build.structure = new Structure(
                     STRUCTURE_TYPES.FOUR_BY_FOUR, self);
             }
             // Place current structure and clear placeholder object
             else {
+            */
+            if (self.build.structure !== null) {
                 self.build.structure.place();
                 self.level.structures.push(self.build.structure);
                 self.build.structure = null;
@@ -217,8 +262,9 @@ function Game(canvas, renderer) {
 
         game.projector = new THREE.Projector();
 
-        // Set the initial game mode
-        game.mode = GAME_MODE.DEFEND;
+        // Set the initial game mode and round counter
+        game.mode = GAME_MODE.BUILD;//DEFEND;
+        game.round = 1;
 
         // Initialize the camera
         game.camera = new THREE.PerspectiveCamera(FOV, ASPECT, NEAR, FAR);
@@ -241,10 +287,10 @@ function Game(canvas, renderer) {
 
         // Initialize the player
         game.player = new Player(game);
-        game.scene.add(game.player.mesh);
+        //game.scene.add(game.player.mesh);
 
         // Initialize a new wave of enemies
-        game.wave = new Wave(20, game);
+        //game.wave = new Wave(20, game);
 
         // Initialize particle system container
         game.particles = [];
@@ -265,6 +311,21 @@ function Game(canvas, renderer) {
 // ----------------------------------------------------------------------------
 // Update Functions -----------------------------------------------------------
 // ----------------------------------------------------------------------------
+
+
+// Create Structure -----------------------------------------------------------
+function createStructure (structureType, game) {
+    if (game.mode === GAME_MODE.BUILD) {
+        if (game.build.structure === null) {
+            // If player has enough money for this structure type, prep one
+            if (game.player.money >= STRUCTURE_COSTS[structureType]) {
+                game.player.money -= STRUCTURE_COSTS[structureType];
+                game.build.structure = new Structure(structureType, game);
+                // TODO: play some animation or sound
+            }
+        }
+    }
+}
 
 
 // Handle Collisions ----------------------------------------------------------

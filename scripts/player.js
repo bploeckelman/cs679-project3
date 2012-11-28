@@ -7,6 +7,7 @@ function Player (game) {
     this.mesh     = null;
     this.position = null;
     this.velocity = null;
+    this.money    = null;
     this.isSpinning = false;
     this.damageAmount = 5;
 
@@ -79,6 +80,8 @@ function Player (game) {
         player.mesh.position.set(PLAYER_SIZE.w / 2, PLAYER_SIZE.h / 2, PLAYER_Z);
         player.position = player.mesh.position;
         player.velocity = new THREE.Vector3(0,0,0);
+
+        player.money = 100;
 
         // Create "breathing" animation
         var BREATHE_TIME = 1000,
