@@ -7,7 +7,7 @@ var MAX_LIGHTS = 20;
 // ----------------------------------------------------------------------------
 // Initialize Game
 // ----------------------------------------------------------------------------
-(function initializeGame() {
+window.onload = function initializeGame() {
     var canvas       = document.getElementById("canvas"),
         canvasWidth  = window.innerWidth,
         canvasHeight = window.innerHeight,
@@ -78,5 +78,5 @@ var MAX_LIGHTS = 20;
         stats.end();
     })();
 
-})();
+};
 

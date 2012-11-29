@@ -1,0 +1,10 @@
+div#buildMenus {
+	position: absolute;
+	bottom: 10px;
+	left: 10px;
+}
+
+div#buildMenus button.menuItem {
+	padding: 10px;
+	font-weight: bold;
+}

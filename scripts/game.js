@@ -32,6 +32,7 @@ function Game(canvas, renderer) {
         mousePrev: null,
         mouseButtonClicked:  -1,
         mouseWheelLastDelta: 0,
+		menuClicked: false,
     };
     this.keymap = {
         panUp:    87, // W
@@ -112,7 +113,10 @@ function Game(canvas, renderer) {
             // Reposition camera
             self.camera.position.x = self.player.mesh.position.x - 50;
             self.camera.position.y = self.player.mesh.position.y - 50;
-        }
+			
+			//Hide the menus
+			document.getElementById("buildMenus").style.display = "none";
+		}
         // Defend -> Build
         else if (self.mode === GAME_MODE.DEFEND) {
             self.mode = GAME_MODE.BUILD;
@@ -131,6 +135,17 @@ function Game(canvas, renderer) {
 
             // TODO: position camera above treasure/artifact @ center of base
             //self.camera.position.set(500,500,100);
+			
+			// Display the menus
+			/*var texture = new THREE.ImageUtils.loadTexture("images/structMenuButton2.png");
+			var sprite = new THREE.Sprite( {
+				map: texture,
+				alignment: THREE.SpriteAlignment.topLeft, // otherwise position moves center of sprite
+				useScreenCoordinates: true  // might not actually be necessary
+			} );
+			sprite.position.set(0,0,0);
+			self.scene.add(sprite);*/
+			document.getElementById("buildMenus").style.display = "block";
         }
     };
 
@@ -215,6 +230,12 @@ function Game(canvas, renderer) {
 
     // Mouse Click
     function handleMouseClick (event) {
+		// If a menu item was clicked, ignore the event
+		if (self.input.menuClicked) {
+			self.input.menuClicked = false;
+			return
+		}
+		
         self.input.mouseButtonClicked = event.button;
 
         if (self.mode === GAME_MODE.BUILD) {
@@ -301,6 +322,35 @@ function Game(canvas, renderer) {
         game.build = {
             structure: null
         };
+		
+		// Initialize the menus
+		/*var texture = new THREE.ImageUtils.loadTexture("images/structMenuButton2.png");
+		var sprite = new THREE.Sprite( {
+			map: texture,
+			alignment: THREE.SpriteAlignment.topLeft, // otherwise position moves center of sprite
+			useScreenCoordinates: true  // might not actually be necessary
+		} );
+		sprite.position.set(0,0,0);
+		
+		alert("width: " + texture.image.width);
+		alert("height: " + texture.image.height);
+		game.scene.add(sprite);*/
+		document.getElementById("initOneByOne").onclick = function () {
+			self.input.menuClicked = true;
+			createStructure(STRUCTURE_TYPES.ONE_BY_ONE, game);
+		};
+		document.getElementById("initTwoByTwo").onclick = function () {
+			self.input.menuClicked = true;
+			createStructure(STRUCTURE_TYPES.TWO_BY_TWO, game);
+		};
+		document.getElementById("initThreeByThree").onclick = function () {
+			self.input.menuClicked = true;
+			createStructure(STRUCTURE_TYPES.THREE_BY_THREE, game);
+		};
+		document.getElementById("initFourByFour").onclick = function () {
+			self.input.menuClicked = true;
+			createStructure(STRUCTURE_TYPES.FOUR_BY_FOUR, game);
+		};
 
         console.log("Game initialized.");
     })(self);
