@@ -46,22 +46,7 @@ function Wave (numEnemies, game) {
     (this.init = function (wave) {
         wave.enemies = [];
         for(var i = 0; i < numEnemies; ++i){
-            var enemy = new Enemy({
-                color:    new THREE.Vector3(
-                                Math.random(),
-                                Math.random(),
-                                Math.random()),
-                position: new THREE.Vector3(
-                                Math.floor(Math.random() * 1000),
-                                Math.floor(Math.random() * 1000), 0.1),
-                size:     new THREE.Vector2(
-                                Math.floor(Math.random() * 40) + 10,
-                                Math.floor(Math.random() * 40) + 10),
-                speed:    new THREE.Vector2(
-                                Math.random() * 1.5,
-                                Math.random() * 1.5),
-                maxspeed: new THREE.Vector2(5,5)
-            });
+            var enemy = new Enemy(ENEMY_DESCRIPTIONS[ENEMY_TYPES.LUNATIC]);
 
             // TODO: set targets in update?
             enemy.setFollowTarget(game.player);

@@ -8,6 +8,28 @@ var PYRAMID = new THREE.CylinderGeometry(0, 10, 10, 4, 1),
         geometry.faces.push(new THREE.Face3(0, 1, 2));
         return geometry;
     }) ();
+    
+// ----------------------------------------------------------------------------
+// Enemy Types & their Description
+// ----------------------------------------------------------------------------
+var ENEMY_TYPES = {
+	BRUTE : 0,
+	LUNATIC : 1,
+};
+/*
+ * Possible description elements :
+ * type, color, position, size, speed, maxspeed, health
+ */
+var ENEMY_DESCRIPTIONS= [
+	{
+        type: ENEMY_TYPES.BRUTE,
+    },
+    {
+        type: ENEMY_TYPES.LUNATIC,
+        maxspeed: new THREE.Vector2(20,20)
+    }
+];
+
 // ----------------------------------------------------------------------------
 // Enemy object
 // ----------------------------------------------------------------------------
@@ -23,13 +45,13 @@ function Enemy (description) {
     this.target   = null;
     this.health   = null;
     this.intersects = null;
-
+	this.type     = null;
 
     // Private variables ------------------------------------------------------
     var self = this;
 
 
-    // Player methods ---------------------------------------------------------
+    // Enemy methods ---------------------------------------------------------
     this.update = function () {
         // Follow the target
         if (self.target !== null) {
@@ -88,33 +110,53 @@ function Enemy (description) {
         enemy.position = new THREE.Vector3(0,0,0.1);
         enemy.velocity = new THREE.Vector2(0,0);
 
-        // Initialize properties from description object
-        for(var prop in description) {
-            if (prop === "color") {
-                if (description[prop] instanceof THREE.Vector3) {
-                    var rgb = description[prop].clone();
-                    enemy.color = new THREE.Color(0x000000);
-                    enemy.color.setRGB(rgb.x, rgb.y, rgb.z);
-                }
-            } else if (prop === "position") {
-                if (description[prop] instanceof THREE.Vector3) {
-                    enemy.position = description[prop].clone();
-                }
-            } else if (prop === "size") {
-                if (description[prop] instanceof THREE.Vector2) {
-                    enemy.size = description[prop].clone();
-                }
-            } else if (prop === "speed") {
-                if (description[prop] instanceof THREE.Vector2) {
-                    enemy.speed = description[prop].clone();
-                }
-            } else if (prop === "maxspeed") {
-                if (description[prop] instanceof THREE.Vector2) {
-                    enemy.maxspeed = description[prop].clone();
-                }
-            }
+        // Initialize properties from description object if available else 
+        // assign randomly
+		if ("color" in description && description["color"] instanceof THREE.Vector3) {
+        	var rgb = description["color"].clone();
+            enemy.color = new THREE.Color(0x000000);
+            enemy.color.setRGB(rgb.x, rgb.y, rgb.z);       
+        } else {
+        	enemy.color = new THREE.Color(0x000000);
+        	enemy.color.setRGB(Math.random(), Math.random(), Math.random());
         }
-
+        
+		if ("position" in description && description["position"] instanceof THREE.Vector3) {
+        	enemy.position = description["position"].clone();      
+        } else {
+        	enemy.position = new THREE.Vector3(Math.floor(Math.random() * 1000),
+                        Math.floor(Math.random() * 1000), 0.1);
+        }
+        
+        if ("size" in description && description["size"] instanceof THREE.Vector2) {
+        	enemy.size = description["size"].clone();       
+        } else {
+        	enemy.size = new THREE.Vector2( Math.floor(Math.random() * 40) + 10,
+                        Math.floor(Math.random() * 40) + 10);
+        }
+        
+        if ("speed" in description && description["speed"] instanceof THREE.Vector2) {
+        	enemy.speed = description["speed"].clone();        
+        } else {
+        	enemy.speed = new THREE.Vector2( Math.random() * 1.5, Math.random() * 1.5);
+        }
+        
+        if ("maxspeed" in description && description["maxspeed"] instanceof THREE.Vector2) {
+        	enemy.maxspeed = description["maxspeed"].clone();        
+        }else {
+        	enemy.maxspeed = new THREE.Vector2(5,5);	
+        }
+        if ("health" in description) {
+        	enemy.health = description["health"];
+        } else {
+        	enemy.health = 100;
+        }
+        if ("type" in description) {
+        	enemy.type = description["type"];
+        } else {
+        	enemy.type = ENEMY_TYPES.BRUTE;
+        }
+        
         // Generate a mesh for the enemy
         // TODO: pass an enemy type value in the description object
         //       and pick from predefined geometry based on that 
@@ -127,8 +169,6 @@ function Enemy (description) {
             })
         );
         enemy.mesh.position = enemy.position;
-
-        enemy.health = 100;
 
         enemy.intersects = false;
 
@@ -158,6 +198,7 @@ function Enemy (description) {
         breatheIn.start();
 
         console.log("Enemy initialized.");
+        console.log(enemy);
     })(self, description);
 
 } // end Enemy object
