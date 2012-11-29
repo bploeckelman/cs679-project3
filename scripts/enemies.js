@@ -34,8 +34,8 @@ function Enemy (description) {
         // Follow the target
         if (self.target !== null) {
             // Velocity is a vector to the target in the xy plane
-            self.velocity.x = self.target.position.x - self.position.x;
-            self.velocity.y = self.target.position.y - self.position.y;
+            self.velocity.x = self.target.mesh.position.x - self.position.x;
+            self.velocity.y = self.target.mesh.position.y - self.position.y;
             self.velocity.z = 0;
 
             // Normalize the velocity 
@@ -54,17 +54,15 @@ function Enemy (description) {
 
             // Rotate towards target
             self.mesh.rotation.z = Math.atan2(
-                self.target.position.y - self.mesh.position.y,
-                self.target.position.x - self.mesh.position.x);
+                self.target.mesh.position.y - self.mesh.position.y,
+                self.target.mesh.position.x - self.mesh.position.x);
         }
 
     };
 
 
     this.setFollowTarget = function (object) {
-        if (object instanceof Player) {
-            self.target = object;
-        }
+        self.target = object;
     };
 
 
@@ -112,6 +110,12 @@ function Enemy (description) {
                 if (description[prop] instanceof THREE.Vector2) {
                     enemy.maxspeed = description[prop].clone();
                 }
+            } else if (prop === "health") {
+                if (!isNaN(description[prop])) {
+                    enemy.health = description[prop];
+                } else {
+                    enemy.health = 100;
+                }
             }
         }
 
@@ -123,12 +127,10 @@ function Enemy (description) {
             TRIANGLE,
             new THREE.MeshBasicMaterial({
                 color: enemy.color.getHex(),
-                wireframe: true
+                //wireframe: true
             })
         );
         enemy.mesh.position = enemy.position;
-
-        enemy.health = 100;
 
         enemy.intersects = false;
 

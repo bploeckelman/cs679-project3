@@ -57,7 +57,10 @@ function Game(canvas, renderer) {
         FOV    = 67,
         ASPECT = window.innerWidth / window.innerHeight,
         NEAR   = 1,
-        FAR    = 1000;
+        FAR    = 1000,
+        COUNTDOWN = false,
+        CANVAS2D  = null,
+        CONTEXT2D = null;
     DIRECT_LIGHT0.position.set(1,1,1).normalize();
 
     // Game methods -----------------------------------------------------------
@@ -72,8 +75,21 @@ function Game(canvas, renderer) {
             handleCollisions(self);
             updateParticles(self);
 
-            if (self.wave.enemies.length == 0) {
-                self.switchMode();
+            if (self.wave.enemies.length == 0 && !COUNTDOWN) {
+                setTimeout(function () {
+                    self.switchMode();
+                    COUNTDOWN = false;
+                }, 5000);
+                COUNTDOWN = true;
+                // TODO: display some message about defend mode completion
+                // ideally we'd display some stats here too, 
+                //  - time it took to beat round
+                //  - remaining artifact health
+                //  - money gained
+                //  - etc...
+                // It should also be setup so that instead of counting 
+                // down to mode switch, the player has to click through 
+                // the completion message...
             }
         } else if (self.mode === GAME_MODE.BUILD) {
             // Move new structure around if one is waiting to be placed
@@ -94,7 +110,36 @@ function Game(canvas, renderer) {
     // Render
     this.render = function () {
         renderer.render(self.scene, self.camera);
+        self.renderOverlayText():
         ++self.frames;
+    };
+
+
+    // Render Overlay Text
+    this.renderOverlayText = function () {
+        // Clear 2d canvas
+        CONTEXT2D.save();
+        CONTEXT2D.setTransform(1,0,0,1,0,0);
+        CONTEXT2D.clearRect(0, 0, CANVAS2D.width, CANVAS2D.height);
+        CONTEXT2D.restore();
+
+        // Draw any hud info on the 2d canvas
+        CONTEXT2D.font         = "20px Arial";
+        CONTEXT2D.textBaseline = "top";
+        CONTEXT2D.textAlign    = "center";
+        CONTEXT2D.fillStyle    = "#ffffff";
+        CONTEXT2D.fillText(
+            "Build Credits: " + self.player.money,
+            CANVAS2D.width / 2, 0);
+        CONTEXT2D.fillText(
+            "Artifact Health: " + self.level.artifact.health,
+            CANVAS2D.width / 2, 20);
+        if (COUNTDOWN) {
+            CONTEXT2D.font = "40px Arial";
+            CONTEXT2D.textBaseline = "center";
+            CONTEXT2D.fillText("Defend phase complete!",
+                CANVAS2D.width / 2, CANVAS2D.height / 2);
+        }
     };
 
 
@@ -106,10 +151,12 @@ function Game(canvas, renderer) {
 
             // Add the player
             self.player = new Player(self);
+            self.player.position = self.level.artifact.mesh.position.clone();
+            self.player.mesh.position = self.level.artifact.mesh.position.clone();
             self.scene.add(self.player.mesh);
 
             // Create a new wave of enemies
-            self.wave = new Wave(20, self);
+            self.wave = new Wave(self.round, self);
 
             // Reposition camera
             self.camera.position.x = self.player.mesh.position.x - 50;
@@ -149,6 +196,7 @@ function Game(canvas, renderer) {
 			document.getElementById("buildMenus").style.display = "block";
         }
     };
+
 
     // Input handlers ---------------------------------------------------------
     // Key Down
@@ -289,7 +337,7 @@ function Game(canvas, renderer) {
         game.scene  = new THREE.Scene();
         game.scene.add(GLOBAL_LIGHT0);
         game.scene.add(DIRECT_LIGHT0);
-        game.scene.fog = GLOBAL_FOG0;
+        //game.scene.fog = GLOBAL_FOG0;
 
         // Add stuff to the scene
         game.scene.add(game.camera);
@@ -339,6 +387,16 @@ function Game(canvas, renderer) {
 			self.input.menuClicked = true;
 			createStructure(STRUCTURE_TYPES.FOUR_BY_FOUR, game);
 		};
+
+        CANVAS2D = document.createElement("canvas");
+        CANVAS2D.id = "canvas2d";
+        CANVAS2D.width  = window.innerWidth;
+        CANVAS2D.height = window.innerHeight;
+        CANVAS2D.style.position = "absolute";
+        CANVAS2D.style.bottom   = 0;
+        CANVAS2D.style.right    = 0;
+        document.getElementById("container").appendChild(CANVAS2D);
+        CONTEXT2D = CANVAS2D.getContext("2d");
 
         console.log("Game initialized.");
     })(self);
@@ -392,12 +450,9 @@ function handleCollisions (game) {
          || playerMin.y + FEATHER > enemyMax.y - FEATHER
          || playerMax.y - FEATHER < enemyMin.y + FEATHER) {
             enemy.intersects = false;
-            enemy.mesh.material.wireframe = true;
         } else {
             enemy.intersects = true;
             if (player.isSpinning) {
-                enemy.mesh.material.wireframe = false;
-                // Damage enemy
                 enemy.takeDamage(player.damageAmount);
             }
         }
