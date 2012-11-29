@@ -8,6 +8,7 @@ function Level (game) {
     this.grid2 = null;
     this.cells = null;
     this.size  = null;
+    this.artifact   = null;
     this.structures = null;
 
 
@@ -20,6 +21,10 @@ function Level (game) {
         for (var i = 0; i < self.structures.length; ++i) {
             self.structures[i].update();
         }
+
+        self.artifact.rotation.x += 0.005;
+        self.artifact.rotation.y += 0.015;
+        self.artifact.rotation.z += 0.025;
     };
 
 
@@ -75,6 +80,22 @@ function Level (game) {
         // Initialize the structures container
         // TODO: add initial structures
         level.structures = [];
+
+        // Initialize the artifact
+        // TODO: make the artifact its own object
+        level.artifact = new THREE.Mesh(
+            new THREE.CubeGeometry(
+                2 * level.size.cellw,
+                2 * level.size.cellh,
+                2 * level.size.cellh),
+            new THREE.MeshLambertMaterial({ color: 0x00ffff })
+        );
+        level.artifact.position.set(
+            level.size.width  / 2,
+            level.size.height / 2,
+            level.size.cellh  / 2 
+        );
+        game.scene.add(level.artifact);
 
         console.log("Level initialized.");
     })(self);

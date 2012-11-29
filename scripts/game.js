@@ -51,13 +51,14 @@ function Game(canvas, renderer) {
 
     // Private variables ------------------------------------------------------
     var self = this,
-        GLOBAL_LIGHT0 = new THREE.AmbientLight(0x4f4f4f),
+        DIRECT_LIGHT0 = new THREE.DirectionalLight(0xffffff),
+        GLOBAL_LIGHT0 = new THREE.AmbientLight(0x111111),
         GLOBAL_FOG0   = new THREE.Fog(0xa0a0a0, 1, 1000),
         FOV    = 67,
         ASPECT = window.innerWidth / window.innerHeight,
         NEAR   = 1,
         FAR    = 1000;
-
+    DIRECT_LIGHT0.position.set(1,1,1).normalize();
 
     // Game methods -----------------------------------------------------------
     // Update
@@ -133,8 +134,8 @@ function Game(canvas, renderer) {
             }
             self.particles = [];
 
-            // TODO: position camera above treasure/artifact @ center of base
-            //self.camera.position.set(500,500,100);
+            // Position camera above treasure/artifact @ center of base
+            self.camera.position.set(500, 500, 200);
 			
 			// Display the menus
 			/*var texture = new THREE.ImageUtils.loadTexture("images/structMenuButton2.png");
@@ -239,17 +240,7 @@ function Game(canvas, renderer) {
         self.input.mouseButtonClicked = event.button;
 
         if (self.mode === GAME_MODE.BUILD) {
-            // Create new structure to be placed (attached to mouse)
-            /*
-            if (self.build.structure === null
-             && self.player.money > 10) {
-                // TODO: pick new structure type from a menu
-                self.build.structure = new Structure(
-                    STRUCTURE_TYPES.FOUR_BY_FOUR, self);
-            }
             // Place current structure and clear placeholder object
-            else {
-            */
             if (self.build.structure !== null) {
                 self.build.structure.place();
                 self.level.structures.push(self.build.structure);
@@ -284,12 +275,12 @@ function Game(canvas, renderer) {
         game.projector = new THREE.Projector();
 
         // Set the initial game mode and round counter
-        game.mode = GAME_MODE.BUILD;//DEFEND;
+        game.mode = GAME_MODE.BUILD;
         game.round = 1;
 
         // Initialize the camera
         game.camera = new THREE.PerspectiveCamera(FOV, ASPECT, NEAR, FAR);
-        game.camera.position.set(0, 0, 200);
+        game.camera.position.set(500, 500, 200);
         game.camera.velocity = new THREE.Vector3(0,0,0);
         game.camera.up = new THREE.Vector3(0,0,1);
         game.camera.lookAt(new THREE.Vector3(0,0,0));
@@ -297,6 +288,7 @@ function Game(canvas, renderer) {
         // Initialize the three.js scene
         game.scene  = new THREE.Scene();
         game.scene.add(GLOBAL_LIGHT0);
+        game.scene.add(DIRECT_LIGHT0);
         game.scene.fog = GLOBAL_FOG0;
 
         // Add stuff to the scene
@@ -308,10 +300,6 @@ function Game(canvas, renderer) {
 
         // Initialize the player
         game.player = new Player(game);
-        //game.scene.add(game.player.mesh);
-
-        // Initialize a new wave of enemies
-        //game.wave = new Wave(20, game);
 
         // Initialize particle system container
         game.particles = [];
@@ -476,41 +464,47 @@ function updateCamera (game) {
         if      (game.input.panLeft)  game.camera.position.x -= KEY_PAN_SPEED;
         else if (game.input.panRight) game.camera.position.x += KEY_PAN_SPEED;
 
-        // Pan camera by moving mouse to edges of screen
-        var minEdge = new THREE.Vector2(
-                window.innerWidth  / 4,  
-                window.innerHeight / 4),
-            maxEdge = new THREE.Vector2(
-                window.innerWidth  * 3 / 4,
-                window.innerHeight * 3 / 4),
-            // TODO: recalculate min/max edges on window resize
-            MOUSE_PAN_SPEED = 50,
-            dx = 0,
-            dy = 0;
+        // Only pan using mouse movement if a building is ready to be placed
+        if (game.build.structure != null) {
+            // Pan camera by moving mouse to edges of screen
+            var minEdge = new THREE.Vector2(
+                    window.innerWidth  / 4,  
+                    window.innerHeight / 4),
+                maxEdge = new THREE.Vector2(
+                    window.innerWidth  * 3 / 4,
+                    window.innerHeight * 3 / 4),
+                // TODO: recalculate min/max edges on window resize
+                MOUSE_PAN_SPEED = 75,
+                dx = 0,
+                dy = 0;
 
-        // Calculate delta for x edges
-        if (game.input.mousePos.x < minEdge.x) {
-            dx = (game.input.mousePos.x - minEdge.x) / MOUSE_PAN_SPEED;
-        } else if (game.input.mousePos.x > maxEdge.x) {
-            dx = (game.input.mousePos.x - maxEdge.x) / MOUSE_PAN_SPEED;
+            // Calculate delta for x edges
+            if (game.input.mousePos.x < minEdge.x) {
+                dx = (game.input.mousePos.x - minEdge.x) / MOUSE_PAN_SPEED;
+            } else if (game.input.mousePos.x > maxEdge.x) {
+                dx = (game.input.mousePos.x - maxEdge.x) / MOUSE_PAN_SPEED;
+            }
+
+            // Calculate delta for y edges
+            if (game.input.mousePos.y < minEdge.y) {
+                dy = -1 * (game.input.mousePos.y - minEdge.y) / MOUSE_PAN_SPEED;
+            } else if (game.input.mousePos.y > maxEdge.y) {
+                dy = -1 * (game.input.mousePos.y - maxEdge.y) / MOUSE_PAN_SPEED;
+            }
+
+            // Pan camera based on mouse movements
+            game.camera.position.addSelf(new THREE.Vector3(dx, dy, 0));
         }
-
-        // Calculate delta for y edges
-        if (game.input.mousePos.y < minEdge.y) {
-            dy = -1 * (game.input.mousePos.y - minEdge.y) / MOUSE_PAN_SPEED;
-        } else if (game.input.mousePos.y > maxEdge.y) {
-            dy = -1 * (game.input.mousePos.y - maxEdge.y) / MOUSE_PAN_SPEED;
-        }
-
-        // Pan camera based on mouse movements
-        game.camera.position.addSelf(new THREE.Vector3(dx, dy, 0));
 
         // Keep camera in level bounds
-        // TODO: don't hardcode bounds, expose them in Level object instead
-        if (game.camera.position.x < 0)    game.camera.position.x = 0;
-        if (game.camera.position.x > 1000) game.camera.position.x = 1000;
-        if (game.camera.position.y < 0)    game.camera.position.y = 0;
-        if (game.camera.position.y > 1000) game.camera.position.y = 1000;
+        if (game.camera.position.x < 0)
+            game.camera.position.x = 0;
+        if (game.camera.position.x > game.level.size.width)
+            game.camera.position.x = game.level.size.width;
+        if (game.camera.position.y < 0)
+            game.camera.position.y = 0;
+        if (game.camera.position.y > game.level.size.height)
+            game.camera.position.y = game.level.size.height;
 
         // Look straight down from camera position, up vector -> +y
         game.camera.up = new THREE.Vector3(0,1,0);
