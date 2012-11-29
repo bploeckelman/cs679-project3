@@ -15,6 +15,7 @@ var PYRAMID = new THREE.CylinderGeometry(0, 10, 10, 4, 1),
 var ENEMY_TYPES = {
 	BRUTE : 0,
 	LUNATIC : 1,
+	ARTIPHILE : 2,
 };
 /*
  * Possible description elements :
@@ -27,7 +28,10 @@ var ENEMY_DESCRIPTIONS= [
     {
         type: ENEMY_TYPES.LUNATIC,
         maxspeed: new THREE.Vector2(20,20)
-    }
+    },
+    {
+        type: ENEMY_TYPES.ARTIPHILE,
+    },
 ];
 
 // ----------------------------------------------------------------------------
@@ -53,11 +57,27 @@ function Enemy (description) {
 
     // Enemy methods ---------------------------------------------------------
     this.update = function () {
+    	
+    	switch(self.type) {
+    		case ENEMY_TYPES.BRUTE :
+            	self.setFollowTarget(game.player);
+            	break;
+    		case ENEMY_TYPES.LUNATIC :
+    			if (game.frames % 60 == 0 || !self.target) {
+    				self.target = new THREE.Vector2(Math.floor(Math.random() * 1000),
+                        Math.floor(Math.random() * 1000));
+               }
+	   			break;
+	   		case ENEMY_TYPES.ARTIPHILE :
+	   			self.target = game.level.artifact.position;
+	   			break;
+    	}
+    	
         // Follow the target
         if (self.target !== null) {
             // Velocity is a vector to the target in the xy plane
-            self.velocity.x = self.target.position.x - self.position.x;
-            self.velocity.y = self.target.position.y - self.position.y;
+            self.velocity.x = self.target.x - self.position.x;
+            self.velocity.y = self.target.y - self.position.y;
             self.velocity.z = 0;
 
             // Normalize the velocity 
@@ -76,8 +96,8 @@ function Enemy (description) {
 
             // Rotate towards target
             self.mesh.rotation.z = Math.atan2(
-                self.target.position.y - self.mesh.position.y,
-                self.target.position.x - self.mesh.position.x);
+                self.target.y - self.mesh.position.y,
+                self.target.x - self.mesh.position.x);
         }
 
     };
@@ -85,7 +105,7 @@ function Enemy (description) {
 
     this.setFollowTarget = function (object) {
         if (object instanceof Player) {
-            self.target = object;
+            self.target = object.position;
         }
     };
 
