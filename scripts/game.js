@@ -105,11 +105,13 @@ function Game(canvas, renderer) {
             self.mode = GAME_MODE.DEFEND;
 
             // Add the player
-            self.player = new Player(self);
+            //self.player = new Player(self);
+            self.player.reset();
             self.scene.add(self.player.mesh);
+            console.log(self);
 
             // Create a new wave of enemies
-            self.wave = new Wave(20, self);
+            self.wave = new Wave(1, self);
 
             // Reposition camera
             self.camera.position.x = self.player.mesh.position.x - 50;

@@ -69,6 +69,11 @@ function Player (game) {
         }
     };
 
+	this.reset = function() {
+		self.mesh.position.set(PLAYER_SIZE.w / 2, PLAYER_SIZE.h / 2, PLAYER_Z);
+        self.position = self.mesh.position;
+        self.velocity = new THREE.Vector3(0,0,0);
+	};
 
     // Constructor ------------------------------------------------------------
     (this.init = function (player) {
