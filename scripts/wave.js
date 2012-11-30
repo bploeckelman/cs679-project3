@@ -10,7 +10,6 @@ function Wave (numEnemies, game) {
     // Private variables ------------------------------------------------------
     var self = this;
 
-
     // Wave methods -----------------------------------------------------------
     this.update = function () {
         for(var i = self.enemies.length - 1; i >= 0; --i) {
@@ -45,14 +44,17 @@ function Wave (numEnemies, game) {
     // Constructor ------------------------------------------------------------
     (this.init = function (wave) {
         wave.enemies = [];
-        for(var i = 0; i < numEnemies; ++i){
-            var enemy = new Enemy(ENEMY_DESCRIPTIONS[ENEMY_TYPES.LUNATIC]);
+        //for(var i = 0; i < numEnemies; ++i){
+            var enemy = new Enemy(ENEMY_DESCRIPTIONS[ENEMY_TYPES.ARTIPHILE]);
 
-            // TODO: set targets in update?
-            enemy.setFollowTarget(game.player);
             wave.enemies.push(enemy);
             game.scene.add(enemy.mesh);
-        }
+        //}
+        enemy = new Enemy(ENEMY_DESCRIPTIONS[ENEMY_TYPES.BRUTE]);
+
+            wave.enemies.push(enemy);
+            game.scene.add(enemy.mesh);
+
     })(self);
 
 } // end Wave object

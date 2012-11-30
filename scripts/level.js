@@ -27,6 +27,22 @@ function Level (game) {
         self.artifact.rotation.z += 0.025;
     };
 
+	THREE.Vector2.prototype.toGridCoords = function () {
+		var ans = new THREE.Vector2();
+		ans.x = Math.floor(this.x / self.size.cellw);
+		ans.y = Math.floor(this.y / self.size.cellh);
+		
+		if (ans.x > self.size.width || ans.y > self.size.height )
+			return null;
+		else return ans;
+	};
+	
+	THREE.Vector2.prototype.toRealCoords = function () {
+		var ans = new THREE.Vector2();
+		ans.x = this.x * self.size.cellw + self.size.cellw/2;
+		ans.y = this.y * self.size.cellh + self.size.cellw/2;
+		return ans;
+	};
 
     // Constructor ------------------------------------------------------------
     (this.init = function (level) {
@@ -76,7 +92,7 @@ function Level (game) {
                 });
             }
         }
-
+        
         // Initialize the structures container
         // TODO: add initial structures
         level.structures = [];
