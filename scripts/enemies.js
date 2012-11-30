@@ -89,6 +89,10 @@ function Enemy (description) {
             self.velocity.x *= self.speed.x / d;
             self.velocity.y *= self.speed.y / d;
         }
+        else {
+        	self.target = new THREE.Vector2(Math.floor(Math.random() * 1000),
+                        Math.floor(Math.random() * 1000));
+        }
 
         // Integrate velocity
         if (!self.intersects) {
@@ -105,7 +109,23 @@ function Enemy (description) {
 
     this.setFollowTarget = function (object) {
         if (object instanceof Player) {
-            self.target = object.position;
+        	var level = game.level;
+			var grid = new PF.Grid(level.size.xcells, level.size.ycells, level.cells);
+			var finder = new PF.AStarFinder();
+			var from = self.position.toGridCoords();
+			var to = game.player.position.toGridCoords();
+			
+			if ( from == null || to == null ) {
+				self.target = null;
+				return;
+			}
+			
+			var path = finder.findPath(from.x, from.y, to.x, to.y, grid);
+
+			if (path.length > 1 ) { 
+				path = PF.Util.smoothenPath(grid, path);
+				self.target = new THREE.Vector2(path[1][0], path[1][1]).toRealCoords();
+				}
         }
     };
 

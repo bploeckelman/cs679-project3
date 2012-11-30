@@ -33,6 +33,7 @@ function Structure (type, game) {
     this.place = function () {
         self.placed = true;
         self.gridindices = Object.freeze(self.gridindices);
+        game.level.cells[gridindices.y][gridindices.x] = 1;
     };
 
 
@@ -61,9 +62,8 @@ function Structure (type, game) {
                 mouseWorldPos.y = game.level.size.height - self.mesh.height;
 
             // Snap to grid
-            self.gridindices.x = Math.floor(mouseWorldPos.x / game.level.size.cellw);
-            self.gridindices.y = Math.floor(mouseWorldPos.y / game.level.size.cellh);
-
+            self.gridindices = mouseWorldPos.toGridCoords();
+			
             self.node.position.x = self.gridindices.x * game.level.size.cellw; 
             self.node.position.y = self.gridindices.y * game.level.size.cellh;
             self.node.position.z = 0.1; // Above grid

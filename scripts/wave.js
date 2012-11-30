@@ -44,16 +44,16 @@ function Wave (numEnemies, game) {
     // Constructor ------------------------------------------------------------
     (this.init = function (wave) {
         wave.enemies = [];
-        //for(var i = 0; i < numEnemies; ++i){
-            var enemy = new Enemy(ENEMY_DESCRIPTIONS[ENEMY_TYPES.ARTIPHILE]);
+        for(var i = 0; i < 20; ++i){
+            var enemy = new Enemy(ENEMY_DESCRIPTIONS[ENEMY_TYPES.BRUTE]);
 
             wave.enemies.push(enemy);
             game.scene.add(enemy.mesh);
-        //}
-        enemy = new Enemy(ENEMY_DESCRIPTIONS[ENEMY_TYPES.BRUTE]);
-
-            wave.enemies.push(enemy);
-            game.scene.add(enemy.mesh);
+        }
+        //enemy = new Enemy(ENEMY_DESCRIPTIONS[ENEMY_TYPES.BRUTE]);
+//
+  //          wave.enemies.push(enemy);
+    //        game.scene.add(enemy.mesh);
 
     })(self);
 
