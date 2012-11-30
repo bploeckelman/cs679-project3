@@ -131,22 +131,20 @@ function Game(canvas, renderer) {
 		var collider = new b2ContactListener;
 		collider.BeginContact = function(contact) {}
 		collider.EndContact = function(contact) {
-			alert("call colling function!");
-			obj1 = contact.GetFixtureA().GetBody().GetUserData();
-			obj2 = contact.GetFixtureB().GetBody().GetUserData();
-			alert(contact.GetFixtureA().GetBody());
-			alert(contact.GetFixtureB().GetBody());
-			if (obj1 != null && obj2 != null){
-				obj1.collide(obj2);
-			}}
-		collider.PostSolve = function(contact, impulse) {
 			/*
-			alert("call colling function!");
 			obj1 = contact.GetFixtureA().GetBody().GetUserData();
 			obj2 = contact.GetFixtureB().GetBody().GetUserData();
 			if (obj1 != null && obj2 != null){
 				obj1.collide(obj2);
-			}*/
+			}
+			*/
+		}
+		collider.PostSolve = function(contact, impulse) {
+			obj1 = contact.GetFixtureA().GetBody().GetUserData();
+			obj2 = contact.GetFixtureB().GetBody().GetUserData();
+			if (obj1 != null && obj2 != null){
+				obj1.collide(obj2);
+			}
 		}
 		collider.PreSolve = function(contact, oldManifold) {}
 		self.box2d.world.SetContactListener(collider);
@@ -249,7 +247,7 @@ function Game(canvas, renderer) {
         game.scene.add(game.player.mesh);
 
         // Initialize an enemy
-        var NUM_ENEMIES = 1,
+        var NUM_ENEMIES = 5,
             enemy = null;
 
         game.enemies = [];

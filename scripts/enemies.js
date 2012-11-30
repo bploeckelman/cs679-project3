@@ -61,7 +61,7 @@ function Enemy (game, description) {
             velocity.x *= self.speed.x / d;
             velocity.y *= self.speed.y / d;
 			
-			var scale = 300.0;
+			var scale = 100.0;
 			velocity.x = velocity.x * scale;
 			velocity.y = velocity.y * scale;
 			self.box2dObject.body.SetLinearVelocity(velocity);
@@ -69,6 +69,7 @@ function Enemy (game, description) {
 		}
 		
 		var position = self.box2dObject.body.GetPosition();
+		this.mesh.rotation.z = this.box2dObject.body.GetAngle();
 		this.mesh.position.set(position.x, position.y, this.mesh.position.z);
 	}
 			
@@ -131,18 +132,21 @@ function Enemy (game, description) {
             })
         );
        // enemy.mesh.position = enemy.position;
-        enemy.mesh.position = position;
+	
+         enemy.mesh.position = position;
 		
 		// Create box2D representation
-		var SCALE = 5;
-		self.width = self.size.x * 1.35 / SCALE;
-		self.height = self.size.y * 1.35 / SCALE;
+		var SCALE = 4;
+		//self.width = self.size.x * 1.35 / SCALE;
+		//self.height = self.size.y * 1.35 / SCALE;
+		self.width = self.size.x  / SCALE;
+		self.height = self.size.y / SCALE;
 		self.box2dObject = new box2dObject(game, enemy);
 		self.box2dObject.body.SetPosition(new b2Vec2(position.x, position.y));
 		self.box2dObject.body.SetLinearVelocity(velocity);
 		
 		
-		
+		/*
         // Create "breathing" animation
         var BREATHE_TIME = 150 * Math.max(enemy.size.x, enemy.size.y),
             MAX_SCALE = 1.35,
@@ -167,7 +171,7 @@ function Enemy (game, description) {
         breatheIn.chain(breatheOut);
         breatheOut.chain(breatheIn);
         breatheIn.start();
-
+		*/
         console.log("Enemy initialized.");
     })(self, description);
 

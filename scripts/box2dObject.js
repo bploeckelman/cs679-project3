@@ -28,7 +28,8 @@ function box2dObject (game, obj) {
     var self = this;
 	var ddensity = 1000;
 	var dfriction = 0.5;
-	var drestituion = 0.2;
+//	var drestituion = 0.2;
+	var drestituion = 100.0;
 	
 	// Constructor ------------------------------------------------------------
     (this.init = function (box2dObject) {

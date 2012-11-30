@@ -140,10 +140,12 @@ function Player (game) {
     // Constructor ------------------------------------------------------------
     (this.init = function (player) {
 		
-		var SCALE = 5;
+		var SCALE = 4;
 		// Create Box2D representation
-		player.width = PLAYER_SIZE.w * 1.25 / SCALE;
-		player.height = PLAYER_SIZE.h * 1.25 / SCALE;
+		//player.width = PLAYER_SIZE.w * 1.25 / SCALE;
+		//player.height = PLAYER_SIZE.h * 1.25 / SCALE;
+		player.width = PLAYER_SIZE.w  / SCALE;
+		player.height = PLAYER_SIZE.h  / SCALE;
 		self.box2dObject = new box2dObject(game, player);
 		var position = new b2Vec2(PLAYER_SIZE.w / 2, PLAYER_SIZE.h / 2);
 		self.box2dObject.body.SetPosition(position);
@@ -153,10 +155,11 @@ function Player (game) {
             new THREE.PlaneGeometry(PLAYER_SIZE.w, PLAYER_SIZE.h),
             new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true })
         );
+		player.mesh.rotation.z = player.box2dObject.body.GetAngle();
         player.mesh.position.set(position.x, position.y, PLAYER_Z);
 		
 	
-
+		/*
         // Create "breathing" animation
         var BREATHE_TIME = 1000,
             MAX_SCALE = 1.25,
@@ -181,7 +184,7 @@ function Player (game) {
         breatheIn.chain(breatheOut);
         breatheOut.chain(breatheIn);
         breatheIn.start();
-
+		*/
         console.log("Player initialized.");
     })(self);
 
