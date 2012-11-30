@@ -4,6 +4,7 @@
 function Level (game) {
 
     // Public properties ------------------------------------------------------
+    this.grid0 = null;
     this.grid1 = null;
     this.grid2 = null;
     this.cells = null;
@@ -83,23 +84,30 @@ function Level (game) {
         level.size = Object.freeze(level.size);
 
         // Create level meshes
+        level.grid0 = new THREE.Mesh(
+            new THREE.PlaneGeometry(level.size.width, level.size.height), 
+            new THREE.MeshBasicMaterial({ color: 0x001100, wireframe: false })
+        );
+
         level.grid1 = new THREE.Mesh(
             new THREE.PlaneGeometry(level.size.width, level.size.height,
                                     level.size.xcells, level.size.ycells),
-            new THREE.MeshBasicMaterial({ color: 0x112211, wireframe: true })
+            new THREE.MeshBasicMaterial({ color: 0x223322, wireframe: true })
         );
 
         level.grid2 = new THREE.Mesh(
             new THREE.PlaneGeometry(level.size.width, level.size.height,
                                     level.size.xcells / 4, level.size.ycells / 4),
-            new THREE.MeshBasicMaterial({ color: 0x115511, wireframe: true })
+            new THREE.MeshBasicMaterial({ color: 0x116611, wireframe: true })
         );
 
         // Reposition the grid so its bottom left corner at (0,0,0)
-        level.grid1.position.set(level.size.width / 2, level.size.height / 2, 0);
-        level.grid2.position.set(level.size.width / 2, level.size.height / 2, 0.1);
+        level.grid0.position.set(level.size.width / 2, level.size.height / 2, -0.2);
+        level.grid1.position.set(level.size.width / 2, level.size.height / 2, -0.1);
+        level.grid2.position.set(level.size.width / 2, level.size.height / 2,  0.0);
 
         // Add the meshes to the scene
+        game.scene.add(level.grid0);
         game.scene.add(level.grid1);
         game.scene.add(level.grid2);
 

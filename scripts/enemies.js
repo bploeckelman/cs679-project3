@@ -240,7 +240,6 @@ function Enemy (description) {
         breatheIn.start();
 
         console.log("Enemy initialized.");
-        console.log(enemy);
     })(self, description);
 
 } // end Enemy object
