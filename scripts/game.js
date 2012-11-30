@@ -116,7 +116,6 @@ function Game(canvas, renderer) {
             // Reposition camera
             self.camera.position.x = self.player.mesh.position.x - 50;
             self.camera.position.y = self.player.mesh.position.y - 50;
-			
 			//Hide the menus
 			document.getElementById("buildMenus").style.display = "none";
 		}

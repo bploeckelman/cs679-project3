@@ -117,15 +117,17 @@ function Enemy (description) {
 			
 			if ( from == null || to == null ) {
 				self.target = null;
-				return;
+			}
+			else {
+				var path = finder.findPath(from.x, from.y, to.x, to.y, grid);
+	
+				if (path.length > 1 ) { 
+					path = PF.Util.smoothenPath(grid, path);
+					self.target = new THREE.Vector2(path[1][0], path[1][1]).toRealCoords();
+					}
+				//console.log(path, self.target);
 			}
 			
-			var path = finder.findPath(from.x, from.y, to.x, to.y, grid);
-
-			if (path.length > 1 ) { 
-				path = PF.Util.smoothenPath(grid, path);
-				self.target = new THREE.Vector2(path[1][0], path[1][1]).toRealCoords();
-				}
         }
     };
 

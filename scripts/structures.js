@@ -4,7 +4,8 @@ var STRUCTURE_TYPES = {
         THREE_BY_THREE: 2,
         FOUR_BY_FOUR:   3
     },
-    STRUCTURE_COSTS = [10, 20, 30, 40];
+    STRUCTURE_COSTS = [10, 20, 30, 40],
+    STRUCTURE_SIZES = [1,2,3,4];
     
 // ----------------------------------------------------------------------------
 // Structure object
@@ -33,7 +34,10 @@ function Structure (type, game) {
     this.place = function () {
         self.placed = true;
         self.gridindices = Object.freeze(self.gridindices);
-        game.level.cells[gridindices.y][gridindices.x] = 1;
+        console.log(self.gridindices);
+        for (var i=0; i < STRUCTURE_SIZES[self.type]; ++i) 
+        	for (var j=0; j < STRUCTURE_SIZES[self.type]; ++j)
+        		game.level.cells[self.gridindices.y+j][self.gridindices.x+i] = 1;
     };
 
 

@@ -115,7 +115,6 @@ function Level (game) {
                 level.cells[y].push(0);
             }
         }
-        
         // Initialize the structures container
         // TODO: add initial structures
         level.structures = [];
