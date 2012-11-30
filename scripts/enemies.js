@@ -33,6 +33,15 @@ function Enemy (game, description) {
 		return self.box2dObject.body.GetLinearVelocity();
 	};
 	
+	this.setPosition = function (position){
+		self.box2dObject.body.SetPosition(new b2Vec2(position.x, position.y));
+		self.mesh.position.set(position.x, position.y, this.mesh.position.z);
+	};
+	
+	this.setVelocity = function (velocity){
+		self.box2dObject.body.SetLinearVelocity(velocity);
+	};
+	
 	this.collide = function(obj){
 		if(obj.type == playerType) {
 			alert("Enemy collides with player!");
@@ -136,11 +145,10 @@ function Enemy (game, description) {
          enemy.mesh.position = position;
 		
 		// Create box2D representation
-		var SCALE = 4;
 		//self.width = self.size.x * 1.35 / SCALE;
 		//self.height = self.size.y * 1.35 / SCALE;
-		self.width = self.size.x  / SCALE;
-		self.height = self.size.y / SCALE;
+		self.width = self.size.x  / box2DPosScale;
+		self.height = self.size.y / box2DPosScale;
 		self.box2dObject = new box2dObject(game, enemy);
 		self.box2dObject.body.SetPosition(new b2Vec2(position.x, position.y));
 		self.box2dObject.body.SetLinearVelocity(velocity);
