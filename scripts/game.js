@@ -110,7 +110,7 @@ function Game(canvas, renderer) {
     // Render
     this.render = function () {
         renderer.render(self.scene, self.camera);
-        self.renderOverlayText():
+        self.renderOverlayText();
         ++self.frames;
     };
 
