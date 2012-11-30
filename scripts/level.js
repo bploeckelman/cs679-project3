@@ -66,9 +66,7 @@ function Level (game) {
             self.structures[i].update();
         }
 
-        self.artifact.rotation.x += 0.005;
-        self.artifact.rotation.y += 0.015;
-        self.artifact.rotation.z += 0.025;
+        self.artifact.update();
     };
 
 	// Constructor ------------------------------------------------------------
@@ -120,20 +118,7 @@ function Level (game) {
         level.structures = [];
 
         // Initialize the artifact
-        // TODO: make the artifact its own object
-        level.artifact = new THREE.Mesh(
-            new THREE.CubeGeometry(
-                2 * level.size.cellw,
-                2 * level.size.cellh,
-                2 * level.size.cellh),
-            new THREE.MeshLambertMaterial({ color: 0x00ffff })
-        );
-        level.artifact.position.set(
-            level.size.width  / 2,
-            level.size.height / 2,
-            level.size.cellh  / 2 
-        );
-        game.scene.add(level.artifact);
+        level.artifact = new Artifact(level, game);
 
         console.log("Level initialized.");
     })(self);
