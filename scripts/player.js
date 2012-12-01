@@ -58,7 +58,7 @@ function Player (game) {
             
             // Rotate the player
             var ROT_AMOUNT = -8 * Math.PI,
-                ROT_TIME   = 1000;
+                ROT_TIME   = 500;
 
             new TWEEN.Tween({ rot: 0 })
                 .to({ rot: ROT_AMOUNT }, ROT_TIME)
@@ -90,8 +90,8 @@ function Player (game) {
 
         // Create "breathing" animation
         var BREATHE_TIME = 1000,
-            MAX_SCALE = 1.25,
-            MIN_SCALE = 0.75,
+            MAX_SCALE = 1.05,
+            MIN_SCALE = 0.95,
             breatheIn = new TWEEN.Tween({ scale: MIN_SCALE })
                 .to({ scale: MAX_SCALE }, BREATHE_TIME)
                 .easing(TWEEN.Easing.Cubic.InOut)

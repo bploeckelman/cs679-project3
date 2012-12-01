@@ -59,19 +59,20 @@ function Enemy (description) {
     this.update = function () {
     	
     	switch(self.type) {
-    		case ENEMY_TYPES.BRUTE :
-            	self.setFollowTarget(game.player);
-            	break;
-    		case ENEMY_TYPES.LUNATIC :
-    			if (game.frames % 60 == 0 || !self.target) {
-    				self.target = new THREE.Vector2(Math.floor(Math.random() * 1000),
-                        Math.floor(Math.random() * 1000));
-               }
-	   			break;
-	   		case ENEMY_TYPES.ARTIPHILE :
-	   			self.target = game.level.artifact.position;
-	   			break;
-    	}
+        case ENEMY_TYPES.BRUTE :
+            self.setFollowTarget(game.player);
+            break;
+        case ENEMY_TYPES.LUNATIC :
+            if (game.frames % 60 == 0 || !self.target) {
+                self.target = new THREE.Vector2(
+                    Math.floor(Math.random() * 1000),
+                    Math.floor(Math.random() * 1000));
+            }
+            break;
+        case ENEMY_TYPES.ARTIPHILE :
+            self.setFollowTarget(game.level.artifact.mesh.position);
+            break;
+        }
     	
         // Follow the target
         if (self.target !== null) {
@@ -88,10 +89,10 @@ function Enemy (description) {
             // Update the enemy's velocity
             self.velocity.x *= self.speed.x / d;
             self.velocity.y *= self.speed.y / d;
-        }
-        else {
-        	self.target = new THREE.Vector2(Math.floor(Math.random() * 1000),
-                        Math.floor(Math.random() * 1000));
+        } else {
+        	self.target = new THREE.Vector2(
+                Math.floor(Math.random() * 1000),
+                Math.floor(Math.random() * 1000));
         }
 
         // Integrate velocity
@@ -103,31 +104,26 @@ function Enemy (description) {
                 self.target.y - self.mesh.position.y,
                 self.target.x - self.mesh.position.x);
         }
-
     };
 
 
     this.setFollowTarget = function (object) {
-        if (object instanceof Player) {
-        	var level = game.level;
-			var grid = new PF.Grid(level.size.xcells, level.size.ycells, level.cells);
-			var finder = new PF.AStarFinder();
-			var from = self.position.toGridCoords();
-			var to = game.player.position.toGridCoords();
-			
-			if ( from == null || to == null ) {
-				self.target = null;
-			}
-			else {
-				var path = finder.findPath(from.x, from.y, to.x, to.y, grid);
-	
-				if (path.length > 1 ) { 
-					path = PF.Util.smoothenPath(grid, path);
-					self.target = new THREE.Vector2(path[1][0], path[1][1]).toRealCoords();
-					}
-				//console.log(path, self.target);
-			}
-			
+        var level = game.level;
+        var grid = new PF.Grid(level.size.xcells, level.size.ycells, level.cells);
+        var finder = new PF.AStarFinder();
+        var from = self.position.toGridCoords();
+        var to = object.toGridCoords();
+        
+        if ( from == null || to == null ) {
+            self.target = null;
+        } else {
+            var path = finder.findPath(from.x, from.y, to.x, to.y, grid);
+
+            if (path.length > 1 ) { 
+                path = PF.Util.smoothenPath(grid, path);
+                self.target = new THREE.Vector2(path[1][0], path[1][1]).toRealCoords();
+            }
+            //console.log(path, self.target);
         }
     };
 
@@ -206,8 +202,7 @@ function Enemy (description) {
             // PYRAMID, // Note: 3d geometry requires rotation/translation
             TRIANGLE,
             new THREE.MeshBasicMaterial({
-                color: enemy.color.getHex(),
-                wireframe: true
+                color: enemy.color.getHex()
             })
         );
         enemy.mesh.position = enemy.position;
@@ -216,8 +211,8 @@ function Enemy (description) {
 
         // Create "breathing" animation
         var BREATHE_TIME = 150 * Math.max(enemy.size.x, enemy.size.y),
-            MAX_SCALE = 1.35,
-            MIN_SCALE = 0.65,
+            MAX_SCALE = 1.1,
+            MIN_SCALE = 0.9,
             breatheIn = new TWEEN.Tween({ scale: MIN_SCALE })
                 .to({ scale: MAX_SCALE }, BREATHE_TIME)
                 .easing(TWEEN.Easing.Cubic.InOut)

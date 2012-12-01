@@ -20,14 +20,6 @@ function Artifact (level, game) {
 
         var t = self.clock.getDelta();
 
-        // TODO: This is just a test of damaging/killing the artifact
-        //       remove once enemies can damage it
-        if ((accum += t) > 0.25) {
-            accum = 0;
-            if (--self.health <= 0)
-                self.die();
-        }
-
         // Update rotation
         self.mesh.rotation.x += Math.sin(t / 1000) * 300;
         self.mesh.rotation.y += 0;

@@ -79,7 +79,7 @@ function Game(canvas, renderer) {
                 setTimeout(function () {
                     self.switchMode();
                     COUNTDOWN = false;
-                }, 5000);
+                }, 4000);
                 COUNTDOWN = true;
                 // TODO: display some message about defend mode completion
                 // ideally we'd display some stats here too, 
@@ -129,11 +129,14 @@ function Game(canvas, renderer) {
         CONTEXT2D.textAlign    = "center";
         CONTEXT2D.fillStyle    = "#ffffff";
         CONTEXT2D.fillText(
-            "Build Credits: " + self.player.money,
+            "Round #" + self.round,
             CANVAS2D.width / 2, 0);
         CONTEXT2D.fillText(
-            "Artifact Health: " + self.level.artifact.health,
+            "Build Credits: " + self.player.money,
             CANVAS2D.width / 2, 20);
+        CONTEXT2D.fillText(
+            "Artifact Health: " + Math.floor(self.level.artifact.health),
+            CANVAS2D.width / 2, 40);
         if (COUNTDOWN) {
             CONTEXT2D.font = "40px Arial";
             CONTEXT2D.textBaseline = "center";
@@ -441,18 +444,28 @@ function handleCollisions (game) {
                 enemy.position.y - enemy.size.y / 2),
             enemyMax = new THREE.Vector2(
                 enemy.position.x + enemy.size.x / 2,
-                enemy.position.y + enemy.size.y / 2),
-            FEATHER = 4;
+                enemy.position.y + enemy.size.y / 2);
 
-        if (playerMin.x + FEATHER > enemyMax.x - FEATHER
-         || playerMax.x - FEATHER < enemyMin.x + FEATHER
-         || playerMin.y + FEATHER > enemyMax.y - FEATHER
-         || playerMax.y - FEATHER < enemyMin.y + FEATHER) {
+        if (playerMin.x > enemyMax.x
+         || playerMax.x < enemyMin.x
+         || playerMin.y > enemyMax.y
+         || playerMax.y < enemyMin.y) {
             enemy.intersects = false;
         } else {
             enemy.intersects = true;
             if (player.isSpinning) {
                 enemy.takeDamage(player.damageAmount);
+            }
+        }
+
+        // Damage the artifact
+        // TODO: this is temporary, remove when collision is merged
+        if (enemyMin.x >= 480 && enemyMax.x <= 520
+         && enemyMin.y >= 480 && enemyMax.y <= 520) {
+            if (game.level.artifact.health > 0) {
+                game.level.artifact.health -= 0.1;
+                if (game.level.artifact.health <= 0)
+                    game.level.artifact.die();
             }
         }
     }

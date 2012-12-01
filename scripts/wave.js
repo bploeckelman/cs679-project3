@@ -59,21 +59,16 @@ function Wave (round, game) {
 
         wave.enemies = [];
         for(var i = 0; i < roundDetails.numEnemies; ++i){
-        	var desc = ENEMY_DESCRIPTIONS[ENEMY_TYPES.BRUTE];
-        	desc.health = roundDetails.health;
+            var desc = ENEMY_DESCRIPTIONS[ENEMY_TYPES.ARTIPHILE];
+            desc.health = roundDetails.health;
+            desc.size   = new THREE.Vector2(roundDetails.size, roundDetails.size);
+            desc.speed  = new THREE.Vector2(roundDetails.speed, roundDetails.speed);
             var enemy = new Enemy(desc);
 
             // TODO: set targets in update?
-            //enemy.setFollowTarget(game.player);
-            enemy.setFollowTarget(game.level.artifact);
             wave.enemies.push(enemy);
             game.scene.add(enemy.mesh);
         }
-        //enemy = new Enemy(ENEMY_DESCRIPTIONS[ENEMY_TYPES.BRUTE]);
-//
-  //          wave.enemies.push(enemy);
-    //        game.scene.add(enemy.mesh);
-
     })(self);
 
 } // end Wave object
