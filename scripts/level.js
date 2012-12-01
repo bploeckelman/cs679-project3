@@ -16,7 +16,51 @@ function Level (game) {
     // Private variables ------------------------------------------------------
     var self = this;
 
-
+	// Utility variables ------------------------------------------------------
+	THREE.Vector2.prototype.toGridCoords = function () {
+		var ans = new THREE.Vector2();
+		ans.x = Math.floor(this.x / self.size.cellw);
+		ans.y = Math.floor(this.y / self.size.cellh);
+		
+		if (ans.x < 0 || ans.y < 0 || ans.x > self.size.xcells || ans.y > self.size.ycells )
+			return null;
+		else return ans;
+	};
+	
+	THREE.Vector2.prototype.toRealCoords = function () {
+		var ans = new THREE.Vector2();
+		ans.x = this.x * self.size.cellw ;
+		ans.y = this.y * self.size.cellh ;
+		
+		if (ans.x < 0 || ans.y < 0 || ans.x > self.size.width || ans.y > self.size.height )
+			return null;
+		else return ans;
+	};
+	
+	THREE.Vector3.prototype.toGridCoords = function () {
+		var ans = new THREE.Vector3();
+		ans.x = Math.floor(this.x / self.size.cellw);
+		ans.y = Math.floor(this.y / self.size.cellh);
+		ans.z = this.z;
+		
+		if (ans.x < 0 || ans.y < 0 || ans.x > self.size.xcells || ans.y > self.size.ycells )
+			return null;
+		else return ans;
+	};
+	
+	THREE.Vector3.prototype.toRealCoords = function () {
+		var ans = new THREE.Vector3();
+		ans.x = this.x * self.size.cellw;
+		ans.y = this.y * self.size.cellh;
+		ans.z = this.z;
+		
+		if (ans.x < 0 || ans.y < 0 || ans.x > self.size.width || ans.y > self.size.height )
+			return null;
+		else return ans;
+	};
+	
+	
+	
     // Level methods ----------------------------------------------------------
     this.update = function () {
         for (var i = 0; i < self.structures.length; ++i) {
@@ -26,8 +70,7 @@ function Level (game) {
         self.artifact.update();
     };
 
-
-    // Constructor ------------------------------------------------------------
+	// Constructor ------------------------------------------------------------
     (this.init = function (level) {
         // Specify level sizes
         level.size = {
@@ -70,19 +113,14 @@ function Level (game) {
 
 
         // Create level cells
+        // 0 - Empty, 1 - Obstacle
         level.cells = [];
         for(var y = 0; y < level.size.ycells; ++y) {
             level.cells.push([]);
             for(var x = 0; x < level.size.xcells; ++x) {
-                level.cells[y].push({ // cell[y][x]
-                    indices: new THREE.Vector2(x,y),
-                    pos: new THREE.Vector3(
-                            x * level.size.cellw,
-                            y * level.size.celly, 0)
-                });
+                level.cells[y].push(0);
             }
         }
-
         // Initialize the structures container
         // TODO: add initial structures
         level.structures = [];

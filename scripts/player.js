@@ -58,7 +58,7 @@ function Player (game) {
             
             // Rotate the player
             var ROT_AMOUNT = -8 * Math.PI,
-                ROT_TIME   = 1000;
+                ROT_TIME   = 500;
 
             new TWEEN.Tween({ rot: 0 })
                 .to({ rot: ROT_AMOUNT }, ROT_TIME)
@@ -69,6 +69,11 @@ function Player (game) {
         }
     };
 
+	this.reset = function() {
+		self.mesh.position.set(PLAYER_SIZE.w / 2, PLAYER_SIZE.h / 2, PLAYER_Z);
+        self.position = self.mesh.position;
+        self.velocity = new THREE.Vector3(0,0,0);
+	};
 
     // Constructor ------------------------------------------------------------
     (this.init = function (player) {
@@ -85,8 +90,8 @@ function Player (game) {
 
         // Create "breathing" animation
         var BREATHE_TIME = 1000,
-            MAX_SCALE = 1.25,
-            MIN_SCALE = 0.75,
+            MAX_SCALE = 1.05,
+            MIN_SCALE = 0.95,
             breatheIn = new TWEEN.Tween({ scale: MIN_SCALE })
                 .to({ scale: MAX_SCALE }, BREATHE_TIME)
                 .easing(TWEEN.Easing.Cubic.InOut)

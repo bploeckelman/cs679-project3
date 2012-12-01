@@ -10,6 +10,7 @@ function Wave (round, game) {
     // Private variables ------------------------------------------------------
     var self = this,
         // TODO: add type field to change representation
+        // TODO: decide on ROUND_DETAILS vs using ENEMY_TYPES
         ROUND_DETAILS = [
             { numEnemies: 5,   health: 10,  size: 10, speed: 0.25 },
             { numEnemies: 8,   health: 20,  size: 12, speed: 0.70 },
@@ -58,27 +59,13 @@ function Wave (round, game) {
 
         wave.enemies = [];
         for(var i = 0; i < roundDetails.numEnemies; ++i){
-            var enemy = new Enemy({
-                color:    new THREE.Vector3(
-                                Math.random(),
-                                Math.random(),
-                                Math.random()),
-                position: new THREE.Vector3(
-                                Math.floor(Math.random() * 1000),
-                                Math.floor(Math.random() * 1000), 0.1),
-                size:     new THREE.Vector2(
-                                roundDetails.size,
-                                roundDetails.size),
-                speed:    new THREE.Vector2(
-                                roundDetails.speed,
-                                roundDetails.speed),
-                maxspeed: new THREE.Vector2(5,5),
-                health:   roundDetails.health
-            });
+            var desc = ENEMY_DESCRIPTIONS[ENEMY_TYPES.ARTIPHILE];
+            desc.health = roundDetails.health;
+            desc.size   = new THREE.Vector2(roundDetails.size, roundDetails.size);
+            desc.speed  = new THREE.Vector2(roundDetails.speed, roundDetails.speed);
+            var enemy = new Enemy(desc);
 
             // TODO: set targets in update?
-            //enemy.setFollowTarget(game.player);
-            enemy.setFollowTarget(game.level.artifact);
             wave.enemies.push(enemy);
             game.scene.add(enemy.mesh);
         }
