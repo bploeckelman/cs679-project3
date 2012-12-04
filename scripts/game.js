@@ -95,10 +95,8 @@ function Game(canvas, renderer) {
             // Move new structure around if one is waiting to be placed
             if (self.build.structure !== null) {
                 self.build.structure.move();
-            } else {
-                if (self.player.money <= 0) {
-                    self.switchMode();
-                }
+                // TODO: update structure color based on whether
+                // its in a buildable location or not
             }
         }
 
@@ -165,8 +163,10 @@ function Game(canvas, renderer) {
             // Reposition camera
             self.camera.position.x = self.player.mesh.position.x - 50;
             self.camera.position.y = self.player.mesh.position.y - 50;
+
 			//Hide the menus
 			document.getElementById("buildMenus").style.display = "none";
+			document.getElementById("switchMode").style.display = "none";
 		}
         // Defend -> Build
         else if (self.mode === GAME_MODE.DEFEND) {
@@ -202,6 +202,7 @@ function Game(canvas, renderer) {
 			sprite.position.set(0,0,0);
 			self.scene.add(sprite);*/
 			document.getElementById("buildMenus").style.display = "block";
+			document.getElementById("switchMode").style.display = "block";
         }
     };
 
@@ -401,6 +402,11 @@ function Game(canvas, renderer) {
 			self.input.menuClicked = true;
 			createStructure(STRUCTURE_TYPES.FOUR_BY_FOUR, game);
 		};
+        document.getElementById("switchMode").onclick = function () {
+            if (self.mode === GAME_MODE.BUILD) {
+                self.switchMode();
+            }
+        };
 
         CANVAS2D = document.createElement("canvas");
         CANVAS2D.id = "canvas2d";
