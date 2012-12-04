@@ -6,6 +6,7 @@ var STRUCTURE_TYPES = {
     },
     STRUCTURE_COSTS = [10, 20, 30, 40],
     STRUCTURE_SIZES = [1,2,3,4],
+    STRUCTURE_AREAS = [3,6,8,10], // These territory sizes work pretty well
     STRUCTURE_COLORS = [
         new THREE.Color(0x008000),
         new THREE.Color(0x2e8b57),
@@ -41,10 +42,13 @@ function Structure (type, game) {
         self.gridindices = Object.freeze(self.gridindices);
         console.log(self.gridindices);
 
-        var occupiedCellIndices = [],
+        var structureSize = STRUCTURE_SIZES[self.type],
+            structureArea = STRUCTURE_AREAS[self.type],
+            occupiedCellIndices = [],
             buildable = true;
-        for (var i=0; i < STRUCTURE_SIZES[self.type]; ++i) {
-        	for (var j=0; j < STRUCTURE_SIZES[self.type]; ++j) {
+
+        for (var i=0; i < structureSize; ++i) {
+            for (var j=0; j < structureSize; ++j) {
                 var indices = { x: self.gridindices.x + i, y: self.gridindices.y + j },
                     cell    = game.level.cells[indices.y][indices.x];
 
@@ -60,14 +64,45 @@ function Structure (type, game) {
         }
 
         if (buildable) { // then build...
+            var min = new THREE.Vector2(game.level.size.xcells, game.level.size.ycells),
+                max = new THREE.Vector2(-1, -1);
+
+            // Set pathfinder grid, occupied flag, and calculate min/max indices
             for (var i = 0; i < occupiedCellIndices.length; ++i) {
                 game.level.grid[occupiedCellIndices[i].y][occupiedCellIndices[i].x] = 1;
                 game.level.cells[occupiedCellIndices[i].y][occupiedCellIndices[i].x].occupied = true;
+
+                if (occupiedCellIndices[i].x < min.x) min.x = occupiedCellIndices[i].x;
+                if (occupiedCellIndices[i].y < min.y) min.y = occupiedCellIndices[i].y;
+                if (occupiedCellIndices[i].x > max.x) max.x = occupiedCellIndices[i].x;
+                if (occupiedCellIndices[i].y > max.y) max.y = occupiedCellIndices[i].y;
             }
 
-            // TODO: set neighbors .buildable = true for buildable terrority 
+            //console.log("min/max indices: "
+            // + "min(" + min.x + ", " + min.y + ") "
+            // + "max(" + max.x + ", " + max.y + ") ");
+
+            // Set buildability status of neighbor cells
+            var halfArea = Math.floor(structureArea / 2);
+            for (var y = min.y - halfArea; y <= max.y + halfArea; ++y) {
+                for (var x = min.x - halfArea; x <= max.x + halfArea; ++x) {
+                    // Keep indices in bounds
+                    var ix, iy;
+                    if      (x < 0)                       ix = 0;
+                    else if (x >= game.level.size.xcells) ix = game.level.size.xcells - 1;
+                    else                                  ix = x;
+                    if      (y < 0)                       iy = 0;
+                    else if (y >= game.level.size.ycells) iy = game.level.size.ycells - 1;
+                    else                                  iy = y;
+
+                    // Set cell as buildable
+                    game.level.cells[iy][ix].buildable = true;
+                }
+            }
+
 
             self.placed = true;
+            game.level.territoryDirty = true; // Regenerate territory geometry
         }
 
         return buildable;

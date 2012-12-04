@@ -12,10 +12,17 @@ function Level (game) {
     this.size  = null;
     this.artifact   = null;
     this.structures = null;
+    this.territory  = null;
+    this.territoryDirty = null;
 
 
     // Private variables ------------------------------------------------------
-    var self = this;
+    var self = this,
+        TERRITORY_MATERIAL = new THREE.MeshBasicMaterial({
+            color: 0x003000,
+            transparent: true,
+            blending: THREE.AdditiveBlending
+        });
 
 	// Utility variables ------------------------------------------------------
 	THREE.Vector2.prototype.toGridCoords = function () {
@@ -64,6 +71,35 @@ function Level (game) {
 	
     // Level methods ----------------------------------------------------------
     this.update = function () {
+        // NOTE: this is inefficient, it should be extracted to a function
+        // player should be able to switch the territory visualization on/off
+        if (self.territoryDirty) { // then regenerate territory meshes...
+            // Remove all previous meshes
+            for (var i = 0; i < self.territory.length; ++i) {
+                game.scene.remove(self.territory[i]);
+            }
+            self.territory = [];
+
+            // Create new meshes for buildable grid cells
+            for (var y = 0; y < self.size.ycells; ++y) {
+                for (var x = 0; x < self.size.xcells; ++x) {
+                    if (self.cells[y][x].buildable) {
+                        var mesh = new THREE.Mesh(
+                                new THREE.PlaneGeometry(self.size.cellw, self.size.cellh),
+                                TERRITORY_MATERIAL);
+                        mesh.position.set(
+                            x * self.size.cellw + self.size.cellw / 2,
+                            y * self.size.cellh + self.size.cellh / 2,
+                            0.05);
+                        game.scene.add(mesh);
+                        self.territory.push(mesh);
+                    }
+                }
+            }
+
+            self.territoryDirty = false;
+        }
+
         for (var i = 0; i < self.structures.length; ++i) {
             self.structures[i].update();
         }
@@ -112,7 +148,6 @@ function Level (game) {
         game.scene.add(level.grid1);
         game.scene.add(level.grid2);
 
-
         // Create level grid and cells
         // grid  : 0 - Empty, 1 - Obstacle
         // cells : buildability status of grid cells
@@ -125,16 +160,26 @@ function Level (game) {
                 level.grid[y].push(0);
                 level.cells[y].push({
                     occupied: false,
-                    buildable: true // TODO: set false and regenerate based on initial structures
+                    buildable: false
                 });
+
+                // Enable building for some initial buildable region
+                // Note: this isn't really ideal, but it gets the job done
+                if (x >= 44 && x <= 55 && y >= 44 && y <= 55) {
+                    level.cells[y][x].buildable = true;
+                }
             }
         }
+
         // Initialize the structures container
-        // TODO: add initial structures
         level.structures = [];
 
         // Initialize the artifact
         level.artifact = new Artifact(level, game);
+
+        // Initialize the territory visualization meshes
+        level.territory = [];
+        level.territoryDirty = true;
 
         console.log("Level initialized.");
     })(self);
