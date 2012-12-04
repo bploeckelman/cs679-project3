@@ -51,13 +51,17 @@ function Artifact (level, game) {
                 2 * level.size.cellw,
                 2 * level.size.cellh,
                 2 * level.size.cellh),
-            new THREE.MeshLambertMaterial({ color: 0xffff00 })
+            new THREE.MeshLambertMaterial({
+                color: 0xffff00,
+                transparent: true,
+                blending: THREE.AdditiveBlending
+            })
         );
 
         artifact.mesh.position.set(
             level.size.width  / 2,
             level.size.height / 2,
-            level.size.cellh  / 2 
+            level.size.cellh
         );
 
         game.scene.add(artifact.mesh);
