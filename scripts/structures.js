@@ -5,7 +5,13 @@ var STRUCTURE_TYPES = {
         FOUR_BY_FOUR:   3
     },
     STRUCTURE_COSTS = [10, 20, 30, 40],
-    STRUCTURE_SIZES = [1,2,3,4];
+    STRUCTURE_SIZES = [1,2,3,4],
+    STRUCTURE_COLORS = [
+        new THREE.Color(0x008000),
+        new THREE.Color(0x2e8b57),
+        new THREE.Color(0x3cb371),
+        new THREE.Color(0x8fbc8f)
+    ];
     
 // ----------------------------------------------------------------------------
 // Structure object
@@ -136,7 +142,7 @@ function Structure (type, game) {
         // Create structure mesh
         structure.mesh = new THREE.Mesh(
             new THREE.PlaneGeometry(width, height),
-            new THREE.MeshBasicMaterial({ color: 0xff00ff })
+            new THREE.MeshBasicMaterial({ color: STRUCTURE_COLORS[structure.type] })
         );
 
         // Create a node to offset the mesh "center" to bottom left
