@@ -7,6 +7,7 @@ function Level (game) {
     this.grid0 = null;
     this.grid1 = null;
     this.grid2 = null;
+    this.grid  = null;
     this.cells = null;
     this.size  = null;
     this.artifact   = null;
@@ -112,13 +113,20 @@ function Level (game) {
         game.scene.add(level.grid2);
 
 
-        // Create level cells
-        // 0 - Empty, 1 - Obstacle
+        // Create level grid and cells
+        // grid  : 0 - Empty, 1 - Obstacle
+        // cells : buildability status of grid cells
+        level.grid  = [];
         level.cells = [];
         for(var y = 0; y < level.size.ycells; ++y) {
+            level.grid.push([]);
             level.cells.push([]);
             for(var x = 0; x < level.size.xcells; ++x) {
-                level.cells[y].push(0);
+                level.grid[y].push(0);
+                level.cells[y].push({
+                    occupied: false,
+                    buildable: true // TODO: set false and regenerate based on initial structures
+                });
             }
         }
         // Initialize the structures container

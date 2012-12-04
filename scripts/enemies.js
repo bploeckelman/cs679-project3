@@ -109,7 +109,7 @@ function Enemy (description) {
 
     this.setFollowTarget = function (object) {
         var level = game.level;
-        var grid = new PF.Grid(level.size.xcells, level.size.ycells, level.cells);
+        var grid = new PF.Grid(level.size.xcells, level.size.ycells, level.grid);
         var finder = new PF.AStarFinder();
         var from = self.position.toGridCoords();
         var to = object.toGridCoords();

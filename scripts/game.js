@@ -292,9 +292,13 @@ function Game(canvas, renderer) {
         if (self.mode === GAME_MODE.BUILD) {
             // Place current structure and clear placeholder object
             if (self.build.structure !== null) {
-                self.build.structure.place();
-                self.level.structures.push(self.build.structure);
-                self.build.structure = null;
+                if (self.build.structure.place()) {
+                    self.level.structures.push(self.build.structure);
+                    self.build.structure = null;
+                } else {
+                    // TODO: display "can't build here" message 
+                    console.log("can't build here");
+                }
             }
         }
         //console.log("Mouse button clicked: " + self.input.mouseButtonClicked);

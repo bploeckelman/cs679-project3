@@ -32,12 +32,39 @@ function Structure (type, game) {
 
 
     this.place = function () {
-        self.placed = true;
         self.gridindices = Object.freeze(self.gridindices);
         console.log(self.gridindices);
-        for (var i=0; i < STRUCTURE_SIZES[self.type]; ++i) 
-        	for (var j=0; j < STRUCTURE_SIZES[self.type]; ++j)
-        		game.level.cells[self.gridindices.y+j][self.gridindices.x+i] = 1;
+
+        var occupiedCellIndices = [],
+            buildable = true;
+        for (var i=0; i < STRUCTURE_SIZES[self.type]; ++i) {
+        	for (var j=0; j < STRUCTURE_SIZES[self.type]; ++j) {
+                var indices = { x: self.gridindices.x + i, y: self.gridindices.y + j },
+                    cell    = game.level.cells[indices.y][indices.x];
+
+                // Save the indices for later
+                occupiedCellIndices.push(indices);
+
+                // Is this grid cell buildable?
+                if (cell.occupied || !cell.buildable) {
+                    buildable = false;
+                    break;
+                }
+            }
+        }
+
+        if (buildable) { // then build...
+            for (var i = 0; i < occupiedCellIndices.length; ++i) {
+                game.level.grid[occupiedCellIndices[i].y][occupiedCellIndices[i].x] = 1;
+                game.level.cells[occupiedCellIndices[i].y][occupiedCellIndices[i].x].occupied = true;
+            }
+
+            // TODO: set neighbors .buildable = true for buildable terrority 
+
+            self.placed = true;
+        }
+
+        return buildable;
     };
 
 
