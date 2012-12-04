@@ -98,7 +98,6 @@ function Game(canvas, renderer) {
             } else {
                 if (self.player.money <= 0) {
                     self.switchMode();
-                    self.round++;
                 }
             }
         }
@@ -151,9 +150,11 @@ function Game(canvas, renderer) {
         // Build -> Defend
         if (self.mode === GAME_MODE.BUILD) {
             self.mode = GAME_MODE.DEFEND;
+            self.round++;
 
             // Add the player
-            self.player = new Player(self);
+            if (self.player === null)
+                self.player = new Player(self);
             self.player.position = self.level.artifact.mesh.position.clone();
             self.player.mesh.position = self.level.artifact.mesh.position.clone();
             self.scene.add(self.player.mesh);
@@ -170,6 +171,11 @@ function Game(canvas, renderer) {
         // Defend -> Build
         else if (self.mode === GAME_MODE.DEFEND) {
             self.mode = GAME_MODE.BUILD;
+
+            // Add money based on territorial control + artifact health
+            self.player.money += self.level.territory.length * 0.15
+                              +  self.level.artifact.health / 50;
+            self.player.money = Math.floor(self.player.money);
 
             // Remove the player mesh
             self.scene.remove(self.player.mesh);
@@ -230,7 +236,9 @@ function Game(canvas, renderer) {
             break;
             case self.keymap.mode:
                 self.input.mode = true;
-                self.switchMode();
+                if (self.mode === GAME_MODE.BUILD) {
+                    self.switchMode();
+                }
             break;
             case self.keymap.action1:
                 self.input.action1 = true;
