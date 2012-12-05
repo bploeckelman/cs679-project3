@@ -3,11 +3,15 @@
 // ----------------------------------------------------------------------------
 var MAX_LIGHTS = 20;
 
+// ----------------------------------------------------------------------------
+// The Game
+// ----------------------------------------------------------------------------
+var game = null;
 
 // ----------------------------------------------------------------------------
 // Initialize Game
 // ----------------------------------------------------------------------------
-(function initializeGame() {
+window.onload = function initializeGame() {
     var canvas       = document.getElementById("canvas"),
         canvasWidth  = window.innerWidth,
         canvasHeight = window.innerHeight,
@@ -18,8 +22,7 @@ var MAX_LIGHTS = 20;
             clearAlpha: 1,
             maxLights:  MAX_LIGHTS // default is 4
         }),
-        stats = new Stats(),
-        game  = null,
+        stats = null,
         input = null,
         requestFrame = null;
 
@@ -61,6 +64,7 @@ var MAX_LIGHTS = 20;
     }, false);
 
     // Setup stats (fps and ms render time graphs)
+    stats = new Stats();
     stats.setMode(0); // mode 0 = fps, mode 1 = ms render time
     stats.domElement.style.position = "absolute";
     stats.domElement.style.top = canvas.offsetTop + 4 + "px";
@@ -80,5 +84,5 @@ var MAX_LIGHTS = 20;
         stats.end();
     })();
 
-})();
+};
 

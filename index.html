@@ -3,11 +3,13 @@
 <head>
     <title>CS679 - Project 3</title>
     <meta charset="utf8">
+	<link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
     <div id="container">
         <canvas id="canvas" tabindex="1"></canvas>   
 		<canvas id="debugcanvas"></canvas>
+		<script type="text/javascript" src="scripts/libs/pathfinding-browser.js"></script>
 		 <script type="text/javascript" src="scripts/libs/three.min.js"></script>
         <script type="text/javascript" src="scripts/libs/game-shim.js"></script>
         <script type="text/javascript" src="scripts/libs/stats.min.js"></script>
@@ -15,12 +17,22 @@
 		<script type="text/javascript" src="scripts/libs/Box2dWeb-2.1.a.3.min.js"></script>
 		<script type="text/javascript" src="scripts/global.js"></script>
 		<script type="text/javascript" src="scripts/box2dObject.js"></script>
+		<script type="text/javascript" src="scripts/level.js"></script>
+		<script type="text/javascript" src="scripts/structures.js"></script>
+        <script type="text/javascript" src="scripts/particles.js"></script>
+        <script type="text/javascript" src="scripts/artifact.js"></script>
         <script type="text/javascript" src="scripts/enemies.js"></script>
         <script type="text/javascript" src="scripts/player.js"></script>
-        <script type="text/javascript" src="scripts/level.js"></script>
+        <script type="text/javascript" src="scripts/wave.js"></script>
         <script type="text/javascript" src="scripts/game.js"></script>
         <script type="text/javascript" src="scripts/main.js"></script>
-    </div>
+	</div>
+	<div id="buildMenus">
+		<button id="initOneByOne" class="menuItem" type="button">One by One</button>
+		<button id="initTwoByTwo" class="menuItem" type="button">Two by Two</button>
+		<button id="initThreeByThree" class="menuItem" type="button">Three by Three</button>
+		<button id="initFourByFour" class="menuItem" type="button">Four by Four</button>
+	</div>
 </body>
 </html>
 

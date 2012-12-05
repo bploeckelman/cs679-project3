@@ -22,6 +22,7 @@ function box2dObject (game, obj) {
     // Public properties ------------------------------------------------------
 	this.body = null;
 	this.fixture = null;
+	this.fixDef = null;
 	
 	
     // Private variables ------------------------------------------------------
@@ -49,6 +50,7 @@ function box2dObject (game, obj) {
 		fixDef.shape.SetAsBox(obj.width/2, obj.height/2);
 		//just for debug draw
 		fixDef.shape.SetAsBox(obj.width*2, obj.height*2);
+		this.fixDef = fixDef;
 	
 		self.fixture = self.body.CreateFixture(fixDef);
 		

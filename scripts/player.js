@@ -5,6 +5,7 @@ function Player (game) {
 
     // Public properties ------------------------------------------------------
     this.mesh     = null;
+    this.money    = null;
     this.isSpinning = false;
 	this.box2dObject = null;
 	this.type = playerType;
@@ -12,14 +13,15 @@ function Player (game) {
 	//used by box2D
 	this.width = null;
 	this.height = null;
-
+     this.damageAmount = 10;
 	
     // Private variables ------------------------------------------------------
     var self = this,
         PLAYER_SIZE = { w: 9, h: 9 },
         MOVE_SPEED  = { x: 0.25, y: 0.25 },
-        MAX_SPEED   = { x: 6, y: 6 },
-        PLAYER_Z    = 0.2;
+        MAX_SPEED   = { x: 3, y: 3 },
+        PLAYER_Z    = 0.2,
+        SPIN_SLOWDOWN = 0.85;
 
 
     // Player methods ---------------------------------------------------------
@@ -32,6 +34,15 @@ function Player (game) {
 		return self.box2dObject.body.GetLinearVelocity();
 	};
 	
+	this.setPosition = function (position){
+		self.box2dObject.body.SetPosition(new b2Vec2(position.x, position.y));
+		self.mesh.position.set(position.x, position.y, this.mesh.position.z);
+	};
+	
+	this.setVelocity = function (velocity){
+		self.box2dObject.body.SetLinearVelocity(velocity);
+	};
+	
 	this.collide = function(obj){
 		if(obj.type == enemyType) {
 			alert("Player collides with enemy!");
@@ -41,14 +52,13 @@ function Player (game) {
 		}
 	};
 	
+	
     this.update = function () {
 	
-	    //FIXME:
-		//need to scale the velocity....
+	   
 		var velocity = new b2Vec2;
 		
         // Move the player
-		
         if      (game.input.panLeft)  velocity.x -= MOVE_SPEED.x;
         else if (game.input.panRight) velocity.x += MOVE_SPEED.x;
         else                          velocity.x  = 0;
@@ -56,6 +66,12 @@ function Player (game) {
         if      (game.input.panUp)    velocity.y += MOVE_SPEED.y;
         else if (game.input.panDown)  velocity.y -= MOVE_SPEED.y;
         else                          velocity.y  = 0;
+
+        // Slow the player down if they are spinning
+        if (this.isSpinning) {
+            velocity.x *= SPIN_SLOWDOWN;
+            velocity.y *= SPIN_SLOWDOWN;
+        }
 
         // Limit the players maximum velocity
         if (velocity.x >  MAX_SPEED.x) velocity.x =  MAX_SPEED.x;
@@ -69,83 +85,69 @@ function Player (game) {
 		var scale = 400.0;
 		velocity.x = velocity.x * scale;
 		velocity.y = velocity.y * scale;
+		
 		self.box2dObject.body.SetLinearVelocity(velocity);
 
 		
         // Position the mesh to correspond with players updated position
+	        this.mesh.rotation.z = this.box2dObject.body.GetAngle();
 		var position = self.box2dObject.body.GetPosition();
 		this.mesh.position.set(position.x, position.y, this.mesh.position.z);
-		//this.position = this.mesh.position;
-		//console.log(position);
 
         // Handle spin move
         if (game.input.spin && !this.isSpinning) {
             var currentZoom = game.camera.position.z;
 
             self.isSpinning = true;
+	    this.scale(5,5);
             
+	    //FIXME:
+	    //Not quite sure whether this would work or not..
+    
             // Rotate the player
             var ROT_AMOUNT = -8 * Math.PI,
-                ROT_TIME   = 2000;
+                ROT_TIME   = 500;
+	    
+	    
 
+	    
+	 
             new TWEEN.Tween({ rot: 0 })
                 .to({ rot: ROT_AMOUNT }, ROT_TIME)
                 .easing(TWEEN.Easing.Quadratic.InOut)
-                .onUpdate(function () { self.mesh.rotation.z = this.rot })
+                .onUpdate(function () { self.rotate(this.rot); })
+     
+		.onComplete(function () { self.isSpinning = false; })
                 .start();
 
-            // NOTE: just messing around here, don't need to keep this....
-            var ZOOM_IN          = 100,
-                ZOOM_OUT         = 100,
-                ZOOM_IN_TIME     = 1500,
-                ZOOM_OUT_TIME    = 700,
-                ZOOM_RETURN_TIME = 400;
-
-            // Zoom the camera in...
-            new TWEEN.Tween({ zoom: currentZoom })
-                .to({ zoom: currentZoom - ZOOM_IN }, ZOOM_IN_TIME)
-                .easing(TWEEN.Easing.Elastic.Out)
-                .onUpdate(function () { game.camera.position.z = this.zoom; })
-                .onComplete(function () {
-                    game.camera.position.z = currentZoom - ZOOM_IN;
-                    // ...Then zoom farther out...
-                    new TWEEN.Tween({ zoom: currentZoom - ZOOM_IN})
-                        .to({ zoom: currentZoom + ZOOM_OUT }, ZOOM_OUT_TIME)
-                        .easing(TWEEN.Easing.Quadratic.Out)
-                        .onUpdate(function () {
-                            game.camera.position.z = this.zoom;
-                        })
-                        .onComplete(function () {
-                            game.camera.position.z = currentZoom + ZOOM_OUT;
-                            // ...Then zoom back to the starting level...
-                            new TWEEN.Tween({ zoom: currentZoom + ZOOM_OUT})
-                                .to({ zoom: currentZoom }, ZOOM_RETURN_TIME)
-                                .easing(TWEEN.Easing.Cubic.In)
-                                .onUpdate(function () {
-                                    game.camera.position.z = this.zoom;
-                                })
-                                .onComplete(function () {
-                                    game.camera.position.z = currentZoom;
-                                    self.isSpinning = false;
-                                })
-                                .start();
-                        })
-                        .start();
-                })
-                .start();
         }
     };
 
+    this.rotate = function (angle) {
+    //	this.box2dObject.body.SetAngle(angle + this.box2dObject.body.GetAngle);
+    };		
+    
+    this.scale = function (scale_w, scale_h) {
+    	var fixDef = this.box2dObject.fixDef;
+	fixDef.shape.SetAsBox(this.width * scale_w / 2, this.height * scale_h / 2);
+	this.box2dObject.fixture = this.body.CreateFixture(fixDef);
+	
+	this.mesh.scale.x = scale_w;
+	this.mesh.scale.y = scale_h;
+    };
 
+    this.reset = function() {
+        self.mesh.position.set(PLAYER_SIZE.w / 2, PLAYER_SIZE.h / 2, PLAYER_Z);
+        self.setPosition(b2Vec2(self.mesh.position.x, self.mesh.position.y));
+        self.setVelocity (b2Vec2(0,0));
+    };
+    
     // Constructor ------------------------------------------------------------
     (this.init = function (player) {
 		
-		var SCALE = 4;
 		// Create Box2D representation
-		//player.width = PLAYER_SIZE.w * 1.25 / SCALE;
-		//player.height = PLAYER_SIZE.h * 1.25 / SCALE;
-		player.width = PLAYER_SIZE.w  / SCALE;
-		player.height = PLAYER_SIZE.h  / SCALE;
+		player.width = PLAYER_SIZE.w  / box2DPosScale;
+		player.height = PLAYER_SIZE.h  / box2DPosScale;
 		self.box2dObject = new box2dObject(game, player);
 		var position = new b2Vec2(PLAYER_SIZE.w / 2, PLAYER_SIZE.h / 2);
 		self.box2dObject.body.SetPosition(position);
@@ -155,15 +157,15 @@ function Player (game) {
             new THREE.PlaneGeometry(PLAYER_SIZE.w, PLAYER_SIZE.h),
             new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true })
         );
-		player.mesh.rotation.z = player.box2dObject.body.GetAngle();
+
         player.mesh.position.set(position.x, position.y, PLAYER_Z);
 		
-	
+	player.money = 100;
 		/*
         // Create "breathing" animation
         var BREATHE_TIME = 1000,
-            MAX_SCALE = 1.25,
-            MIN_SCALE = 0.75,
+            MAX_SCALE = 1.05,
+            MIN_SCALE = 0.95,
             breatheIn = new TWEEN.Tween({ scale: MIN_SCALE })
                 .to({ scale: MAX_SCALE }, BREATHE_TIME)
                 .easing(TWEEN.Easing.Cubic.InOut)
