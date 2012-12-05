@@ -1,5 +1,5 @@
 // Cylinder: topRadius, bottomRadius, height, radiusSegments, heightSegments
-var PYRAMID = new THREE.CylinderGeometry(0, 10, 10, 4, 1),
+/*var PYRAMID = new THREE.CylinderGeometry(0, 10, 10, 4, 1),
     TRIANGLE = (function initializeTriangleGeometry () {
         var geometry = new THREE.Geometry();
         geometry.vertices.push(new THREE.Vector3(-5, -5, 0.2));
@@ -8,7 +8,7 @@ var PYRAMID = new THREE.CylinderGeometry(0, 10, 10, 4, 1),
         geometry.faces.push(new THREE.Face3(0, 1, 2));
         return geometry;
     }) ();
-    
+    */
 // ----------------------------------------------------------------------------
 // Enemy Types & their Description
 // ----------------------------------------------------------------------------
@@ -52,10 +52,14 @@ function Enemy (description) {
     this.box2dObject = null;
     this.enemyType     = null;
     this.type = enemyType;
+	this.v1 = null;
+	this.v2 = null;
+	this.v3 = null;
 	
 	//used by box2D
-	this.width = null;
-	this.height = null;
+	//this.width = null;
+	//this.height = null;
+	this.triangle = null;
 
 
     // Private variables ------------------------------------------------------
@@ -150,7 +154,6 @@ function Enemy (description) {
 			self.mesh.rotation.z = self.box2dObject.body.GetAngle();
 			self.mesh.position.set(position.x, position.y, self.mesh.position.z);
 			
-			console.log(self.box2dObject.body);
 	};
 	
     this.rotate = function (angle) {
@@ -264,14 +267,37 @@ function Enemy (description) {
         } else {
         	enemy.enemyType = ENEMY_TYPES.BRUTE;
         }
+		if("v1" in description){
+			enemy.v1 = description["v1"];
+		}else{
+			enemy.v1 = new b2Vec2(-1,0);
+		}
+		if("v2" in description){
+			enemy.v2 = description["v2"];
+		}else{
+			enemy.v2 = new b2Vec2(0,-1);
+		}
+		if("v3" in description){
+			enemy.v3 = description["v3"];
+		}else{
+			enemy.v3 = new b2Vec2(1,0);
+		}
 		
+		var triangle = (function initializeTriangleGeometry () {
+		var geometry = new THREE.Geometry();
+		geometry.vertices.push(new THREE.Vector3(enemy.v1.x, enemy.v1.y, 0.2));
+		geometry.vertices.push(new THREE.Vector3(enemy.v2.x, enemy.v2.y, 0.2));
+		geometry.vertices.push(new THREE.Vector3(enemy.v3.x, enemy.v3.y, 0.2));
+		geometry.faces.push(new THREE.Face3(0, 1, 2));
+		return geometry;
+	}) ();
 
         // Generate a mesh for the enemy
         // TODO: pass an enemy type value in the description object
         //       and pick from predefined geometry based on that 
         enemy.mesh = new THREE.Mesh(
             // PYRAMID, // Note: 3d geometry requires rotation/translation
-            TRIANGLE,
+            triangle,
             new THREE.MeshBasicMaterial({
                 color: enemy.color.getHex(),
                 //wireframe: true
@@ -285,6 +311,15 @@ function Enemy (description) {
 		self.width = self.size.x  / box2DPosScale;
 		self.height = self.size.y / box2DPosScale;
 		self.box2dObject = new box2dObject(game, enemy);
+		//alert(self.box2dObject.fixDef);
+		self.box2dObject.fixDef.shape = new b2PolygonShape;
+		//set enemy's triangle shape in box2d
+		self.box2dObject.fixDef.shape.SetAsArray([
+			new b2Vec2(enemy.v1.x, enemy.v1.y),
+			new b2Vec2(enemy.v2.x, enemy.v2.y),
+			new b2Vec2(enemy.v3.x, enemy.v3.y)], 3
+		);
+		self.box2dObject.fixture = self.box2dObject.body.CreateFixture(self.box2dObject.fixDef);
 		position.x = threePosition.x;
 		position.y = threePosition.y;
 		self.setPosition(position);

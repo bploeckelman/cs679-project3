@@ -44,16 +44,15 @@ function box2dObject (game, obj, type) {
 			
 			
 		var fixDef = new b2FixtureDef;
+		self.fixDef = fixDef;
 		fixDef.density = ddensity;
 		fixDef.friction = dfriction;
 		fixDef.resitution = drestituion;
-		fixDef.shape = new b2PolygonShape();
-		fixDef.shape.SetAsBox(obj.width/2, obj.height/2);
-		//just for debug draw
-		fixDef.shape.SetAsBox(obj.width*2, obj.height*2);
-		this.fixDef = fixDef;
-	
-		self.fixture = self.body.CreateFixture(fixDef);
-		
+		//Default to box if it has width and height attribute
+		if( typeof obj.width !== 'undefined' && typeof obj.height !== 'undefined'){
+			fixDef.shape = new b2PolygonShape();
+			fixDef.shape.SetAsBox(obj.width/2, obj.height/2);
+			self.fixture = self.body.CreateFixture(fixDef);
+		}
 	})(self);
 }
