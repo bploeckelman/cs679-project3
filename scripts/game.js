@@ -28,6 +28,7 @@ function Game(canvas, renderer) {
         action2:  false,
         action3:  false,
         action4:  false,
+        esc:      false,
         mousePos:  null,
         mousePrev: null,
         mouseButtonClicked:  -1,
@@ -46,6 +47,7 @@ function Game(canvas, renderer) {
         action2:  50, // 2
         action3:  51, // 3
         action4:  52, // 4
+        esc:      27, // ESC
     };
 
 
@@ -249,16 +251,26 @@ function Game(canvas, renderer) {
                 self.input.action2 = true;
                 createStructure(STRUCTURE_TYPES.TWO_BY_TWO, self);
             break;
-            break;
             case self.keymap.action3:
                 self.input.action3 = true;
                 createStructure(STRUCTURE_TYPES.THREE_BY_THREE, self);
-            break;
             break;
             case self.keymap.action4:
                 self.input.action4 = true;
                 createStructure(STRUCTURE_TYPES.FOUR_BY_FOUR, self);
             break;
+            case self.keymap.esc:
+                self.input.esc = true;
+                if (self.mode === GAME_MODE.BUILD) {
+                    // Discard currently ready-to-place structure
+                    if (self.build.structure !== null) {
+                        // Reimburse the player for the stucture's cost
+                        self.player.money += STRUCTURE_COSTS[self.build.structure.type];
+                        // Cleanup the mesh and drop the structure object
+                        self.scene.remove(self.build.structure.node);
+                        self.build.structure = null;
+                    }
+                }
             break;
         };
     };
@@ -279,6 +291,7 @@ function Game(canvas, renderer) {
             case self.keymap.action2:  self.input.action2  = false; break;
             case self.keymap.action3:  self.input.action3  = false; break;
             case self.keymap.action4:  self.input.action4  = false; break;
+            case self.keymap.esc:      self.input.esc      = false; break;
         };
     };
 

@@ -200,6 +200,17 @@ function Structure (type, game) {
         // Add the mesh to the scene
         game.scene.add(structure.node);
 
+        new TWEEN.Tween({ scale: 0.0 })
+            .to({ scale: 1.0 }, 350)
+            .easing(TWEEN.Easing.Cubic.InOut)
+            .onUpdate(function () {
+                structure.mesh.scale.x = this.scale;
+                structure.mesh.scale.y = this.scale;
+                structure.mesh.scale.z = 1.0;
+            })
+            .onComplete(function () { })
+            .start();
+
         console.log("Structure initialized.");
     })(self);
 

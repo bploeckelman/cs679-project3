@@ -18,6 +18,7 @@ function Level (game) {
 
     // Private variables ------------------------------------------------------
     var self = this,
+        TERRITORY_GEOMETRY = null, // Created on init()
         TERRITORY_MATERIAL = new THREE.MeshBasicMaterial({
             color: 0x003000,
             transparent: true,
@@ -84,9 +85,7 @@ function Level (game) {
             for (var y = 0; y < self.size.ycells; ++y) {
                 for (var x = 0; x < self.size.xcells; ++x) {
                     if (self.cells[y][x].buildable) {
-                        var mesh = new THREE.Mesh(
-                                new THREE.PlaneGeometry(self.size.cellw, self.size.cellh),
-                                TERRITORY_MATERIAL);
+                        var mesh = new THREE.Mesh(TERRITORY_GEOMETRY, TERRITORY_MATERIAL);
                         mesh.position.set(
                             x * self.size.cellw + self.size.cellw / 2,
                             y * self.size.cellh + self.size.cellh / 2,
@@ -121,6 +120,8 @@ function Level (game) {
         level.size = Object.freeze(level.size);
 
         // Create level meshes
+        TERRITORY_GEOMETRY = new THREE.PlaneGeometry(self.size.cellw, self.size.cellh);
+
         level.grid0 = new THREE.Mesh(
             new THREE.PlaneGeometry(level.size.width, level.size.height), 
             new THREE.MeshBasicMaterial({ color: 0x001100, wireframe: false })
