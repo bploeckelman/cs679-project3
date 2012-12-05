@@ -13,6 +13,7 @@ function Game(canvas, renderer) {
     this.player = null;
     this.wave   = null;
     this.build  = null;
+	this.menus 	= null;
     this.particles = null;
     this.projector = null;
     this.input  = {
@@ -93,7 +94,7 @@ function Game(canvas, renderer) {
                 // down to mode switch, the player has to click through 
                 // the completion message...
             }
-        } else if (self.mode === GAME_MODE.BUILD) {
+        } else if (self.mode === GAME_MODE.BUILD) {		
             // Move new structure around if one is waiting to be placed
             if (self.build.structure !== null) {
                 self.build.structure.move();
@@ -205,6 +206,7 @@ function Game(canvas, renderer) {
 			self.scene.add(sprite);*/
 			document.getElementById("buildMenus").style.display = "block";
 			document.getElementById("switchMode").style.display = "block";
+	    		updateMenus(self);
         }
     };
 
@@ -399,22 +401,42 @@ function Game(canvas, renderer) {
 		alert("width: " + texture.image.width);
 		alert("height: " + texture.image.height);
 		game.scene.add(sprite);*/
-		document.getElementById("initOneByOne").onclick = function () {
+		game.menus = [];
+		var button = document.getElementById("initOneByOne");
+		button.setAttribute('data-structType', STRUCTURE_TYPES.ONE_BY_ONE);
+		button.setAttribute('data-structCost', STRUCTURE_COSTS[STRUCTURE_TYPES.ONE_BY_ONE]);
+		button.onclick = function () {
 			self.input.menuClicked = true;
 			createStructure(STRUCTURE_TYPES.ONE_BY_ONE, game);
 		};
-		document.getElementById("initTwoByTwo").onclick = function () {
+		game.menus.push(button);
+		
+		button = document.getElementById("initTwoByTwo");
+		button.setAttribute('data-structType', STRUCTURE_TYPES.TWO_BY_TWO);
+		button.setAttribute('data-structCost', STRUCTURE_COSTS[STRUCTURE_TYPES.TWO_BY_TWO]);
+		button.onclick = function () {
 			self.input.menuClicked = true;
 			createStructure(STRUCTURE_TYPES.TWO_BY_TWO, game);
 		};
-		document.getElementById("initThreeByThree").onclick = function () {
+		game.menus.push(button);
+		
+		button = document.getElementById("initThreeByThree");
+		button.setAttribute('data-structType', STRUCTURE_TYPES.THREE_BY_THREE);
+		button.setAttribute('data-structCost', STRUCTURE_COSTS[STRUCTURE_TYPES.THREE_BY_THREE]);
+		button.onclick = function () {
 			self.input.menuClicked = true;
 			createStructure(STRUCTURE_TYPES.THREE_BY_THREE, game);
 		};
-		document.getElementById("initFourByFour").onclick = function () {
+		game.menus.push(button);
+		
+		button = document.getElementById("initFourByFour");
+		button.setAttribute('data-structType', STRUCTURE_TYPES.FOUR_BY_FOUR);
+		button.setAttribute('data-structCost', STRUCTURE_COSTS[STRUCTURE_TYPES.FOUR_BY_FOUR]);
+		button.onclick = function () {
 			self.input.menuClicked = true;
 			createStructure(STRUCTURE_TYPES.FOUR_BY_FOUR, game);
 		};
+		game.menus.push(button);
         document.getElementById("switchMode").onclick = function () {
             if (self.mode === GAME_MODE.BUILD) {
                 self.switchMode();
@@ -453,6 +475,9 @@ function createStructure (structureType, game) {
                 // TODO: play some animation or sound
             }
         }
+		
+		//Check if any menus need to be disabled
+		updateMenus(game);
     }
 }
 
@@ -500,6 +525,22 @@ function handleCollisions (game) {
             }
         }
     }
+}
+
+
+// Update Menus ---------------------------------------------------------------
+function updateMenus (game) {
+	for (var i=0; i<game.menus.length; i++)
+	{
+		var menuButton = game.menus[i];
+		
+		//Default to enabled
+		menuButton.disabled = false;
+		
+		var structCost = menuButton.getAttribute("data-structCost");
+		if (game.player.money < structCost)
+			menuButton.disabled = true;
+	}
 }
 
 
