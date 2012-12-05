@@ -157,7 +157,7 @@ function Enemy (description) {
 	};
 	
     this.rotate = function (angle) {
-    //	this.box2dObject.body.SetAngle(angle + this.box2dObject.body.GetAngle);
+    	this.box2dObject.body.SetAngle(angle + this.box2dObject.body.GetAngle());
     };		
     
     this.scale = function (scale_w, scale_h) {
@@ -270,17 +270,17 @@ function Enemy (description) {
 		if("v1" in description){
 			enemy.v1 = description["v1"];
 		}else{
-			enemy.v1 = new b2Vec2(-1,0);
+			enemy.v1 = new b2Vec2(-5,0);
 		}
 		if("v2" in description){
 			enemy.v2 = description["v2"];
 		}else{
-			enemy.v2 = new b2Vec2(0,-1);
+			enemy.v2 = new b2Vec2(0,-5);
 		}
 		if("v3" in description){
 			enemy.v3 = description["v3"];
 		}else{
-			enemy.v3 = new b2Vec2(1,0);
+			enemy.v3 = new b2Vec2(5,0);
 		}
 		
 		var triangle = (function initializeTriangleGeometry () {

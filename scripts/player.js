@@ -124,7 +124,7 @@ function Player (game) {
     };
 
     this.rotate = function (angle) {
-    //	this.box2dObject.body.SetAngle(angle + this.box2dObject.body.GetAngle);
+    	this.box2dObject.body.SetAngle(angle + this.box2dObject.body.GetAngle());
     };		
     
     this.scale = function (scale_w, scale_h) {
