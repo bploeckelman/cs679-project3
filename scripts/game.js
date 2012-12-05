@@ -149,7 +149,7 @@ function Game(canvas, renderer) {
 			*/
 		}
 		collider.PostSolve = function(contact, impulse) {
-			alert("collision happend!");
+			//alert("collision happend!");
 			obj1 = contact.GetFixtureA().GetBody().GetUserData();
 			obj2 = contact.GetFixtureB().GetBody().GetUserData();
 			if (obj1 != null && obj2 != null){

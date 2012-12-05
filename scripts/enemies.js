@@ -83,8 +83,8 @@ function Enemy (description) {
 	this.collide = function(obj){
 		if(obj.type == playerType) {
 			alert("Enemy collides with player!");
-		}else if(obj.type == playerType){
-			alert("Enemy collides with enemy!");
+		}else if(obj.type == enemyType){
+			//alert("Enemy collides with enemy!");
 		}else{
 			//collide with unknow object
 			//do nothing
@@ -277,17 +277,14 @@ function Enemy (description) {
                 //wireframe: true
             })
         );
-       // enemy.mesh.position = enemy.position;
+
 	
         enemy.mesh.position = threePosition;
 	    enemy.intersects = false;
 		// Create box2D representation
-		//self.width = self.size.x * 1.35 / SCALE;
-		//self.height = self.size.y * 1.35 / SCALE;
 		self.width = self.size.x  / box2DPosScale;
 		self.height = self.size.y / box2DPosScale;
 		self.box2dObject = new box2dObject(game, enemy);
-		//self.box2dObject.body.SetPosition(new b2Vec2(position.x, position.y));
 		position.x = threePosition.x;
 		position.y = threePosition.y;
 		self.setPosition(position);

@@ -18,7 +18,7 @@ var b2WeldJointDef =  Box2D.Dynamics.Joints.b2WeldJointDef;
 var b2ContactListener = Box2D.Dynamics.b2ContactListener;
 
 
-function box2dObject (game, obj) {
+function box2dObject (game, obj, type) {
     // Public properties ------------------------------------------------------
 	this.body = null;
 	this.fixture = null;
@@ -35,9 +35,10 @@ function box2dObject (game, obj) {
 	// Constructor ------------------------------------------------------------
     (this.init = function (box2dObject) {
 	
+		type = typeof type !== 'undefined' ? type : b2Body.b2_dynamicBody;
 		var bodyDef = new b2BodyDef;
 		bodyDef.allowSleep = true;
-		bodyDef.type = b2Body.b2_dynamicBody;
+		bodyDef.type = type;
 		self.body = game.box2d.world.CreateBody(bodyDef);
 		self.body.SetUserData(obj);
 			
