@@ -74,11 +74,11 @@ function Game(canvas, renderer) {
 
         if (self.mode === GAME_MODE.DEFEND) {
             self.player.update(); 
-            self.wave.update();
-            handleCollisions(self);
-            updateParticles(self);
+            //self.wave.update();
+            //handleCollisions(self);
+            //updateParticles(self);
 
-            if (self.wave.enemies.length == 0 && !COUNTDOWN) {
+            /*if (self.wave.enemies.length == 0 && !COUNTDOWN) {
                 setTimeout(function () {
                     self.switchMode();
                     COUNTDOWN = false;
@@ -93,7 +93,7 @@ function Game(canvas, renderer) {
                 // It should also be setup so that instead of counting 
                 // down to mode switch, the player has to click through 
                 // the completion message...
-            }
+            }*/
         } else if (self.mode === GAME_MODE.BUILD) {		
             // Move new structure around if one is waiting to be placed
             if (self.build.structure !== null) {

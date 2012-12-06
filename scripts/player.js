@@ -44,9 +44,12 @@ function Player (game) {
 
         if (this.velocity.y >  MAX_SPEED.y) this.velocity.y =  MAX_SPEED.y;
         if (this.velocity.y < -MAX_SPEED.y) this.velocity.y = -MAX_SPEED.y;
-
+		
         // Position the mesh to correspond with players updated position
         this.mesh.position = this.position.addSelf(this.velocity).clone();
+		
+		//Check structure collisions
+		this.checkStructCollisions();
 
         // Handle spin move
         if (game.input.spin && !this.isSpinning) {
@@ -68,6 +71,30 @@ function Player (game) {
                 .start();
         }
     };
+	
+	this.checkStructCollisions = function() {
+		var playerMin = new THREE.Vector2(
+            self.position.x - 9 / 2,
+            self.position.y - 9 / 2),
+        playerMax = new THREE.Vector2(
+            self.position.x + 9 / 2,
+            self.position.y + 9 / 2);
+			
+		for (var i = 0; i < game.level.structures.length; i++) {
+			var struct = game.level.structures[i];
+
+			if (playerMin.x > struct.positionMax.x
+			 || playerMax.x < struct.positionMin.x
+			 || playerMin.y > struct.positionMax.y
+			 || playerMax.y < struct.positionMin.y) {
+				continue;
+			} else {
+				self.velocity.x = -self.velocity.x;
+				self.velocity.y = -self.velocity.y;
+				self.mesh.position = self.position.addSelf(self.velocity).clone();
+			}
+		}
+	};
 
 	this.reset = function() {
 		self.mesh.position.set(PLAYER_SIZE.w / 2, PLAYER_SIZE.h / 2, PLAYER_Z);
@@ -85,6 +112,13 @@ function Player (game) {
         player.mesh.position.set(PLAYER_SIZE.w / 2, PLAYER_SIZE.h / 2, PLAYER_Z);
         player.position = player.mesh.position;
         player.velocity = new THREE.Vector3(0,0,0);
+		
+		player.positionMin = new THREE.Vector2(
+            self.position.x - 9 / 2,
+            self.position.y - 9 / 2);
+        player.positionMax = new THREE.Vector2(
+            self.position.x + 9 / 2,
+            self.position.y + 9 / 2);
 
         player.money = 100;
 

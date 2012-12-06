@@ -25,6 +25,8 @@ function Structure (type, game) {
     this.node     = null;
     this.placed   = null;
     this.position = null;
+	this.positionMin = null;
+	this.positionMax = null;
     this.gridindices = null;
 
 
@@ -99,8 +101,22 @@ function Structure (type, game) {
                     game.level.cells[iy][ix].buildable = true;
                 }
             }
-
-
+			
+			//self.position.x = self.node.position.x + self.mesh.position.x;
+			//self.position.y = self.node.position.y + self.mesh.position.y;
+			var posX = self.node.position.x + self.mesh.position.x,
+				posY = self.node.position.y + self.mesh.position.y;
+			
+			//alert("mesh postion: " + self.mesh.position.x + "," + self.mesh.position.y);
+			//alert("node postion: " + self.node.position.x + "," + self.node.position.y);
+			//alert("center postion: " + posX + "," + posY);
+			self.positionMin = new THREE.Vector2(
+                posX - 2 - (game.level.size.cellw * STRUCTURE_SIZES[self.type]) / 2,
+                posY - 2 - (game.level.size.cellh * STRUCTURE_SIZES[self.type]) / 2);
+            self.positionMax = new THREE.Vector2(
+                posX - 2 + (game.level.size.cellw * STRUCTURE_SIZES[self.type]) / 2,
+                posY - 2 + (game.level.size.cellh * STRUCTURE_SIZES[self.type]) / 2);
+			
             self.placed = true;
             game.level.territoryDirty = true; // Regenerate territory geometry
         }
