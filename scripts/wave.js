@@ -28,9 +28,7 @@ function Wave (round, game) {
             enemy.update();
 
             // Handle dead enemies
-			
             if (enemy.health <= 0) {
-				alert("remove because of health!");
                 // Spawn a new particle system
                 spawnParticles(
                     PARTICLES.ENEMY_DEATH,

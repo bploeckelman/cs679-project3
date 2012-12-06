@@ -5,10 +5,10 @@ var GAME_MODE = { BUILD: "build", DEFEND: "defend" };
 function Game(canvas, renderer) {
 	//FIXME:
 	//Delete me later, just for debugdraw
-	var debugcanvas = document.getElementById("debugcanvas");
+	/*var debugcanvas = document.getElementById("debugcanvas");
 	 debugcanvas.width = 800;
 	 debugcanvas.height = 300;
-	var theContext = debugcanvas.getContext("2d");
+	var theContext = debugcanvas.getContext("2d");*/
 
 
     // Public properties ------------------------------------------------------
@@ -20,8 +20,8 @@ function Game(canvas, renderer) {
     this.level  = null;
     this.player = null;
     this.wave   = null;
-    this.build  = null;	
-	
+    this.build  = null;
+	this.menus 	= null;
     this.particles = null;
     this.projector = null;
     
@@ -42,6 +42,7 @@ function Game(canvas, renderer) {
         action2:  false,
         action3:  false,
         action4:  false,
+        esc:      false,
         mousePos:  null,
         mousePrev: null,
         mouseButtonClicked:  -1,
@@ -60,6 +61,7 @@ function Game(canvas, renderer) {
         action2:  50, // 2
         action3:  51, // 3
         action4:  52, // 4
+        esc:      27, // ESC
     };
 
 
@@ -112,11 +114,8 @@ function Game(canvas, renderer) {
             // Move new structure around if one is waiting to be placed
             if (self.build.structure !== null) {
                 self.build.structure.move();
-            } else {
-                if (self.player.money <= 0) {
-                    self.switchMode();
-                    self.round++;
-                }
+                // TODO: update structure color based on whether
+                // its in a buildable location or not
             }
         }
 
@@ -162,7 +161,7 @@ function Game(canvas, renderer) {
 	};
    
     // Render Overlay Text
-     this.renderOverlayText = function () {
+    this.renderOverlayText = function () {
         // Clear 2d canvas
         CONTEXT2D.save();
         CONTEXT2D.setTransform(1,0,0,1,0,0);
@@ -197,10 +196,13 @@ function Game(canvas, renderer) {
         // Build -> Defend
         if (self.mode === GAME_MODE.BUILD) {
             self.mode = GAME_MODE.DEFEND;
+            self.round++;
 
             // Add the player
-            self.player = new Player(self);
-			self.player.setPosition(self.level.artifact.mesh.position.clone());
+            if (self.player === null)
+                self.player = new Player(self);
+            self.player.position = self.level.artifact.mesh.position.clone();
+            self.player.mesh.position = self.level.artifact.mesh.position.clone();
             self.scene.add(self.player.mesh);
 
             // Create a new wave of enemies
@@ -212,10 +214,16 @@ function Game(canvas, renderer) {
 			
 			//Hide the menus
 			document.getElementById("buildMenus").style.display = "none";
+			document.getElementById("switchMode").style.display = "none";
 		}
         // Defend -> Build
         else if (self.mode === GAME_MODE.DEFEND) {
             self.mode = GAME_MODE.BUILD;
+
+            // Add money based on territorial control + artifact health
+            self.player.money += self.level.territory.length * 0.15
+                              +  self.level.artifact.health / 50;
+            self.player.money = Math.floor(self.player.money);
 
             // Remove the player mesh
             self.scene.remove(self.player.mesh);
@@ -242,6 +250,8 @@ function Game(canvas, renderer) {
 			sprite.position.set(0,0,0);
 			self.scene.add(sprite);*/
 			document.getElementById("buildMenus").style.display = "block";
+			document.getElementById("switchMode").style.display = "block";
+	    		updateMenus(self);
         }
     };
 
@@ -276,7 +286,9 @@ function Game(canvas, renderer) {
             break;
             case self.keymap.mode:
                 self.input.mode = true;
-                self.switchMode();
+                if (self.mode === GAME_MODE.BUILD) {
+                    self.switchMode();
+                }
             break;
             case self.keymap.action1:
                 self.input.action1 = true;
@@ -286,16 +298,26 @@ function Game(canvas, renderer) {
                 self.input.action2 = true;
                 createStructure(STRUCTURE_TYPES.TWO_BY_TWO, self);
             break;
-            break;
             case self.keymap.action3:
                 self.input.action3 = true;
                 createStructure(STRUCTURE_TYPES.THREE_BY_THREE, self);
-            break;
             break;
             case self.keymap.action4:
                 self.input.action4 = true;
                 createStructure(STRUCTURE_TYPES.FOUR_BY_FOUR, self);
             break;
+            case self.keymap.esc:
+                self.input.esc = true;
+                if (self.mode === GAME_MODE.BUILD) {
+                    // Discard currently ready-to-place structure
+                    if (self.build.structure !== null) {
+                        // Reimburse the player for the stucture's cost
+                        self.player.money += STRUCTURE_COSTS[self.build.structure.type];
+                        // Cleanup the mesh and drop the structure object
+                        self.scene.remove(self.build.structure.node);
+                        self.build.structure = null;
+                    }
+                }
             break;
         };
     };
@@ -316,6 +338,7 @@ function Game(canvas, renderer) {
             case self.keymap.action2:  self.input.action2  = false; break;
             case self.keymap.action3:  self.input.action3  = false; break;
             case self.keymap.action4:  self.input.action4  = false; break;
+            case self.keymap.esc:      self.input.esc      = false; break;
         };
     };
 
@@ -338,9 +361,13 @@ function Game(canvas, renderer) {
         if (self.mode === GAME_MODE.BUILD) {
             // Place current structure and clear placeholder object
             if (self.build.structure !== null) {
-                self.build.structure.place();
-                self.level.structures.push(self.build.structure);
-                self.build.structure = null;
+                if (self.build.structure.place()) {
+                    self.level.structures.push(self.build.structure);
+                    self.build.structure = null;
+                } else {
+                    // TODO: display "can't build here" message 
+                    console.log("can't build here");
+                }
             }
         }
         //console.log("Mouse button clicked: " + self.input.mouseButtonClicked);
@@ -376,13 +403,13 @@ function Game(canvas, renderer) {
 	game.initBox2d();
 		
 		
-		   var debugDraw = new b2DebugDraw();
+		   /*var debugDraw = new b2DebugDraw();
 			debugDraw.SetSprite(theContext);
 			debugDraw.SetDrawScale(1.0);
 			debugDraw.SetFillAlpha(0.5);
 			debugDraw.SetLineThickness(1.0);
 			debugDraw.SetFlags(b2DebugDraw.e_shapeBit | b2DebugDraw.e_jointBit);
-			game.box2d.world.SetDebugDraw(debugDraw);
+			game.box2d.world.SetDebugDraw(debugDraw);*/
 
         // Initialize the camera
         game.camera = new THREE.PerspectiveCamera(FOV, ASPECT, NEAR, FAR);
@@ -429,22 +456,47 @@ function Game(canvas, renderer) {
 		alert("width: " + texture.image.width);
 		alert("height: " + texture.image.height);
 		game.scene.add(sprite);*/
-		document.getElementById("initOneByOne").onclick = function () {
+		game.menus = [];
+		var button = document.getElementById("initOneByOne");
+		button.setAttribute('data-structType', STRUCTURE_TYPES.ONE_BY_ONE);
+		button.setAttribute('data-structCost', STRUCTURE_COSTS[STRUCTURE_TYPES.ONE_BY_ONE]);
+		button.onclick = function () {
 			self.input.menuClicked = true;
 			createStructure(STRUCTURE_TYPES.ONE_BY_ONE, game);
 		};
-		document.getElementById("initTwoByTwo").onclick = function () {
+		game.menus.push(button);
+		
+		button = document.getElementById("initTwoByTwo");
+		button.setAttribute('data-structType', STRUCTURE_TYPES.TWO_BY_TWO);
+		button.setAttribute('data-structCost', STRUCTURE_COSTS[STRUCTURE_TYPES.TWO_BY_TWO]);
+		button.onclick = function () {
 			self.input.menuClicked = true;
 			createStructure(STRUCTURE_TYPES.TWO_BY_TWO, game);
 		};
-		document.getElementById("initThreeByThree").onclick = function () {
+		game.menus.push(button);
+		
+		button = document.getElementById("initThreeByThree");
+		button.setAttribute('data-structType', STRUCTURE_TYPES.THREE_BY_THREE);
+		button.setAttribute('data-structCost', STRUCTURE_COSTS[STRUCTURE_TYPES.THREE_BY_THREE]);
+		button.onclick = function () {
 			self.input.menuClicked = true;
 			createStructure(STRUCTURE_TYPES.THREE_BY_THREE, game);
 		};
-		document.getElementById("initFourByFour").onclick = function () {
+		game.menus.push(button);
+		
+		button = document.getElementById("initFourByFour");
+		button.setAttribute('data-structType', STRUCTURE_TYPES.FOUR_BY_FOUR);
+		button.setAttribute('data-structCost', STRUCTURE_COSTS[STRUCTURE_TYPES.FOUR_BY_FOUR]);
+		button.onclick = function () {
 			self.input.menuClicked = true;
 			createStructure(STRUCTURE_TYPES.FOUR_BY_FOUR, game);
 		};
+		game.menus.push(button);
+        document.getElementById("switchMode").onclick = function () {
+            if (self.mode === GAME_MODE.BUILD) {
+                self.switchMode();
+            }
+        };
 
         CANVAS2D = document.createElement("canvas");
         CANVAS2D.id = "canvas2d";
@@ -478,6 +530,9 @@ function createStructure (structureType, game) {
                 // TODO: play some animation or sound
             }
         }
+		
+		//Check if any menus need to be disabled
+		updateMenus(game);
     }
 }
 
@@ -527,6 +582,22 @@ function handleCollisions (game) {
             }
         }
     }
+}
+
+
+// Update Menus ---------------------------------------------------------------
+function updateMenus (game) {
+	for (var i=0; i<game.menus.length; i++)
+	{
+		var menuButton = game.menus[i];
+		
+		//Default to enabled
+		menuButton.disabled = false;
+		
+		var structCost = menuButton.getAttribute("data-structCost");
+		if (game.player.money < structCost)
+			menuButton.disabled = true;
+	}
 }
 
 
