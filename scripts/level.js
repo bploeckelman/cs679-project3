@@ -14,16 +14,20 @@ function Level (game) {
     this.structures = null;
     this.territory  = null;
     this.territoryDirty = null;
+    this.clock = null;
 
 
     // Private variables ------------------------------------------------------
     var self = this,
         TERRITORY_GEOMETRY = null, // Created on init()
+        TERRITORY_MATERIAL = new THREE.ShaderMaterial(shaders.noise);
+        /*
         TERRITORY_MATERIAL = new THREE.MeshBasicMaterial({
             color: 0x003000,
             transparent: true,
             blending: THREE.AdditiveBlending
         });
+        */
 
 	// Utility variables ------------------------------------------------------
 	THREE.Vector2.prototype.toGridCoords = function () {
@@ -72,6 +76,10 @@ function Level (game) {
 	
     // Level methods ----------------------------------------------------------
     this.update = function () {
+        var delta = 0.01 * self.clock.getDelta();
+        shaders.noise.uniforms.time.value += delta;
+        shaders.cells.uniforms.time.value += 10 * delta;
+
         // NOTE: this is inefficient, it should be extracted to a function
         // player should be able to switch the territory visualization on/off
         if (self.territoryDirty) { // then regenerate territory meshes...
@@ -181,6 +189,8 @@ function Level (game) {
         // Initialize the territory visualization meshes
         level.territory = [];
         level.territoryDirty = true;
+
+        level.clock = new THREE.Clock();
 
         console.log("Level initialized.");
     })(self);

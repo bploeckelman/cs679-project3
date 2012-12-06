@@ -53,8 +53,8 @@ function Artifact (level, game) {
                 2 * level.size.cellh),
             new THREE.MeshLambertMaterial({
                 color: 0xffff00,
-                transparent: true,
-                blending: THREE.AdditiveBlending
+                //transparent: true,
+                //blending: THREE.AdditiveBlending
             })
         );
 
