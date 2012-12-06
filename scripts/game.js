@@ -17,6 +17,7 @@ function Game(canvas, renderer) {
     this.particles = null;
     this.projector = null;
     this.countdown = false;
+    this.instructions = null;
     this.input  = {
         panUp:    false,
         panDown:  false,
@@ -146,6 +147,19 @@ function Game(canvas, renderer) {
             CONTEXT2D.textBaseline = "center";
             CONTEXT2D.fillText("Defend phase complete!",
                 CANVAS2D.width / 2, CANVAS2D.height / 2);
+        }
+
+        // Draw instructions on the 2d canvas
+        if (self.instructions.draw) {
+            CONTEXT2D.font         = self.instructions.text.style.font;
+            CONTEXT2D.textBaseLine = self.instructions.text.style.textBaseLine;
+            CONTEXT2D.textAlign    = self.instructions.text.style.textAlign;
+            CONTEXT2D.fillStyle    = self.instructions.text.style.fillStyle;
+
+            CONTEXT2D.fillText(
+                self.instructions.text.text,
+                self.instructions.position.x,
+                self.instructions.position.y);
         }
     };
 
@@ -383,6 +397,81 @@ function Game(canvas, renderer) {
         // Set the initial game mode and round counter
         game.mode = GAME_MODE.BUILD;
         game.round = 1;
+
+        // TODO: extract all this instruction setup out to a function
+        var style0 = { 
+                font: "50px Arial",
+                textBaseLine: "bottom",
+                textAlign: "left",
+                fillStyle: "#ff100f",
+                delay: 2000,
+            },  
+            style1 = {
+                font: "25px Arial",
+                textBaseLine: "bottom",
+                textAlign: "left",
+                fillStyle: "#ffffff",
+                delay: 1000,
+            },  
+            style2 = {
+                font: "25px Arial",
+                textBaseLine: "bottom",
+                textAlign: "left",
+                fillStyle: "#ffffff",
+                delay: 5000,
+            };
+
+        game.instructions = {
+            draw: true,
+            text: { text: "Flatland Defender", style: style0 },
+            lines: [
+                { text: "A game by...", style: style1 },
+                { text: "Brian Ploeckelman,", style: style1 },
+                { text: "Eric Satterness,", style: style1 },
+                { text: "Shreedhar Hardikar,", style: style1 },
+                { text: "and Suli Yang...", style: style1 },
+                { text: "Made at UW-Madison", style: style1 },
+                { text: "For CS 679 Games Tech", style: style1 },
+                { text: "Fall Semester - 2012", style: style1 },
+                { text: "", style: style1 },
+                { text: "", style: style1 },
+                { text: "Start by pressing 1,2,3,4, or clicking a button\nto buy a new structure", style: style2 },
+                { text: "Then left-click to place the structure, or right-click to discard it", style: style2 },
+                { text: "You can only place structures within the green 'claimed' cells", style: style2 },
+                { text: "Placing structures expands your claimed territory", style: style2 },
+                { text: "Bigger structures expand it more than smaller ones, but cost more", style: style2 },
+                { text: "Structures also block enemies from getting to your artifact cube", style: style2 },
+                { text: "The more territory you claim, the more credits you get to build", style: style2 }
+            ],
+            line: 0,
+            position: new THREE.Vector2(50, window.innerHeight / 5),
+            tween: new TWEEN.Tween({
+                    y: window.innerHeight / 5,
+                    starty: window.innerHeight / 5 
+                })
+                .to({ y: window.innerHeight * 9 / 10 }, 750)
+                .easing(TWEEN.Easing.Cubic.In)
+                .onUpdate(function () {
+                    game.instructions.position.y = this.y;
+                })
+                .onComplete(function () {
+                    if (game.instructions.line < game.instructions.lines.length) {
+                        // Move to the next line of text
+                        game.instructions.text = game.instructions.lines[game.instructions.line++];
+                        game.instructions.tween.delay(game.instructions.text.style.delay);
+                        // Reset the tween/text positions
+                        this.y = this.starty;
+                        game.instructions.position.y = this.starty;
+                        // Restart the tween
+                        game.instructions.tween.start();
+                    } else {
+                        // ... all out of instructions 
+                        game.instructions.draw = false;
+                    }
+                })
+                .delay(2000)
+                .start()
+        };
 
         // Initialize the camera
         game.camera = new THREE.PerspectiveCamera(FOV, ASPECT, NEAR, FAR);
