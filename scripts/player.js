@@ -23,7 +23,7 @@ function Player (game) {
 
     // Player methods ---------------------------------------------------------
     this.update = function () {
-        // Move the player
+        // Move the player using keyboard
         if      (game.input.panLeft)  this.velocity.x -= MOVE_SPEED.x;
         else if (game.input.panRight) this.velocity.x += MOVE_SPEED.x;
         else                          this.velocity.x  = 0;
@@ -31,6 +31,38 @@ function Player (game) {
         if      (game.input.panUp)    this.velocity.y += MOVE_SPEED.y;
         else if (game.input.panDown)  this.velocity.y -= MOVE_SPEED.y;
         else                          this.velocity.y  = 0;
+
+        // Move the player by moving mouse to edges of screen
+        if (game.input.mouseMove && !game.countdown) {
+            var minEdge = new THREE.Vector2(
+                    window.innerWidth  / 2,  
+                    window.innerHeight / 2),
+                maxEdge = new THREE.Vector2(
+                    window.innerWidth  / 2,
+                    window.innerHeight / 2),
+                // TODO: recalculate min/max edges on window resize
+                MOUSE_PAN_SPEED = 125,
+                dx = 0,
+                dy = 0;
+
+            // Calculate delta for x edges
+            if (game.input.mousePos.x < minEdge.x) {
+                dx = (game.input.mousePos.x - minEdge.x) / MOUSE_PAN_SPEED;
+            } else if (game.input.mousePos.x > maxEdge.x) {
+                dx = (game.input.mousePos.x - maxEdge.x) / MOUSE_PAN_SPEED;
+            }
+
+            // Calculate delta for y edges
+            if (game.input.mousePos.y < minEdge.y) {
+                dy = -1 * (game.input.mousePos.y - minEdge.y) / MOUSE_PAN_SPEED;
+            } else if (game.input.mousePos.y > maxEdge.y) {
+                dy = -1 * (game.input.mousePos.y - maxEdge.y) / MOUSE_PAN_SPEED;
+            }
+
+            // Move player based on mouse movements
+            this.velocity.x += dx;
+            this.velocity.y += dy;
+        }
 
         // Slow the player down if they are spinning
         if (this.isSpinning) {

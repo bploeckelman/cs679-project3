@@ -16,6 +16,7 @@ function Game(canvas, renderer) {
 	this.menus 	= null;
     this.particles = null;
     this.projector = null;
+    this.countdown = false;
     this.input  = {
         panUp:    false,
         panDown:  false,
@@ -32,9 +33,13 @@ function Game(canvas, renderer) {
         esc:      false,
         mousePos:  null,
         mousePrev: null,
+        mouseMove: false,
         mouseButtonClicked:  -1,
         mouseWheelLastDelta: 0,
 		menuClicked: false,
+        mouseButton1Down: false,
+        mouseButton2Down: false,
+        mouseButton3Down: false,
     };
     this.keymap = {
         panUp:    87, // W
@@ -61,7 +66,6 @@ function Game(canvas, renderer) {
         ASPECT = window.innerWidth / window.innerHeight,
         NEAR   = 1,
         FAR    = 1000,
-        COUNTDOWN = false,
         CANVAS2D  = null,
         CONTEXT2D = null;
     DIRECT_LIGHT0.position.set(1,1,1).normalize();
@@ -78,12 +82,12 @@ function Game(canvas, renderer) {
             handleCollisions(self);
             updateParticles(self);
 
-            if (self.wave.enemies.length == 0 && !COUNTDOWN) {
+            if (self.wave.enemies.length == 0 && !self.countdown){
                 setTimeout(function () {
                     self.switchMode();
-                    COUNTDOWN = false;
+                    self.countdown = false;
                 }, 4000);
-                COUNTDOWN = true;
+                self.countdown = true;
                 // TODO: display some message about defend mode completion
                 // ideally we'd display some stats here too, 
                 //  - time it took to beat round
@@ -137,7 +141,7 @@ function Game(canvas, renderer) {
         CONTEXT2D.fillText(
             "Artifact Health: " + Math.floor(self.level.artifact.health),
             CANVAS2D.width / 2, 40);
-        if (COUNTDOWN) {
+        if (self.countdown) {
             CONTEXT2D.font = "40px Arial";
             CONTEXT2D.textBaseline = "center";
             CONTEXT2D.fillText("Defend phase complete!",
@@ -341,6 +345,28 @@ function Game(canvas, renderer) {
         //console.log("Mouse button clicked: " + self.input.mouseButtonClicked);
     }
 
+    // Mouse Down
+    function handleMouseDown (event) {
+        if      (event.button == 0) self.input.mouseButton1Down = true;
+        else if (event.button == 1) self.input.mouseButton2Down = true;
+        else if (event.button == 2) self.input.mouseButton3Down = true;
+
+        self.input.spin = self.input.mouseButton1Down;
+        self.input.mouseMove = self.input.mouseButton3Down;
+        //console.log("mouse down event: " + event.button);
+    }
+
+    // Mouse Up
+    function handleMouseUp (event) {
+        if      (event.button == 0) self.input.mouseButton1Down = false;
+        else if (event.button == 1) self.input.mouseButton2Down = false;
+        else if (event.button == 2) self.input.mouseButton3Down = false;
+
+        self.input.spin = self.input.mouseButton1Down;
+        self.input.mouseMove = self.input.mouseButton3Down;
+        //console.log("mouse up event: " + event.button);
+    }
+
     // Mouse Move
     function handleMouseMove (event) {
         self.input.mousePrev = self.input.mousePos.clone();
@@ -357,10 +383,12 @@ function Game(canvas, renderer) {
         game.input.mousePrev = new THREE.Vector2();
 
         // Setup input handlers
-        document.addEventListener("keyup",   handleKeyup,   false);
-        document.addEventListener("keydown", handleKeydown, false);
-        document.addEventListener("click",   handleMouseClick, false);
-        document.addEventListener("mousemove", handleMouseMove, false);
+        document.addEventListener("keyup",      handleKeyup,      false);
+        document.addEventListener("keydown",    handleKeydown,    false);
+        document.addEventListener("click",      handleMouseClick, false);
+        document.addEventListener("mousedown",  handleMouseDown,  false);
+        document.addEventListener("mouseup",    handleMouseUp,    false);
+        document.addEventListener("mousemove",  handleMouseMove,  false);
         document.addEventListener("mousewheel", handleMouseWheel, false);
 
         game.projector = new THREE.Projector();
