@@ -181,17 +181,17 @@ function Structure (type, game) {
     };
 	
 	
-	this.takeDamage = function (amount) { 
+	this.takeDamage = function (amount, arrayIndex) { 
 		self.health = self.health - amount;
         if (self.health <= 0) {
-            self.die();
+            self.die(arrayIndex);
         } else {
             //TODO: Add damage effect?
         }
     };
 
 	
-    this.die = function () {
+    this.die = function (arrayIndex) {
 		//FIXME: Particles not getting displayed
 		spawnParticles(
             // TODO: make a new particle system type for this
@@ -200,10 +200,10 @@ function Structure (type, game) {
             { color: new THREE.Color(0xff0000) },
             game
         );
+		game.level.structures.splice(arrayIndex, 1);
         game.scene.remove(self.mesh);
 		game.scene.remove(self.node);
 		//TODO: Free up the grid cell
-		//	Remove from structures list
     };
 
 

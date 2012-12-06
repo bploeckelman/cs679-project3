@@ -9,8 +9,8 @@ function Player (game) {
     this.velocity 	= null;
     this.money		= null;
     this.isSpinning = false;
-	this.health		= 10000;
-    this.damageAmount = 10;
+	this.health		= 100;
+    this.enemyDamage = 10;
 
 
     // Private variables ------------------------------------------------------

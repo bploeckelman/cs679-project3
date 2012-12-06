@@ -50,7 +50,8 @@ function Enemy (description) {
     this.health   = null;
     this.intersects = null;
 	this.type     = null;
-	this.damageAmount = 0.1;
+	this.structDamage = 0.1;
+	this.playerDamage = 0.1;
 
     // Private variables ------------------------------------------------------
     var self = this;
@@ -127,7 +128,7 @@ function Enemy (description) {
 			 || enemyMax.y < struct.positionMin.y) {
 				continue;
 			} else {
-				struct.takeDamage(self.damageAmount);
+				struct.takeDamage(self.structDamage, i);
 			}
 		}
 	};

@@ -142,6 +142,9 @@ function Game(canvas, renderer) {
         CONTEXT2D.fillText(
             "Artifact Health: " + Math.floor(self.level.artifact.health),
             CANVAS2D.width / 2, 40);
+		CONTEXT2D.fillText(
+            "Player Health: " + Math.floor(self.player.health),
+            CANVAS2D.width / 2, 60);
         if (self.countdown) {
             CONTEXT2D.font = "40px Arial";
             CONTEXT2D.textBaseline = "center";
@@ -608,10 +611,10 @@ function handleCollisions (game) {
         } else {
             enemy.intersects = true;
             if (player.isSpinning) {
-                enemy.takeDamage(player.damageAmount);
+                enemy.takeDamage(player.enemyDamage);
             }
 			else {
-				player.takeDamage(enemy.damageAmount);
+				player.takeDamage(enemy.playerDamage);
 			}
         }
 
