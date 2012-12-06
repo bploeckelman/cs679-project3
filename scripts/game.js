@@ -267,29 +267,7 @@ function Game(canvas, renderer) {
             break;
             case self.keymap.esc:
                 self.input.esc = true;
-                if (self.mode === GAME_MODE.BUILD) {
-                    // Discard currently ready-to-place structure
-                    if (self.build.structure !== null) {
-                        // Reimburse the player for the stucture's cost
-                        self.player.money += STRUCTURE_COSTS[self.build.structure.type];
-
-                        // Shrink the mesh out of existence (opposite of new structure)
-                        new TWEEN.Tween({ scale: 1.0 })
-                            .to({ scale: 0.0 }, 350)
-                            .easing(TWEEN.Easing.Cubic.InOut)
-                            .onUpdate(function () {
-                                self.build.structure.mesh.scale.x = this.scale;
-                                self.build.structure.mesh.scale.y = this.scale;
-                                self.build.structure.mesh.scale.z = 1.0;
-                            })
-                            .onComplete(function () {
-                                // Cleanup the mesh and drop the structure object
-                                self.scene.remove(self.build.structure.node);
-                                self.build.structure = null;
-                            })
-                            .start();
-                    }
-                }
+                discardBuildStructure(self);
             break;
         };
     };
@@ -353,6 +331,15 @@ function Game(canvas, renderer) {
 
         self.input.spin = self.input.mouseButton1Down;
         self.input.mouseMove = self.input.mouseButton3Down;
+
+        if (self.mode === GAME_MODE.BUILD) {
+            if (self.input.mouseButton3Down) { // On Right Click...
+                if (self.build.structure !== null) {
+                    discardBuildStructure(self);
+                }
+            }
+        }
+
         //console.log("mouse down event: " + event.button);
     }
 
@@ -719,4 +706,31 @@ function updateParticles (game) {
         }
     }
 }
+
+// discardBuildStructure ------------------------------------------------------
+function discardBuildStructure (game) {
+    if (game.mode === GAME_MODE.BUILD) {
+        // Discard currently ready-to-place structure
+        if (game.build.structure !== null) {
+            // Reimburse the player for the stucture's cost
+            game.player.money += STRUCTURE_COSTS[game.build.structure.type];
+
+            // Shrink the mesh out of existence (opposite of new structure)
+            new TWEEN.Tween({ scale: 1.0 })
+                .to({ scale: 0.0 }, 350)
+                .easing(TWEEN.Easing.Cubic.InOut)
+                .onUpdate(function () {
+                    game.build.structure.mesh.scale.x = this.scale;
+                    game.build.structure.mesh.scale.y = this.scale;
+                    game.build.structure.mesh.scale.z = 1.0;
+                })
+                .onComplete(function () {
+                    // Cleanup the mesh and drop the structure object
+                    game.scene.remove(game.build.structure.node);
+                    game.build.structure = null;
+                })
+                .start();
+        }
+    }
+};
 
