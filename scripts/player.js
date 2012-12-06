@@ -151,6 +151,7 @@ function Player (game) {
         game.scene.remove(self.mesh);
 		
 		//End game
+		game.gamelost = true;
     };
 	
 

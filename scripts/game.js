@@ -18,6 +18,8 @@ function Game(canvas, renderer) {
     this.projector = null;
     this.countdown = false;
     this.instructions = null;
+	this.gamelost = null;
+	this.gamewon = null;
     this.input  = {
         panUp:    false,
         panDown:  false,
@@ -78,27 +80,46 @@ function Game(canvas, renderer) {
         updateCamera(self);
 
         if (self.mode === GAME_MODE.DEFEND) {
-            self.player.update(); 
-            self.wave.update();
-            handleCollisions(self);
-            updateParticles(self);
+			if (self.gamelost) {
+				//Menu display handled in renderOverlayText
+				updateParticles(self);
 
-            if (self.wave.enemies.length == 0 && !self.countdown){
-                setTimeout(function () {
-                    self.switchMode();
-                    self.countdown = false;
-                }, 4000);
-                self.countdown = true;
-                // TODO: display some message about defend mode completion
-                // ideally we'd display some stats here too, 
-                //  - time it took to beat round
-                //  - remaining artifact health
-                //  - money gained
-                //  - etc...
-                // It should also be setup so that instead of counting 
-                // down to mode switch, the player has to click through 
-                // the completion message...
-            }
+				//Add replay button?
+			}
+			else if (self.gamewon) {
+				//Menu display handled in renderOverlayText
+				updateParticles(self);
+				
+				//Add replay button?
+			}
+			else {
+				self.player.update();
+				self.wave.update();
+				handleCollisions(self);
+				updateParticles(self);
+
+				if (self.wave.enemies.length == 0 && !self.countdown){
+					setTimeout(function () {
+						self.switchMode();
+						self.countdown = false;
+					}, 4000);
+					self.countdown = true;
+					// TODO: display some message about defend mode completion
+					// ideally we'd display some stats here too, 
+					//  - time it took to beat round
+					//  - remaining artifact health
+					//  - money gained
+					//  - etc...
+					// It should also be setup so that instead of counting 
+					// down to mode switch, the player has to click through 
+					// the completion message...
+					
+					//Game won if defeated all enemies on last round
+					if (self.round >= 6) {
+						self.gamewon = true;
+					}
+				}
+			}
         } else if (self.mode === GAME_MODE.BUILD) {		
             // Move new structure around if one is waiting to be placed
             if (self.build.structure !== null) {
@@ -128,42 +149,64 @@ function Game(canvas, renderer) {
         CONTEXT2D.clearRect(0, 0, CANVAS2D.width, CANVAS2D.height);
         CONTEXT2D.restore();
 
-        // Draw any hud info on the 2d canvas
-        CONTEXT2D.font         = "20px Arial";
-        CONTEXT2D.textBaseline = "top";
-        CONTEXT2D.textAlign    = "center";
-        CONTEXT2D.fillStyle    = "#ffffff";
-        CONTEXT2D.fillText(
-            "Round #" + self.round,
-            CANVAS2D.width / 2, 0);
-        CONTEXT2D.fillText(
-            "Build Credits: " + self.player.money,
-            CANVAS2D.width / 2, 20);
-        CONTEXT2D.fillText(
-            "Artifact Health: " + Math.floor(self.level.artifact.health),
-            CANVAS2D.width / 2, 40);
-		CONTEXT2D.fillText(
-            "Player Health: " + Math.floor(self.player.health),
-            CANVAS2D.width / 2, 60);
-        if (self.countdown) {
-            CONTEXT2D.font = "40px Arial";
-            CONTEXT2D.textBaseline = "center";
-            CONTEXT2D.fillText("Defend phase complete!",
-                CANVAS2D.width / 2, CANVAS2D.height / 2);
-        }
+		if (self.gamelost) {
+			CONTEXT2D.font         = "40px Arial";
+			CONTEXT2D.textBaseline = "top";
+			CONTEXT2D.textAlign    = "center";
+			CONTEXT2D.fillStyle    = "#ffffff";
+			CONTEXT2D.fillText(
+				"GAME OVER",
+				CANVAS2D.width/2,
+				CANVAS2D.height/2);
+		}
+		else if (self.gamewon) {
+			CONTEXT2D.font         = "40px Arial";
+			CONTEXT2D.textBaseline = "top";
+			CONTEXT2D.textAlign    = "center";
+			CONTEXT2D.fillStyle    = "#ffffff";
+			CONTEXT2D.fillText(
+				"YOU WIN",
+				CANVAS2D.width/2,
+				CANVAS2D.height/2);
+		}
+		else {
+			// Draw any hud info on the 2d canvas
+			CONTEXT2D.font         = "20px Arial";
+			CONTEXT2D.textBaseline = "top";
+			CONTEXT2D.textAlign    = "center";
+			CONTEXT2D.fillStyle    = "#ffffff";
+			CONTEXT2D.fillText(
+				"Round #" + self.round,
+				CANVAS2D.width / 2, 0);
+			CONTEXT2D.fillText(
+				"Build Credits: " + self.player.money,
+				CANVAS2D.width / 2, 20);
+			CONTEXT2D.fillText(
+				"Artifact Health: " + Math.floor(self.level.artifact.health),
+				CANVAS2D.width / 2, 40);
+			CONTEXT2D.fillText(
+				"Player Health: " + Math.floor(self.player.health),
+				CANVAS2D.width / 2, 60);
+			if (self.countdown) {
+				CONTEXT2D.font = "40px Arial";
+				CONTEXT2D.textBaseline = "center";
+				CONTEXT2D.fillText("Defend phase complete!",
+					CANVAS2D.width / 2, CANVAS2D.height / 2);
+			}
 
-        // Draw instructions on the 2d canvas
-        if (self.instructions.draw) {
-            CONTEXT2D.font         = self.instructions.text.style.font;
-            CONTEXT2D.textBaseLine = self.instructions.text.style.textBaseLine;
-            CONTEXT2D.textAlign    = self.instructions.text.style.textAlign;
-            CONTEXT2D.fillStyle    = self.instructions.text.style.fillStyle;
+			// Draw instructions on the 2d canvas
+			if (self.instructions.draw) {
+				CONTEXT2D.font         = self.instructions.text.style.font;
+				CONTEXT2D.textBaseLine = self.instructions.text.style.textBaseLine;
+				CONTEXT2D.textAlign    = self.instructions.text.style.textAlign;
+				CONTEXT2D.fillStyle    = self.instructions.text.style.fillStyle;
 
-            CONTEXT2D.fillText(
-                self.instructions.text.text,
-                self.instructions.position.x,
-                self.instructions.position.y);
-        }
+				CONTEXT2D.fillText(
+					self.instructions.text.text,
+					self.instructions.position.x,
+					self.instructions.position.y);
+			}
+		}
     };
 
 
@@ -172,6 +215,7 @@ function Game(canvas, renderer) {
         // Build -> Defend
         if (self.mode === GAME_MODE.BUILD) {
             self.mode = GAME_MODE.DEFEND;
+			self.instructions.draw = false;
             self.round++;
 
             // Add the player
@@ -467,6 +511,9 @@ function Game(canvas, renderer) {
                 .delay(2000)
                 .start()
         };
+		
+		//Draw the game over screen the same way we do the instruction
+		game.gameover = false;
 
         // Initialize the camera
         game.camera = new THREE.PerspectiveCamera(FOV, ASPECT, NEAR, FAR);
