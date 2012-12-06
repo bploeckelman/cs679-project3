@@ -19,7 +19,8 @@ function Player (game) {
         MOVE_SPEED  = { x: 0.25, y: 0.25 },
         MAX_SPEED   = { x: 3, y: 3 },
         PLAYER_Z    = 0.2,
-        SPIN_SLOWDOWN = 0.85;
+        SPIN_SLOWDOWN = 0.85,
+        CONTROL_ROTATION = -Math.PI / 8;
 
 
     // Player methods ---------------------------------------------------------
@@ -36,7 +37,7 @@ function Player (game) {
         // Move the player by moving mouse to edges of screen
         if (game.input.mouseMove && !game.countdown) {
             var minEdge = new THREE.Vector2(
-                    window.innerWidth  / 2,  
+                    window.innerWidth  / 2,
                     window.innerHeight / 2),
                 maxEdge = new THREE.Vector2(
                     window.innerWidth  / 2,
@@ -60,9 +61,15 @@ function Player (game) {
                 dy = -1 * (game.input.mousePos.y - maxEdge.y) / MOUSE_PAN_SPEED;
             }
 
+            // Rotate the mouse movement vector by 45 deg for nicer control
+            var x = this.velocity.x + dx,
+                y = this.velocity.y + dy,
+                rotx = x * Math.cos(CONTROL_ROTATION) - y * Math.sin(CONTROL_ROTATION),
+                roty = x * Math.sin(CONTROL_ROTATION) + y * Math.cos(CONTROL_ROTATION);
+
             // Move player based on mouse movements
-            this.velocity.x += dx;
-            this.velocity.y += dy;
+            this.velocity.x = rotx;
+            this.velocity.y = roty;
         }
 
         // Slow the player down if they are spinning
