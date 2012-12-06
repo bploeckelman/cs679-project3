@@ -50,6 +50,7 @@ function Enemy (description) {
     this.health   = null;
     this.intersects = null;
 	this.type     = null;
+	this.damageAmount = 0.1;
 
     // Private variables ------------------------------------------------------
     var self = this;
@@ -104,8 +105,33 @@ function Enemy (description) {
                 self.target.y - self.mesh.position.y,
                 self.target.x - self.mesh.position.x);
         }
+		
+		//Check structure collisions
+		this.checkStructCollisions();
     };
 
+	this.checkStructCollisions = function() {
+		var enemyMin = new THREE.Vector2(
+            self.position.x - 9 / 2,
+            self.position.y - 9 / 2),
+        enemyMax = new THREE.Vector2(
+            self.position.x + 9 / 2,
+            self.position.y + 9 / 2);
+			
+		for (var i = 0; i < game.level.structures.length; i++) {
+			var struct = game.level.structures[i];
+
+			if (enemyMin.x > struct.positionMax.x
+			 || enemyMax.x < struct.positionMin.x
+			 || enemyMin.y > struct.positionMax.y
+			 || enemyMax.y < struct.positionMin.y) {
+				continue;
+			} else {
+				struct.takeDamage(self.damageAmount);
+			}
+		}
+	};
+	
 
     this.setFollowTarget = function (object) {
         var level = game.level;
@@ -128,11 +154,12 @@ function Enemy (description) {
     };
 
 
-    this.takeDamage = function (amount) { 
-        if ((self.health = self.health - amount) <= 0) {
+    this.takeDamage = function (amount) {
+		self.health = self.health - amount;
+        if (self.health <= 0) {
             self.die();
         } else {
-            // TODO: handle non-lethal damage
+            //TODO: Add damage effect?
         }
     };
 

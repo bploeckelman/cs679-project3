@@ -4,11 +4,12 @@
 function Player (game) {
 
     // Public properties ------------------------------------------------------
-    this.mesh     = null;
-    this.position = null;
-    this.velocity = null;
-    this.money    = null;
+    this.mesh     	= null;
+    this.position 	= null;
+    this.velocity 	= null;
+    this.money		= null;
     this.isSpinning = false;
+	this.health		= 10000;
     this.damageAmount = 10;
 
 
@@ -95,6 +96,31 @@ function Player (game) {
 			}
 		}
 	};
+	
+	
+	this.takeDamage = function (amount) {
+		self.health = self.health - amount;
+        if (self.health <= 0) {
+            self.die();
+        } else {
+            //TODO: Add damage effect?
+        }
+    };
+
+
+    this.die = function () {
+        spawnParticles(
+            // TODO: make a new particle system type for this
+            PARTICLES.ENEMY_DEATH,
+            self.mesh.position,
+            { color: new THREE.Color(0xff0000) },
+            game
+        );
+        game.scene.remove(self.mesh);
+		
+		//End game
+    };
+	
 
 	this.reset = function() {
 		self.mesh.position.set(PLAYER_SIZE.w / 2, PLAYER_SIZE.h / 2, PLAYER_Z);

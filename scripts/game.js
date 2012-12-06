@@ -74,11 +74,11 @@ function Game(canvas, renderer) {
 
         if (self.mode === GAME_MODE.DEFEND) {
             self.player.update(); 
-            //self.wave.update();
-            //handleCollisions(self);
-            //updateParticles(self);
+            self.wave.update();
+            handleCollisions(self);
+            updateParticles(self);
 
-            /*if (self.wave.enemies.length == 0 && !COUNTDOWN) {
+            if (self.wave.enemies.length == 0 && !COUNTDOWN) {
                 setTimeout(function () {
                     self.switchMode();
                     COUNTDOWN = false;
@@ -93,7 +93,7 @@ function Game(canvas, renderer) {
                 // It should also be setup so that instead of counting 
                 // down to mode switch, the player has to click through 
                 // the completion message...
-            }*/
+            }
         } else if (self.mode === GAME_MODE.BUILD) {		
             // Move new structure around if one is waiting to be placed
             if (self.build.structure !== null) {
@@ -196,17 +196,9 @@ function Game(canvas, renderer) {
             self.camera.position.set(500, 500, 200);
 			
 			// Display the menus
-			/*var texture = new THREE.ImageUtils.loadTexture("images/structMenuButton2.png");
-			var sprite = new THREE.Sprite( {
-				map: texture,
-				alignment: THREE.SpriteAlignment.topLeft, // otherwise position moves center of sprite
-				useScreenCoordinates: true  // might not actually be necessary
-			} );
-			sprite.position.set(0,0,0);
-			self.scene.add(sprite);*/
 			document.getElementById("buildMenus").style.display = "block";
 			document.getElementById("switchMode").style.display = "block";
-	    		updateMenus(self);
+	    	updateMenus(self);
         }
     };
 
@@ -390,17 +382,6 @@ function Game(canvas, renderer) {
         };
 		
 		// Initialize the menus
-		/*var texture = new THREE.ImageUtils.loadTexture("images/structMenuButton2.png");
-		var sprite = new THREE.Sprite( {
-			map: texture,
-			alignment: THREE.SpriteAlignment.topLeft, // otherwise position moves center of sprite
-			useScreenCoordinates: true  // might not actually be necessary
-		} );
-		sprite.position.set(0,0,0);
-		
-		alert("width: " + texture.image.width);
-		alert("height: " + texture.image.height);
-		game.scene.add(sprite);*/
 		game.menus = [];
 		var button = document.getElementById("initOneByOne");
 		button.setAttribute('data-structType', STRUCTURE_TYPES.ONE_BY_ONE);
@@ -512,6 +493,9 @@ function handleCollisions (game) {
             if (player.isSpinning) {
                 enemy.takeDamage(player.damageAmount);
             }
+			else {
+				player.takeDamage(enemy.damageAmount);
+			}
         }
 
         // Damage the artifact

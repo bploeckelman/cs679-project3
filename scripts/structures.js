@@ -28,6 +28,7 @@ function Structure (type, game) {
 	this.positionMin = null;
 	this.positionMax = null;
     this.gridindices = null;
+	this.health = null;
 
 
     // Private variables ------------------------------------------------------
@@ -102,20 +103,19 @@ function Structure (type, game) {
                 }
             }
 			
-			//self.position.x = self.node.position.x + self.mesh.position.x;
-			//self.position.y = self.node.position.y + self.mesh.position.y;
-			var posX = self.node.position.x + self.mesh.position.x,
-				posY = self.node.position.y + self.mesh.position.y;
+			self.position = new THREE.Vector2(
+				self.node.position.x + self.mesh.position.x,
+				self.node.position.y + self.mesh.position.y);
 			
 			//alert("mesh postion: " + self.mesh.position.x + "," + self.mesh.position.y);
 			//alert("node postion: " + self.node.position.x + "," + self.node.position.y);
 			//alert("center postion: " + posX + "," + posY);
 			self.positionMin = new THREE.Vector2(
-                posX - 2 - (game.level.size.cellw * STRUCTURE_SIZES[self.type]) / 2,
-                posY - 2 - (game.level.size.cellh * STRUCTURE_SIZES[self.type]) / 2);
+                self.position.x - 0 - (game.level.size.cellw * STRUCTURE_SIZES[self.type]) / 2,
+                self.position.y - 0 - (game.level.size.cellh * STRUCTURE_SIZES[self.type]) / 2);
             self.positionMax = new THREE.Vector2(
-                posX - 2 + (game.level.size.cellw * STRUCTURE_SIZES[self.type]) / 2,
-                posY - 2 + (game.level.size.cellh * STRUCTURE_SIZES[self.type]) / 2);
+                self.position.x - 2 + (game.level.size.cellw * STRUCTURE_SIZES[self.type]) / 2,
+                self.position.y - 2 + (game.level.size.cellh * STRUCTURE_SIZES[self.type]) / 2);
 			
             self.placed = true;
             game.level.territoryDirty = true; // Regenerate territory geometry
@@ -156,6 +156,32 @@ function Structure (type, game) {
             self.node.position.y = self.gridindices.y * game.level.size.cellh;
             self.node.position.z = 0.1; // Above grid
         }
+    };
+	
+	
+	this.takeDamage = function (amount) { 
+		self.health = self.health - amount;
+        if (self.health <= 0) {
+            self.die();
+        } else {
+            //TODO: Add damage effect?
+        }
+    };
+
+	
+    this.die = function () {
+		//FIXME: Particles not getting displayed
+		spawnParticles(
+            // TODO: make a new particle system type for this
+            PARTICLES.ENEMY_DEATH,
+            self.position,
+            { color: new THREE.Color(0xff0000) },
+            game
+        );
+        game.scene.remove(self.mesh);
+		game.scene.remove(self.node);
+		//TODO: Free up the grid cell
+		//	Remove from structures list
     };
 
 
@@ -226,6 +252,8 @@ function Structure (type, game) {
             })
             .onComplete(function () { })
             .start();
+			
+		structure.health = 10;
 
         console.log("Structure initialized.");
     })(self);
