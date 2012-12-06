@@ -100,6 +100,27 @@ function Structure (type, game) {
                 }
             }
 
+            // Add a little pop to the mesh to indicate that it is placed
+            new TWEEN.Tween({ scale: 1.0 })
+                .to({ scale: 0.8 }, 100)
+                .easing(TWEEN.Easing.Cubic.InOut)
+                .onUpdate(function () {
+                    self.mesh.scale.x = this.scale;
+                    self.mesh.scale.y = this.scale;
+                    self.mesh.scale.z = 1.0;
+                })
+                .onComplete(function () {
+                    new TWEEN.Tween({ scale: 0.8 })
+                        .to({ scale: 1.0 }, 100)
+                        .easing(TWEEN.Easing.Cubic.InOut)
+                        .onUpdate(function () {
+                            self.mesh.scale.x = this.scale;
+                            self.mesh.scale.y = this.scale;
+                            self.mesh.scale.z = 1.0;
+                        })
+                        .start();
+                })
+                .start();
 
             self.placed = true;
             game.level.territoryDirty = true; // Regenerate territory geometry

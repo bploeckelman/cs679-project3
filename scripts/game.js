@@ -268,9 +268,22 @@ function Game(canvas, renderer) {
                     if (self.build.structure !== null) {
                         // Reimburse the player for the stucture's cost
                         self.player.money += STRUCTURE_COSTS[self.build.structure.type];
-                        // Cleanup the mesh and drop the structure object
-                        self.scene.remove(self.build.structure.node);
-                        self.build.structure = null;
+
+                        // Shrink the mesh out of existence (opposite of new structure)
+                        new TWEEN.Tween({ scale: 1.0 })
+                            .to({ scale: 0.0 }, 350)
+                            .easing(TWEEN.Easing.Cubic.InOut)
+                            .onUpdate(function () {
+                                self.build.structure.mesh.scale.x = this.scale;
+                                self.build.structure.mesh.scale.y = this.scale;
+                                self.build.structure.mesh.scale.z = 1.0;
+                            })
+                            .onComplete(function () {
+                                // Cleanup the mesh and drop the structure object
+                                self.scene.remove(self.build.structure.node);
+                                self.build.structure = null;
+                            })
+                            .start();
                     }
                 }
             break;
