@@ -55,6 +55,8 @@ function Enemy (description) {
 	this.vision = 100;
 
 	this.path = null;
+	this.EPSILON = 4;
+	
 	
     // Private variables ------------------------------------------------------
     var self = this;
@@ -185,7 +187,7 @@ function Enemy (description) {
 			var now = self.position;
 			var target = self.target;
 			//console.log(target);
-			if ( Math.abs(target.x - now.x) < 1 && Math.abs(target.y - now.y) < 1 ) {
+			if ( Math.abs(target.x - now.x) < self.EPSILON && Math.abs(target.y - now.y) < self.EPSILON ) {
 				var next = new THREE.Vector2(self.path[0][0], self.path[0][1]).toRealCoords();
 				self.path.shift();
 				//console.log(target);
