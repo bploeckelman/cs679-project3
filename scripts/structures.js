@@ -118,13 +118,19 @@ function Structure (type, game) {
                 self.position.y - 2 + (game.level.size.cellh * STRUCTURE_SIZES[self.type]) / 2);
                 
             // Add a little pop to the mesh to indicate that it is placed
-            new TWEEN.Tween({ scale: 1.0 })
-                .to({ scale: 0.8 }, 100)
+            new TWEEN.Tween({
+                    scale: 1.0,
+                    red:   self.mesh.material.color.r,
+                    green: self.mesh.material.color.g,
+                    blue:  self.mesh.material.color.b
+                })
+                .to({ scale: 0.8, red: 0.0, green: 1.0, blue: 0.0 }, 100)
                 .easing(TWEEN.Easing.Cubic.InOut)
                 .onUpdate(function () {
                     self.mesh.scale.x = this.scale;
                     self.mesh.scale.y = this.scale;
                     self.mesh.scale.z = 1.0;
+                    self.mesh.material.color.setRGB(this.red, this.green, this.blue);
                 })
                 .onComplete(function () {
                     new TWEEN.Tween({ scale: 0.8 })
@@ -135,12 +141,46 @@ function Structure (type, game) {
                             self.mesh.scale.y = this.scale;
                             self.mesh.scale.z = 1.0;
                         })
+                        .onComplete(function () {
+                            self.mesh.material.color = STRUCTURE_COLORS[self.type].clone();
+                        })
                         .start();
                 })
                 .start();
 			
             self.placed = true;
             game.level.territoryDirty = true; // Regenerate territory geometry
+        } else { // !buildable
+            // Add a little pop to the mesh to indicate that it can't be placed
+            new TWEEN.Tween({
+                    scale: 1.0,
+                    red:   self.mesh.material.color.r,
+                    green: self.mesh.material.color.g,
+                    blue:  self.mesh.material.color.b
+                })
+                .to({ scale: 1.2, red: 1.0, green: 0.0, blue: 0.0 }, 100)
+                .easing(TWEEN.Easing.Cubic.InOut)
+                .onUpdate(function () {
+                    self.mesh.scale.x = this.scale;
+                    self.mesh.scale.y = this.scale;
+                    self.mesh.scale.z = 1.0;
+                    self.mesh.material.color.setRGB(this.red, this.green, this.blue);
+                })
+                .onComplete(function () {
+                    new TWEEN.Tween({ scale: 1.2 })
+                        .to({ scale: 1.0 }, 100)
+                        .easing(TWEEN.Easing.Cubic.InOut)
+                        .onUpdate(function () {
+                            self.mesh.scale.x = this.scale;
+                            self.mesh.scale.y = this.scale;
+                            self.mesh.scale.z = 1.0;
+                        })
+                        .onComplete(function () {
+                            self.mesh.material.color = STRUCTURE_COLORS[self.type].clone();
+                        })
+                        .start();
+                })
+                .start();
         }
 
         return buildable;
