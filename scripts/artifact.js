@@ -73,7 +73,7 @@ function Artifact (level, game) {
         artifact.clock = new THREE.Clock(true);
 
         // Set initial health
-        artifact.health = 100;
+        artifact.health = 10000;
 
         console.log("Artifact initialized.");
     })(self);
