@@ -61,12 +61,14 @@ window.onload = function initializeGame() {
     }, false);
 
     // Setup stats (fps and ms render time graphs)
+    /*
     stats = new Stats();
     stats.setMode(0); // mode 0 = fps, mode 1 = ms render time
     stats.domElement.style.position = "absolute";
     stats.domElement.style.top = canvas.offsetTop + 4 + "px";
     stats.domElement.style.left = canvas.offsetLeft + "px";
     document.getElementById("container").appendChild(stats.domElement);
+    */
 
     // Create the game object
     game = new Game(canvas, renderer);
@@ -74,11 +76,11 @@ window.onload = function initializeGame() {
     // Enter main loop
     // ---------------
     (function mainLoop() {
-        stats.begin();
+        //stats.begin();
         requestFrame(mainLoop);
         game.update();
         game.render();
-        stats.end();
+        //stats.end();
     })();
 
 };

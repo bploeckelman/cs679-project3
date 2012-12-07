@@ -58,6 +58,39 @@ function Game(canvas, renderer) {
         action4:  52, // 4
         esc:      27, // ESC
     };
+    this.instructionTween = new TWEEN.Tween({
+            y: window.innerHeight / 5,
+            starty: window.innerHeight / 5 
+        })
+        .to({ y: window.innerHeight * 9 / 10 }, 750)
+        .easing(TWEEN.Easing.Cubic.In)
+        .onUpdate(function () {
+            game.instructions.position.y = this.y;
+        })
+        .onComplete(function () {
+            if (game.instructions.line < game.instructions.lines.length) {
+                // Move to the next line of text
+                game.instructions.text = game.instructions.lines[game.instructions.line++];
+                game.instructions.tween.delay(game.instructions.text.style.delay);
+                // Reset the tween/text positions
+                this.y = this.starty;
+                game.instructions.position.y = this.starty;
+                // Restart the tween
+                game.instructions.tween.start();
+            } else {
+                // ... all out of instructions 
+                game.instructions.draw = false;
+                // Move back to first line of text
+                game.instructions.line = 0;
+                game.instructions.text = game.instructions.lines[game.instructions.line++];
+                game.instructions.tween.delay(game.instructions.text.style.delay);
+                // Reset the tween/text positions
+                this.y = this.starty;
+                game.instructions.position.y = this.starty;
+            }
+        })
+        .delay(2000)
+        .start()
 
 
     // Private variables ------------------------------------------------------
@@ -76,8 +109,18 @@ function Game(canvas, renderer) {
     // Game methods -----------------------------------------------------------
     // Update
     this.update = function () { 
+
         self.level.update();
         updateCamera(self);
+
+        // Only update camera/level and tweens if drawing instructions
+        if (self.instructions.draw) {
+            // Still need to update input for moving structures in build phase
+            if (self.build.structure !== null)
+                self.build.structure.move();
+            TWEEN.update();
+            return;
+        }
 
         if (self.mode === GAME_MODE.DEFEND) {
 			if (self.gamelost) {
@@ -122,11 +165,8 @@ function Game(canvas, renderer) {
 			}
         } else if (self.mode === GAME_MODE.BUILD) {		
             // Move new structure around if one is waiting to be placed
-            if (self.build.structure !== null) {
+            if (self.build.structure !== null)
                 self.build.structure.move();
-                // TODO: update structure color based on whether
-                // its in a buildable location or not
-            }
         }
 
         TWEEN.update();
@@ -438,6 +478,7 @@ function Game(canvas, renderer) {
         game.round = 1;
 
         // TODO: extract all this instruction setup out to a function
+        /*
         var style0 = { 
                 font: "50px Arial",
                 textBaseLine: "bottom",
@@ -459,32 +500,26 @@ function Game(canvas, renderer) {
                 fillStyle: "#ffffff",
                 delay: 5000,
             };
+            */
 
         game.instructions = {
             draw: true,
-            text: { text: "Flatland Defender", style: style0 },
+            text: { text: "Flatland Defender", style: styles.style0 },
             lines: [
-                { text: "A game by...", style: style1 },
-                { text: "Brian Ploeckelman,", style: style1 },
-                { text: "Eric Satterness,", style: style1 },
-                { text: "Shreedhar Hardikar,", style: style1 },
-                { text: "and Suli Yang...", style: style1 },
-                { text: "Made at UW-Madison", style: style1 },
-                { text: "For CS 679 Games Tech", style: style1 },
-                { text: "Fall Semester - 2012", style: style1 },
-                { text: "", style: style1 },
-                { text: "", style: style1 },
-                { text: "Start by pressing 1,2,3,4, or clicking a button\nto buy a new structure", style: style2 },
-                { text: "Then left-click to place the structure, or right-click to discard it", style: style2 },
-                { text: "You can only place structures within the green 'claimed' cells", style: style2 },
-                { text: "Placing structures expands your claimed territory", style: style2 },
-                { text: "Bigger structures expand it more than smaller ones, but cost more", style: style2 },
-                { text: "Structures also block enemies from getting to your artifact cube", style: style2 },
-                { text: "The more territory you claim, the more credits you get to build", style: style2 }
+                { text: "A game by...", style: styles.style1 },
+                { text: "Brian Ploeckelman,", style: styles.style1 },
+                { text: "Eric Satterness,", style: styles.style1 },
+                { text: "Shreedhar Hardikar,", style: styles.style1 },
+                { text: "and Suli Yang...", style: styles.style1 },
+                { text: "Made at UW-Madison", style: styles.style1 },
+                { text: "For CS 679 Games Tech", style: styles.style1 },
+                { text: "Fall Semester - 2012", style: styles.style1 },
             ],
             line: 0,
-            position: new THREE.Vector2(50, window.innerHeight / 5),
-            tween: new TWEEN.Tween({
+            position: new THREE.Vector2(25, window.innerHeight / 5),
+            tween: game.instructionTween
+            /*
+            new TWEEN.Tween({
                     y: window.innerHeight / 5,
                     starty: window.innerHeight / 5 
                 })
@@ -510,6 +545,7 @@ function Game(canvas, renderer) {
                 })
                 .delay(2000)
                 .start()
+                */
         };
 		
 		//Draw the game over screen the same way we do the instruction
@@ -585,18 +621,64 @@ function Game(canvas, renderer) {
 			createStructure(STRUCTURE_TYPES.FOUR_BY_FOUR, game);
 		};
 		game.menus.push(button);
+        // ------- End Build Button Handlers --------------
         document.getElementById("switchMode").onclick = function () {
-            if (self.mode === GAME_MODE.BUILD) {
+            if (self.mode === GAME_MODE.BUILD)
                 self.switchMode();
-            }
         };
+
         document.getElementById("switchMode").onmousedown = function () {
-            document.getElementsByTagName("input")[0].style.background = "url(images/button-pressed.png) center";
-            document.getElementsByTagName("input")[0].style.backgroundSize = "cover";
+            document.getElementById("switchMode")
+                    .getElementsByTagName("input")[0]
+                    .style.background = "url(images/button-pressed.png) center";
+            document.getElementById("switchMode")
+                    .getElementsByTagName("input")[0]
+                    .style.backgroundSize = "100% 100%";
         };
         document.getElementById("switchMode").onmouseup = function () {
-            document.getElementsByTagName("input")[0].style.background = "url(images/button.png) center";
-            document.getElementsByTagName("input")[0].style.backgroundSize = "cover";
+            document.getElementById("switchMode")
+                    .getElementsByTagName("input")[0]
+                    .style.background = "url(images/button.png) center";
+            document.getElementById("switchMode")
+                    .getElementsByTagName("input")[0]
+                    .style.backgroundSize = "100% 100%";
+        };
+
+        // --------- Help Buton handlers ------------------
+        document.getElementById("help").onclick = function () {
+            // Fill game.instructions with instruction text/styles
+            if (self.mode === GAME_MODE.BUILD) {
+                game.instructions = instructions.build;
+                game.instructions.line = 0;
+                game.instructions.text = game.instructions.lines[game.instructions.line++];
+                game.instructions.draw = true;
+                game.instructions.tween = game.instructionTween;
+                game.instructions.tween.start();
+            } else if (self.mode === GAME_MODE.DEFEND) {
+                game.instructions = instructions.defend;
+                game.instructions.line = 0;
+                game.instructions.text = game.instructions.lines[game.instructions.line++];
+                game.instructions.draw = true;
+                game.instructions.tween = game.instructionTween;
+                game.instructions.tween.start();
+            }
+        };
+
+        document.getElementById("help").onmousedown = function () {
+            document.getElementById("help")
+                    .getElementsByTagName("input")[0]
+                    .style.background = "url(images/button-pressed.png) center";
+            document.getElementById("help")
+                    .getElementsByTagName("input")[0]
+                    .style.backgroundSize = "100% 100%";
+        };
+        document.getElementById("help").onmouseup = function () {
+            document.getElementById("help")
+                    .getElementsByTagName("input")[0]
+                    .style.background = "url(images/button.png) center";
+            document.getElementById("help")
+                    .getElementsByTagName("input")[0]
+                    .style.backgroundSize = "100% 100%";
         };
 
         CANVAS2D = document.createElement("canvas");
