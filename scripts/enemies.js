@@ -289,8 +289,16 @@ function Enemy (description) {
 		if ("position" in description && description["position"] instanceof THREE.Vector3) {
         	enemy.position = description["position"].clone();      
         } else {
-        	enemy.position = new THREE.Vector3(Math.floor(Math.random() * 1000),
-                        Math.floor(Math.random() * 1000), 0.1);
+            // Only start at edges
+            var edge = Math.floor(Math.random() * 4);
+            switch (edge) {
+                case 0: enemy.position = new THREE.Vector3(Math.floor(Math.random() * 1000), 0, 0.1); break;
+                case 1: enemy.position = new THREE.Vector3(Math.floor(Math.random() * 1000), 999, 0.1); break;
+                case 2: enemy.position = new THREE.Vector3(0, Math.floor(Math.random() * 1000), 0.1); break;
+                case 3: enemy.position = new THREE.Vector3(999, Math.floor(Math.random() * 999), 0.1); break;
+                default: enemy.position = new THREE.Vector3(Math.floor(Math.random() * 1000),
+                            Math.floor(Math.random() * 1000), 0.1);
+            }
         }
         
         if ("size" in description && description["size"] instanceof THREE.Vector2) {
