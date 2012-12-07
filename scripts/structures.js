@@ -240,6 +240,17 @@ function Structure (type, game) {
             { color: new THREE.Color(0xff0000) },
             game
         );
+		
+		var structureSize = STRUCTURE_SIZES[self.type];
+
+        for (var i=0; i < structureSize; ++i) {
+            for (var j=0; j < structureSize; ++j) {
+                var indices = { x: self.gridindices.x + i, y: self.gridindices.y + j };
+				game.level.grid[indices.y][indices.x] = 0;
+                game.level.cells[indices.y][indices.x].occupied = false;
+
+            }
+        }
 		game.level.structures.splice(arrayIndex, 1);
         game.scene.remove(self.mesh);
 		game.scene.remove(self.node);

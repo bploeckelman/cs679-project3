@@ -76,7 +76,12 @@ function Enemy (description) {
             break;
         case ENEMY_TYPES.ARTIPHILE :
 			//self.setFollowTarget(game.level.artifact.mesh.position);
-			self.progressAlongPath();
+			if ( self.path == null ) {
+				self.setPathToTake(self.findPathTo(game.level.artifact.mesh.position));
+			}
+			else {
+				self.progressAlongPath();
+			}
             break;
 			var range = {
 				x1: Math.max(0,from.x-self.vision),
@@ -108,14 +113,14 @@ function Enemy (description) {
         }
 
         // Integrate velocity
-        //if (!self.intersects) {
+        if (!self.intersects) {
             self.position.addSelf(self.velocity);
 
             // Rotate towards target
             self.mesh.rotation.z = Math.atan2(
                 self.target.y - self.mesh.position.y,
                 self.target.x - self.mesh.position.x);
-        //}
+        }
 		
 		//Check structure collisions
 		this.checkStructCollisions();
@@ -136,20 +141,29 @@ function Enemy (description) {
 			 || enemyMax.x < struct.positionMin.x
 			 || enemyMin.y > struct.positionMax.y
 			 || enemyMax.y < struct.positionMin.y) {
-				continue;
+				continue;				
 			} else {
 				struct.takeDamage(self.structDamage, i);
 			}
 		}
+		
+		var pos = self.position.toGridCoords();
+		console.log(pos);
+		if (game.level.grid[pos.y][pos.x] == 1) {
+			self.intersects = true;
+		}
+		else {
+			self.intersects = false;
+		}
 	};
 	
 	this.setPathToTake = function (path) {
-		if (path != null && path.length > 1) {
+		if (path != null && path.length >= 1) {
 			//path.reverse();
 			self.path = path;
-			console.log(path);
+			//console.log(path);
 		}
-		console.log(path);
+		//console.log(path);
 		
 	};
 
@@ -174,12 +188,12 @@ function Enemy (description) {
 			if ( Math.abs(target.x - now.x) < 1 && Math.abs(target.y - now.y) < 1 ) {
 				var next = new THREE.Vector2(self.path[0][0], self.path[0][1]).toRealCoords();
 				self.path.shift();
-				console.log(target);
-				console.log(now);
+				//console.log(target);
+				//console.log(now);
 				self.target = next;
 			}
 		}
-		console.log(self.path.length);
+		//console.log(self.path.length);
 	};
 	
 	this.findPathTo = function (object) {
@@ -200,7 +214,13 @@ function Enemy (description) {
                 path = PF.Util.smoothenPath(grid, path);
                 return path;
             }
-            //console.log(path, self.target);
+			else {
+				path.push([from.x, from.y]);
+				path.push([to.x, to.y]);
+				//console.log(path);
+				return path
+			}
+            
         }
     };
 	

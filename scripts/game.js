@@ -744,9 +744,7 @@ function handleCollisions (game) {
          || playerMax.x < enemyMin.x
          || playerMin.y > enemyMax.y
          || playerMax.y < enemyMin.y) {
-            enemy.intersects = false;
         } else {
-            enemy.intersects = true;
             if (player.isSpinning) {
                 enemy.takeDamage(player.enemyDamage);
             }
