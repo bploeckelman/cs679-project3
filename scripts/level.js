@@ -174,8 +174,11 @@ function Level (game) {
 
                 // Enable building for some initial buildable region
                 // Note: this isn't really ideal, but it gets the job done
-                if (x >= 44 && x <= 55 && y >= 44 && y <= 55) {
-                    level.cells[y][x].buildable = true;
+                if (x >= 41 && x <= 58 && y >= 41 && y <= 58) {
+                    if (x >= 48 && x <= 51 && y >= 48 && y <= 51) // keep center region non-buildable
+                        level.cells[y][x].buildable = false;
+                    else
+                        level.cells[y][x].buildable = true;
                 }
             }
         }

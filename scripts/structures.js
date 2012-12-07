@@ -12,7 +12,8 @@ var STRUCTURE_TYPES = {
         new THREE.Color(0x2e8b57),
         new THREE.Color(0x3cb371),
         new THREE.Color(0x8fbc8f)
-    ];
+    ],
+    TEXTURE = THREE.ImageUtils.loadTexture("images/structure.png");
     
 // ----------------------------------------------------------------------------
 // Structure object
@@ -99,7 +100,10 @@ function Structure (type, game) {
                     else                                  iy = y;
 
                     // Set cell as buildable
-                    game.level.cells[iy][ix].buildable = true;
+                    if (ix >= 48 && ix <= 51 && iy >= 48 && iy <= 51) // keep center region non-buildable
+                        game.level.cells[iy][ix].buildable = false;
+                    else
+                        game.level.cells[iy][ix].buildable = true;
                 }
             }
 			
@@ -302,7 +306,11 @@ function Structure (type, game) {
         // Create structure mesh
         structure.mesh = new THREE.Mesh(
             new THREE.PlaneGeometry(width, height),
-            new THREE.MeshBasicMaterial({ color: STRUCTURE_COLORS[structure.type] })
+            new THREE.MeshBasicMaterial({
+                color: STRUCTURE_COLORS[structure.type],
+                map: TEXTURE,
+                transparent: true
+            })
         );
 
         // Create a node to offset the mesh "center" to bottom left
