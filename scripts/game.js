@@ -529,7 +529,10 @@ function Game(canvas, renderer) {
         // Note: add other properties for current structure type
         //       and build menu and other stuff like that
         game.build = {
-            structure: null
+            structure: null,
+            readyTween1: null,
+            readyTween2: null,
+            tweenStarted: false
         };
 		
 		// Initialize the menus
@@ -612,8 +615,17 @@ function Game(canvas, renderer) {
 
         // ------- "Done Building" Button Handlers ------------
         document.getElementById("switchMode").onclick = function () {
-            if (self.mode === GAME_MODE.BUILD)
+            if (self.mode === GAME_MODE.BUILD) {
+                // Reset the 'done building' button
+                if (self.build.tweenStarted) {
+                    self.build.readyTween1.stop();
+                    self.build.readyTween2.stop();
+                    self.build.readyTween1 = null;
+                    self.build.readyTween2 = null;
+                    self.build.tweenStarted = false;
+                }
                 self.switchMode();
+            }
         };
         document.getElementById("switchMode").onmousedown = function () {
             document.getElementById("switchMode")
@@ -758,6 +770,8 @@ function handleCollisions (game) {
 
 // Update Menus ---------------------------------------------------------------
 function updateMenus (game) {
+    var allDisabled = true;
+
 	for (var i=0; i<game.menus.length; i++)
 	{
 		var menuButton = game.menus[i];
@@ -766,13 +780,56 @@ function updateMenus (game) {
 		menuButton.disabled = false;
 		
 		var structCost = menuButton.getAttribute("data-structCost");
-		if (game.player.money < structCost) {
+		if (game.player.money < structCost)
 			menuButton.disabled = true;
-        }
 
         menuButton.onmousedown();
         menuButton.onmouseup();
+
+        if (!menuButton.disabled) 
+            allDisabled = false;
 	}
+
+    if (allDisabled && !game.build.tweenStarted) {
+        var button = document.getElementById("switchMode").getElementsByTagName("input")[0];
+        var startSize1 = new THREE.Vector2(200, 64);
+        var tween1 = new TWEEN.Tween({
+                width: startSize1.x,
+                height: startSize1.y
+            })
+            .to({ width: 256, height: 100 }, 450)
+            .onUpdate(function () {
+                button.style.width  = "" + this.width  + "px";
+                button.style.height = "" + this.height + "px";
+            })
+            .onComplete(function () {
+                this.width  = startSize1.x;
+                this.height = startSize1.y;
+            });
+
+        var startSize2 = new THREE.Vector2(256, 100);
+        var tween2 = new TWEEN.Tween({
+                width: startSize2.x,
+                height: startSize2.y 
+            })
+            .to({ width: startSize1.x, height: startSize1.y }, 450)
+            .onUpdate(function () {
+                button.style.width  = "" + this.width  + "px";
+                button.style.height = "" + this.height + "px";
+            })
+            .onComplete(function () {
+                this.width  = startSize2.x;
+                this.height = startSize2.y;
+            });
+
+        tween1.chain(tween2);
+        tween2.chain(tween1);
+
+        game.build.readyTween1 = tween1;
+        game.build.readyTween2 = tween2;
+        game.build.readyTween1.start();
+        game.build.tweenStarted = true;
+    }
 }
 
 
