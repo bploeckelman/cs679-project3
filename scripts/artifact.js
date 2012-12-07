@@ -103,7 +103,7 @@ function Artifact (level, game) {
         artifact.clock = new THREE.Clock(true);
 
         // Set initial health
-        artifact.health = 10000;
+        artifact.health = 200;
 
         // Setup pulse tweens
         artifact.pulse = { time: 500, minScale: 0.75, maxScale: 1.0, tweenIn: null, tweenOut: null };

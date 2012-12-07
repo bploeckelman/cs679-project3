@@ -215,7 +215,7 @@ function Player (game) {
             self.position.x + 9 / 2,
             self.position.y + 9 / 2);
 
-        player.money = 10000;
+        player.money = 250;
 
         // Create "breathing" animation
         var BREATHE_TIME = 1000,
