@@ -275,6 +275,13 @@ function Game(canvas, renderer) {
 			//Hide the menus
 			document.getElementById("buildMenus").style.display = "none";
 			document.getElementById("switchMode").style.display = "none";
+
+            // Zoom in a bit
+            new TWEEN.Tween({ zoom: self.camera.position.z })
+                .to({ zoom: self.camera.position.z - 100 }, 2000)
+                .easing(TWEEN.Easing.Cubic.InOut)
+                .onUpdate(function () { self.camera.position.z = this.zoom; })
+                .start();
 		}
         // Defend -> Build
         else if (self.mode === GAME_MODE.DEFEND) {

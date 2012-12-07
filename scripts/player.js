@@ -15,6 +15,7 @@ function Player (game) {
 
     // Private variables ------------------------------------------------------
     var self = this,
+        TEXTURE     = THREE.ImageUtils.loadTexture("images/player.png"),
         PLAYER_SIZE = { w: 9, h: 9 },
         MOVE_SPEED  = { x: 0.25, y: 0.25 },
         MAX_SPEED   = { x: 3, y: 3 },
@@ -173,7 +174,12 @@ function Player (game) {
         // Create player mesh
         player.mesh = new THREE.Mesh(
             new THREE.PlaneGeometry(PLAYER_SIZE.w, PLAYER_SIZE.h),
-            new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true })
+            new THREE.MeshBasicMaterial({
+                color: 0xff0000,
+                map: TEXTURE,
+                transparent: true,
+                wireframe: false
+            })
         );
         player.mesh.position.set(PLAYER_SIZE.w / 2, PLAYER_SIZE.h / 2, PLAYER_Z);
         player.position = player.mesh.position;
