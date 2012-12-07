@@ -13,12 +13,24 @@ div#switchMode {
 div#buildMenus {
 	position: absolute;
 	bottom: 10px;
-	left: 10px;
+    /* Note: this centers the buttons nicely in a reasonably sized window
+       it breaks things in a smal window though, 
+       might want to go back to left aligned? */
+    width: 80%;
+	left: 50%;
+    margin-left: -650px;
 }
 
 button.menuItem {
 	padding: 10px;
+    color: white;
+    font-size: 1.1em;
 	font-weight: bold;
+    width: 320px;
+    border: 0 none;
+    vertical-align: middle;
+    background: url("images/button.png") center;
+    background-size: 100% 100%;
 }
 
 input.endBuild {
