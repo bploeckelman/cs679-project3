@@ -261,8 +261,14 @@ function Game(canvas, renderer) {
             // Add the player
             if (self.player === null)
                 self.player = new Player(self);
-            self.player.position = self.level.artifact.mesh.position.clone();
-            self.player.mesh.position = self.level.artifact.mesh.position.clone();
+			var posX = self.level.artifact.mesh.position.x,
+				posY = self.level.artifact.mesh.position.y + 12,
+				posZ = self.level.artifact.mesh.position.z,
+				pos = new THREE.Vector3(posX, posY, posZ);
+			self.player.position = pos;
+			self.player.mesh.position = pos;
+            /*self.player.position = self.level.artifact.mesh.position.clone();
+            self.player.mesh.position = self.level.artifact.mesh.position.clone();*/
             self.scene.add(self.player.mesh);
 
             // Create a new wave of enemies
@@ -761,14 +767,28 @@ function handleCollisions (game) {
 
         // Damage the artifact
         // TODO: this is temporary, remove when collision is merged
-        if (enemyMin.x >= 480 && enemyMax.x <= 520
+        /*if (enemyMin.x >= 480 && enemyMax.x <= 520
          && enemyMin.y >= 480 && enemyMax.y <= 520) {
             if (game.level.artifact.health > 0) {
                 game.level.artifact.health -= 0.1;
                 if (game.level.artifact.health <= 0)
                     game.level.artifact.die();
             }
+        }*/
+		if (enemyMin.x > game.level.artifact.positionMax.x
+         || enemyMax.x < game.level.artifact.positionMin.x
+         || enemyMin.y > game.level.artifact.positionMax.y
+         || enemyMax.y < game.level.artifact.positionMin.y) {
+            //Do nothing
         }
+		else {
+			//Stop enemy
+			enemy.velocity.x = -enemy.velocity.x;
+			enemy.velocity.y = -enemy.velocity.y;
+			enemy.mesh.position = enemy.position.addSelf(enemy.velocity).clone();
+			
+			game.level.artifact.takeDamage(enemy.artifactDamage);
+		}
     }
 }
 

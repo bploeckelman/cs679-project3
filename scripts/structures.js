@@ -255,9 +255,7 @@ function Structure (type, game) {
 		game.scene.remove(self.node);
 		
 		//Free up the grid cell
-		var structureSize = STRUCTURE_SIZES[self.type],
-            structureArea = STRUCTURE_AREAS[self.type],
-            occupiedCellIndices = [];
+		var structureSize = STRUCTURE_SIZES[self.type];
 
         for (var i=0; i < structureSize; ++i) {
             for (var j=0; j < structureSize; ++j) {

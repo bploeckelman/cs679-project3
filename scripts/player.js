@@ -25,7 +25,7 @@ function Player (game) {
 
 
     // Player methods ---------------------------------------------------------
-    this.update = function () {
+    this.update = function () {	
         // Move the player using keyboard
         if      (game.input.panLeft)  this.velocity.x -= MOVE_SPEED.x;
         else if (game.input.panRight) this.velocity.x += MOVE_SPEED.x;
@@ -91,6 +91,7 @@ function Player (game) {
 		
 		//Check structure collisions
 		this.checkStructCollisions();
+		this.checkArtifactCollision();
 
         // Handle spin move
         if (game.input.spin && !this.isSpinning) {
@@ -134,6 +135,28 @@ function Player (game) {
 				self.velocity.y = -self.velocity.y;
 				self.mesh.position = self.position.addSelf(self.velocity).clone();
 			}
+		}
+	};
+	
+	this.checkArtifactCollision = function() {
+		var playerMin = new THREE.Vector2(
+            self.position.x - 9 / 2,
+            self.position.y - 9 / 2),
+        playerMax = new THREE.Vector2(
+            self.position.x + 9 / 2,
+            self.position.y + 9 / 2);
+			
+		var artifact = game.level.artifact;
+
+		if (playerMin.x > artifact.positionMax.x
+		 || playerMax.x < artifact.positionMin.x
+		 || playerMin.y > artifact.positionMax.y
+		 || playerMax.y < artifact.positionMin.y) {
+			//Do nothing
+		} else {
+			self.velocity.x = -self.velocity.x;
+			self.velocity.y = -self.velocity.y;
+			self.mesh.position = self.position.addSelf(self.velocity).clone();
 		}
 	};
 	
