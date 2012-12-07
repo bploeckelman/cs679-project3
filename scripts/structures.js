@@ -29,7 +29,9 @@ function Structure (type, game) {
 	this.positionMin = null;
 	this.positionMax = null;
     this.gridindices = null;
-	this.health = null;
+	this.health      = null;
+    this.maxHealth   = null;
+    this.damageEffect = null;
 
 
     // Private variables ------------------------------------------------------
@@ -227,10 +229,14 @@ function Structure (type, game) {
 	
 	this.takeDamage = function (amount, arrayIndex) { 
 		self.health = self.health - amount;
+
         if (self.health <= 0) {
             self.die(arrayIndex);
         } else {
-            //TODO: Add damage effect?
+            if (!self.damageEffect.running) {
+                self.damageEffect.tween.start();
+                self.damageEffect.running = true;
+            }
         }
     };
 
@@ -304,13 +310,10 @@ function Structure (type, game) {
         height -= 2;
 
         // Create structure mesh
+        var structureColor = STRUCTURE_COLORS[structure.type];
         structure.mesh = new THREE.Mesh(
             new THREE.PlaneGeometry(width, height),
-            new THREE.MeshBasicMaterial({
-                color: STRUCTURE_COLORS[structure.type],
-                map: TEXTURE,
-                transparent: true
-            })
+            new THREE.MeshBasicMaterial({ color: structureColor, map: TEXTURE, transparent: true })
         );
 
         // Create a node to offset the mesh "center" to bottom left
@@ -344,7 +347,25 @@ function Structure (type, game) {
             .onComplete(function () { })
             .start();
 			
-		structure.health = 10;
+        structure.maxHealth = 10;
+		structure.health = structure.maxHealth;
+
+        // Initialize damage effect tween
+        structure.damageEffect = {
+            running: false,
+            tween: null
+        };
+        structure.damageEffect.tween = new TWEEN.Tween({ red: structureColor.r })
+            .to({ red: 1 }, 400)
+            .onUpdate(function () {
+                structure.mesh.material.color.setRGB(this.red, structureColor.g, structureColor.b);
+            })
+            .onComplete(function () {
+                var red = Math.max(1 - (structure.health / structure.maxHealth), structureColor.r);
+                structure.mesh.material.color.setRGB(red, structureColor.g, structureColor.b);
+                this.red = structureColor.r;
+                structure.damageEffect.running = false;
+            });
 
         console.log("Structure initialized.");
     })(self);
