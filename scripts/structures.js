@@ -8,7 +8,7 @@ var STRUCTURE_TYPES = {
     STRUCTURE_SIZES = [1,2,3,4],
     STRUCTURE_AREAS = [3,6,8,10], // These territory sizes work pretty well
     STRUCTURE_COLORS = [
-        new THREE.Color(0x008000),
+        new THREE.Color(0xff0000),
         new THREE.Color(0x2e8b57),
         new THREE.Color(0x3cb371),
         new THREE.Color(0x8fbc8f)
@@ -109,6 +109,21 @@ function Structure (type, game) {
                 }
             }
 			
+			var all_buildable = true;
+			for(var y = 0; y < game.level.size.ycells; y++){
+				for(var x = 0; x < game.level.size.xcells; x++){
+				 if (x >= 48 && x <= 51 && y >= 48 && y <= 51){ // keep center region non-buildable
+                        continue;
+					}else if(game.level.cells[y][x].buildable === false){
+						all_buildable = false;
+					}
+				}
+			}
+					
+			if(all_buildable){
+				game.gamewon = true;
+			}
+				
 			self.position = new THREE.Vector2(
 				self.node.position.x + self.mesh.position.x,
 				self.node.position.y + self.mesh.position.y);
@@ -155,6 +170,8 @@ function Structure (type, game) {
                 .start();
 			
             self.placed = true;
+			var snd = new Audio("sounds/structure_built.wav");
+			snd.play();
             game.level.territoryDirty = true; // Regenerate territory geometry
         } else { // !buildable
             // Add a little pop to the mesh to indicate that it can't be placed
@@ -234,6 +251,8 @@ function Structure (type, game) {
             self.die(arrayIndex);
         } else {
             if (!self.damageEffect.running) {
+				var snd = new Audio("sounds/structure_damage.wav");
+				snd.play();
                 self.damageEffect.tween.start();
                 self.damageEffect.running = true;
             }
@@ -243,6 +262,8 @@ function Structure (type, game) {
 	
     this.die = function (arrayIndex) {
 		//FIXME: Particles not getting displayed
+		var snd = new Audio("sounds/structure_die.wav");
+		snd.play();
 		spawnParticles(
             PARTICLES.ENEMY_DEATH,
             self.mesh.position,
@@ -356,7 +377,7 @@ function Structure (type, game) {
             tween: null
         };
         structure.damageEffect.tween = new TWEEN.Tween({ red: structureColor.r })
-            .to({ red: 1 }, 400)
+            .to({ red: 1 }, 300)
             .onUpdate(function () {
                 structure.mesh.material.color.setRGB(this.red, structureColor.g, structureColor.b);
             })

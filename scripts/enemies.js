@@ -151,7 +151,7 @@ function Enemy (description) {
 		}
 		
 		var pos = self.position.toGridCoords();
-		console.log(pos);
+	//	console.log(pos);
 		if (game.level.grid[pos.y][pos.x] == 1) {
 			self.intersects = true;
 		}
@@ -256,13 +256,16 @@ function Enemy (description) {
         if (self.health <= 0) {
             self.die();
         } else {
-            //TODO: Add damage effect?
+			var snd = new Audio("sounds/enemy_damage.wav");
+			snd.play();
         }
     };
 
 
     this.die = function () {
         // TODO: add any special handling for enemy death here
+		var snd = new Audio("sounds/enemy_die.wav");
+		snd.play();
     };
 
 

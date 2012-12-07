@@ -11,6 +11,7 @@ function Player (game) {
     this.isSpinning = false;
 	this.health		= 100;
     this.enemyDamage = 10;
+	this.damageEffect = null;
 
 
     // Private variables ------------------------------------------------------
@@ -166,7 +167,13 @@ function Player (game) {
         if (self.health <= 0) {
             self.die();
         } else {
-            //TODO: Add damage effect?
+            //Damage effect?
+			 if (!self.damageEffect.running) {
+			    var snd = new Audio("sounds/player_hurt.wav");
+				snd.play();
+                self.damageEffect.tween.start();
+                self.damageEffect.running = true;
+            }
         }
     };
 
@@ -194,11 +201,12 @@ function Player (game) {
 
     // Constructor ------------------------------------------------------------
     (this.init = function (player) {
+		var playerColor =  new THREE.Color(0xff0000);
         // Create player mesh
         player.mesh = new THREE.Mesh(
             new THREE.PlaneGeometry(PLAYER_SIZE.w, PLAYER_SIZE.h),
             new THREE.MeshBasicMaterial({
-                color: 0xff0000,
+                color: playerColor,
                 map: TEXTURE,
                 transparent: true,
                 wireframe: false
@@ -216,6 +224,21 @@ function Player (game) {
             self.position.y + 9 / 2);
 
         player.money = 250;
+		
+		player.damageEffect = {
+            running: false,
+            tween: null
+        };
+        player.damageEffect.tween = new TWEEN.Tween({ red: playerColor.r })
+            .to({ red: 0 }, 500)
+            .onUpdate(function () {
+                player.mesh.material.color.setRGB(this.red, playerColor.g, playerColor.b);
+            })
+            .onComplete(function () {
+				player.mesh.material.color = playerColor;
+				player.damageEffect.running = false;
+            });
+
 
         // Create "breathing" animation
         var BREATHE_TIME = 1000,
