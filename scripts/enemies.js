@@ -52,7 +52,12 @@ function Enemy (description) {
 	this.type     = null;
 	this.structDamage = 0.02;
 	this.playerDamage = 0.1;
+	this.vision = 100;
 
+	this.path = null;
+	this.EPSILON = 4;
+	
+	
     // Private variables ------------------------------------------------------
     var self = this;
 
@@ -72,8 +77,20 @@ function Enemy (description) {
             }
             break;
         case ENEMY_TYPES.ARTIPHILE :
-            self.setFollowTarget(game.level.artifact.mesh.position);
+			//self.setFollowTarget(game.level.artifact.mesh.position);
+			if ( self.path == null ) {
+				self.setPathToTake(self.findPathTo(game.level.artifact.mesh.position));
+			}
+			else {
+				self.progressAlongPath();
+			}
             break;
+			var range = {
+				x1: Math.max(0,from.x-self.vision),
+				x2: Math.min(level.size.xcells, from.x+self.vision),
+				y1: Math.max(0,from.y-self.vision),
+				y2: Math.min(level.size.xcells, from.y+self.vision),
+			}; 
         }
     	
         // Follow the target
@@ -126,20 +143,98 @@ function Enemy (description) {
 			 || enemyMax.x < struct.positionMin.x
 			 || enemyMin.y > struct.positionMax.y
 			 || enemyMax.y < struct.positionMin.y) {
-				continue;
+				continue;				
 			} else {
 				struct.takeDamage(self.structDamage, i);
 			}
 		}
+		
+		var pos = self.position.toGridCoords();
+		console.log(pos);
+		if (game.level.grid[pos.y][pos.x] == 1) {
+			self.intersects = true;
+		}
+		else {
+			self.intersects = false;
+		}
 	};
 	
+	this.setPathToTake = function (path) {
+		if (path != null && path.length >= 1) {
+			//path.reverse();
+			self.path = path;
+			//console.log(path);
+		}
+		//console.log(path);
+		
+	};
 
-    this.setFollowTarget = function (object) {
-        var level = game.level;
-        var grid = new PF.Grid(level.size.xcells, level.size.ycells, level.grid);
-        var finder = new PF.AStarFinder();
+	this.progressAlongPath = function () {
+		if (self.path == null) {
+			self.target = null;
+			return;
+		}
+		else if (self.target == null) {
+			self.path.shift();
+			self.target = new THREE.Vector2(self.path[0][0], self.path[0][1]).toRealCoords();
+			self.path.shift();
+			//console.log(self.path[0]);
+		}
+		else if (self.path.length == 0) {
+			//console.log(self.path[0]);
+		}
+		else {
+			var now = self.position;
+			var target = self.target;
+			//console.log(target);
+			if ( Math.abs(target.x - now.x) < self.EPSILON && Math.abs(target.y - now.y) < self.EPSILON ) {
+				var next = new THREE.Vector2(self.path[0][0], self.path[0][1]).toRealCoords();
+				self.path.shift();
+				//console.log(target);
+				//console.log(now);
+				self.target = next;
+			}
+		}
+		//console.log(self.path.length);
+	};
+	
+	this.findPathTo = function (object) {
+        var level = game.level;		
         var from = self.position.toGridCoords();
         var to = object.toGridCoords();
+		
+		
+        var grid = new PF.Grid(level.size.xcells, level.size.ycells, level.grid);
+        var finder = new PF.AStarFinder();
+        
+        if ( from == null || to == null ) {
+            self.target = null;
+        } else {
+            var path = finder.findPath(from.x, from.y, to.x, to.y, grid);
+
+            if (path.length > 1 ) { 
+                path = PF.Util.smoothenPath(grid, path);
+                return path;
+            }
+			else {
+				path.push([from.x, from.y]);
+				path.push([to.x, to.y]);
+				//console.log(path);
+				return path
+			}
+            
+        }
+    };
+	
+	
+    this.setFollowTarget = function (object) {
+        var level = game.level;		
+        var from = self.position.toGridCoords();
+        var to = object.toGridCoords();
+		
+		
+        var grid = new PF.Grid(level.size.xcells, level.size.ycells, level.grid);
+        var finder = new PF.AStarFinder();
         
         if ( from == null || to == null ) {
             self.target = null;
@@ -222,7 +317,27 @@ function Enemy (description) {
         } else {
         	enemy.type = ENEMY_TYPES.BRUTE;
         }
+		if ("vision" in description) {
+        	enemy.vision = description["vision"];
+        } else {
+        	enemy.vision = 100;
+        }
         
+		//Do specific initial things based on the type of enemy
+		switch(self.type) {
+			case ENEMY_TYPES.BRUTE :
+				break;
+			case ENEMY_TYPES.LUNATIC :
+				self.target = new THREE.Vector2(
+				Math.floor(Math.random() * 1000),
+				Math.floor(Math.random() * 1000));
+				break;
+			case ENEMY_TYPES.ARTIPHILE :
+				//self.setFollowTarget(game.level.artifact.mesh.position);
+				self.setPathToTake(self.findPathTo(game.level.artifact.mesh.position));
+				break;
+		};
+		
         // Generate a mesh for the enemy
         // TODO: pass an enemy type value in the description object
         //       and pick from predefined geometry based on that 
