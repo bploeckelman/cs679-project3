@@ -50,8 +50,7 @@ function Enemy (description) {
     this.health   = null;
     this.intersects = null;
 	this.type     = null;
-	//this.structDamage = 0.02;
-	this.structDamage = 10;
+	this.structDamage = 0.02;
 	this.playerDamage = 0.1;
 
     // Private variables ------------------------------------------------------
