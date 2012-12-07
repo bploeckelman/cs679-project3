@@ -256,8 +256,8 @@ function Enemy (description) {
         if (self.health <= 0) {
             self.die();
         } else {
-			var snd = new Audio("sounds/enemy_damage.wav");
-			snd.play();
+			//var snd = new Audio("sounds/enemy_damage.wav");
+			//snd.play();
         }
     };
 

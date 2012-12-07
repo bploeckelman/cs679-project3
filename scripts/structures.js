@@ -8,7 +8,7 @@ var STRUCTURE_TYPES = {
     STRUCTURE_SIZES = [1,2,3,4],
     STRUCTURE_AREAS = [3,6,8,10], // These territory sizes work pretty well
     STRUCTURE_COLORS = [
-        new THREE.Color(0xff0000),
+        new THREE.Color(0x008000),
         new THREE.Color(0x2e8b57),
         new THREE.Color(0x3cb371),
         new THREE.Color(0x8fbc8f)

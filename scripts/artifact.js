@@ -11,6 +11,7 @@ function Artifact (level, game) {
     this.clock  = null;
     this.health = null;
     this.pulse  = null;
+    this.runningDamageEffect = false;
 
     // Private variables ------------------------------------------------------
     var self = this,
@@ -46,7 +47,21 @@ function Artifact (level, game) {
         if (self.health <= 0) {
             self.die();
         } else {
-            //TODO: Add damage effect?
+            // Run damage effect
+            if (!self.runningDamageEffect) {
+                spawnParticles(
+                    // TODO: make a new particle system type for this
+                    PARTICLES.ENEMY_DEATH,
+                    self.mesh.position,
+                    { color: new THREE.Color(0xf0f000) },
+                    game
+                );
+                var snd = new Audio("sounds/artifact_damage.wav");
+                snd.play();
+
+                setTimeout(function () { self.runningDamageEffect = false; }, 1500);
+                self.runningDamageEffect = true;
+            }
         }
     };
 	
@@ -61,6 +76,8 @@ function Artifact (level, game) {
         );
         game.scene.remove(self.mesh);
 		
+        var snd = new Audio("sounds/artifact_die.wav");
+        snd.play();
 		//End game
 		game.gamelost = true;
     };

@@ -92,7 +92,7 @@ function Player (game) {
 		
 		//Check structure collisions
 		this.checkStructCollisions();
-		this.checkArtifactCollision();
+		//this.checkArtifactCollision();
 
         // Handle spin move
         if (game.input.spin && !this.isSpinning) {
@@ -112,6 +112,9 @@ function Player (game) {
                 .onUpdate(function () { self.mesh.rotation.z = this.rot; })
                 .onComplete(function () { self.isSpinning = false; })
                 .start();
+
+            var snd = new Audio("sounds/saw1.mp3");
+            snd.play();
         }
     };
 	
@@ -188,6 +191,8 @@ function Player (game) {
         );
         game.scene.remove(self.mesh);
 		
+        var snd = new Audio("sounds/player_die.wav");
+        snd.play();
 		//End game
 		game.gamelost = true;
     };
@@ -229,13 +234,14 @@ function Player (game) {
             running: false,
             tween: null
         };
-        player.damageEffect.tween = new TWEEN.Tween({ red: playerColor.r })
-            .to({ red: 0 }, 500)
+        player.damageEffect.tween = new TWEEN.Tween({ red: 1 })
+            .to({ red: 0 }, 250)
             .onUpdate(function () {
                 player.mesh.material.color.setRGB(this.red, playerColor.g, playerColor.b);
             })
             .onComplete(function () {
-				player.mesh.material.color = playerColor;
+                this.red = 1;
+				player.mesh.material.color.setRGB(1, playerColor.g, playerColor.b);
 				player.damageEffect.running = false;
             });
 
