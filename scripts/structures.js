@@ -234,9 +234,8 @@ function Structure (type, game) {
     this.die = function (arrayIndex) {
 		//FIXME: Particles not getting displayed
 		spawnParticles(
-            // TODO: make a new particle system type for this
             PARTICLES.ENEMY_DEATH,
-            self.position,
+            self.mesh.position,
             { color: new THREE.Color(0xff0000) },
             game
         );
@@ -254,7 +253,20 @@ function Structure (type, game) {
 		game.level.structures.splice(arrayIndex, 1);
         game.scene.remove(self.mesh);
 		game.scene.remove(self.node);
-		//TODO: Free up the grid cell
+		
+		//Free up the grid cell
+		var structureSize = STRUCTURE_SIZES[self.type],
+            structureArea = STRUCTURE_AREAS[self.type],
+            occupiedCellIndices = [];
+
+        for (var i=0; i < structureSize; ++i) {
+            for (var j=0; j < structureSize; ++j) {
+                var indices = { x: self.gridindices.x + i, y: self.gridindices.y + j };
+
+                game.level.cells[indices.y][indices.x].occupied = false;
+            }
+        }
+		game.level.territoryDirty = true; // Regenerate territory geometry
     };
 
 

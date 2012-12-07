@@ -477,31 +477,7 @@ function Game(canvas, renderer) {
         game.mode = GAME_MODE.BUILD;
         game.round = 1;
 
-        // TODO: extract all this instruction setup out to a function
-        /*
-        var style0 = { 
-                font: "50px Arial",
-                textBaseLine: "bottom",
-                textAlign: "left",
-                fillStyle: "#ff100f",
-                delay: 2000,
-            },  
-            style1 = {
-                font: "25px Arial",
-                textBaseLine: "bottom",
-                textAlign: "left",
-                fillStyle: "#ffffff",
-                delay: 1000,
-            },  
-            style2 = {
-                font: "25px Arial",
-                textBaseLine: "bottom",
-                textAlign: "left",
-                fillStyle: "#ffffff",
-                delay: 5000,
-            };
-            */
-
+        // Set initial 'instructions'
         game.instructions = {
             draw: true,
             text: { text: "Flatland Defender", style: styles.style0 },
@@ -518,34 +494,6 @@ function Game(canvas, renderer) {
             line: 0,
             position: new THREE.Vector2(25, window.innerHeight / 5),
             tween: game.instructionTween
-            /*
-            new TWEEN.Tween({
-                    y: window.innerHeight / 5,
-                    starty: window.innerHeight / 5 
-                })
-                .to({ y: window.innerHeight * 9 / 10 }, 750)
-                .easing(TWEEN.Easing.Cubic.In)
-                .onUpdate(function () {
-                    game.instructions.position.y = this.y;
-                })
-                .onComplete(function () {
-                    if (game.instructions.line < game.instructions.lines.length) {
-                        // Move to the next line of text
-                        game.instructions.text = game.instructions.lines[game.instructions.line++];
-                        game.instructions.tween.delay(game.instructions.text.style.delay);
-                        // Reset the tween/text positions
-                        this.y = this.starty;
-                        game.instructions.position.y = this.starty;
-                        // Restart the tween
-                        game.instructions.tween.start();
-                    } else {
-                        // ... all out of instructions 
-                        game.instructions.draw = false;
-                    }
-                })
-                .delay(2000)
-                .start()
-                */
         };
 		
 		//Draw the game over screen the same way we do the instruction
@@ -581,7 +529,10 @@ function Game(canvas, renderer) {
         // Note: add other properties for current structure type
         //       and build menu and other stuff like that
         game.build = {
-            structure: null
+            structure: null,
+            readyTween1: null,
+            readyTween2: null,
+            tweenStarted: false
         };
 		
 		// Initialize the menus
@@ -593,6 +544,16 @@ function Game(canvas, renderer) {
 			self.input.menuClicked = true;
 			createStructure(STRUCTURE_TYPES.ONE_BY_ONE, game);
 		};
+        button.onmousedown = function () {
+            document.getElementById("initOneByOne").style.background = "url(images/button-pressed.png) center";
+            document.getElementById("initOneByOne").style.backgroundSize = "100% 100%";
+        };
+        button.onmouseup = function () {
+            if (!document.getElementById("initOneByOne").disabled) {
+                document.getElementById("initOneByOne").style.background = "url(images/button.png) center";
+                document.getElementById("initOneByOne").style.backgroundSize = "100% 100%";
+            }
+        };
 		game.menus.push(button);
 		
 		button = document.getElementById("initTwoByTwo");
@@ -602,6 +563,16 @@ function Game(canvas, renderer) {
 			self.input.menuClicked = true;
 			createStructure(STRUCTURE_TYPES.TWO_BY_TWO, game);
 		};
+        button.onmousedown = function () {
+            document.getElementById("initTwoByTwo").style.background = "url(images/button-pressed.png) center";
+            document.getElementById("initTwoByTwo").style.backgroundSize = "100% 100%";
+        };
+        button.onmouseup = function () {
+            if (!document.getElementById("initTwoByTwo").disabled) {
+                document.getElementById("initTwoByTwo").style.background = "url(images/button.png) center";
+                document.getElementById("initTwoByTwo").style.backgroundSize = "100% 100%";
+            }
+        };
 		game.menus.push(button);
 		
 		button = document.getElementById("initThreeByThree");
@@ -611,6 +582,16 @@ function Game(canvas, renderer) {
 			self.input.menuClicked = true;
 			createStructure(STRUCTURE_TYPES.THREE_BY_THREE, game);
 		};
+        button.onmousedown = function () {
+            document.getElementById("initThreeByThree").style.background = "url(images/button-pressed.png) center";
+            document.getElementById("initThreeByThree").style.backgroundSize = "100% 100%";
+        };
+        button.onmouseup = function () {
+            if (!document.getElementById("initThreeByThree").disabled) {
+                document.getElementById("initThreeByThree").style.background = "url(images/button.png) center";
+                document.getElementById("initThreeByThree").style.backgroundSize = "100% 100%";
+            }
+        };
 		game.menus.push(button);
 		
 		button = document.getElementById("initFourByFour");
@@ -620,13 +601,32 @@ function Game(canvas, renderer) {
 			self.input.menuClicked = true;
 			createStructure(STRUCTURE_TYPES.FOUR_BY_FOUR, game);
 		};
-		game.menus.push(button);
-        // ------- End Build Button Handlers --------------
-        document.getElementById("switchMode").onclick = function () {
-            if (self.mode === GAME_MODE.BUILD)
-                self.switchMode();
+        button.onmousedown = function () {
+            document.getElementById("initFourByFour").style.background = "url(images/button-pressed.png) center";
+            document.getElementById("initFourByFour").style.backgroundSize = "100% 100%";
         };
+        button.onmouseup = function () {
+            if (!document.getElementById("initFourByFour").disabled) {
+                document.getElementById("initFourByFour").style.background = "url(images/button.png) center";
+                document.getElementById("initFourByFour").style.backgroundSize = "100% 100%";
+            }
+        };
+		game.menus.push(button);
 
+        // ------- "Done Building" Button Handlers ------------
+        document.getElementById("switchMode").onclick = function () {
+            if (self.mode === GAME_MODE.BUILD) {
+                // Reset the 'done building' button
+                if (self.build.tweenStarted) {
+                    self.build.readyTween1.stop();
+                    self.build.readyTween2.stop();
+                    self.build.readyTween1 = null;
+                    self.build.readyTween2 = null;
+                    self.build.tweenStarted = false;
+                }
+                self.switchMode();
+            }
+        };
         document.getElementById("switchMode").onmousedown = function () {
             document.getElementById("switchMode")
                     .getElementsByTagName("input")[0]
@@ -663,7 +663,6 @@ function Game(canvas, renderer) {
                 game.instructions.tween.start();
             }
         };
-
         document.getElementById("help").onmousedown = function () {
             document.getElementById("help")
                     .getElementsByTagName("input")[0]
@@ -769,6 +768,8 @@ function handleCollisions (game) {
 
 // Update Menus ---------------------------------------------------------------
 function updateMenus (game) {
+    var allDisabled = true;
+
 	for (var i=0; i<game.menus.length; i++)
 	{
 		var menuButton = game.menus[i];
@@ -779,7 +780,54 @@ function updateMenus (game) {
 		var structCost = menuButton.getAttribute("data-structCost");
 		if (game.player.money < structCost)
 			menuButton.disabled = true;
+
+        menuButton.onmousedown();
+        menuButton.onmouseup();
+
+        if (!menuButton.disabled) 
+            allDisabled = false;
 	}
+
+    if (allDisabled && !game.build.tweenStarted) {
+        var button = document.getElementById("switchMode").getElementsByTagName("input")[0];
+        var startSize1 = new THREE.Vector2(200, 64);
+        var tween1 = new TWEEN.Tween({
+                width: startSize1.x,
+                height: startSize1.y
+            })
+            .to({ width: 256, height: 100 }, 450)
+            .onUpdate(function () {
+                button.style.width  = "" + this.width  + "px";
+                button.style.height = "" + this.height + "px";
+            })
+            .onComplete(function () {
+                this.width  = startSize1.x;
+                this.height = startSize1.y;
+            });
+
+        var startSize2 = new THREE.Vector2(256, 100);
+        var tween2 = new TWEEN.Tween({
+                width: startSize2.x,
+                height: startSize2.y 
+            })
+            .to({ width: startSize1.x, height: startSize1.y }, 450)
+            .onUpdate(function () {
+                button.style.width  = "" + this.width  + "px";
+                button.style.height = "" + this.height + "px";
+            })
+            .onComplete(function () {
+                this.width  = startSize2.x;
+                this.height = startSize2.y;
+            });
+
+        tween1.chain(tween2);
+        tween2.chain(tween1);
+
+        game.build.readyTween1 = tween1;
+        game.build.readyTween2 = tween2;
+        game.build.readyTween1.start();
+        game.build.tweenStarted = true;
+    }
 }
 
 
@@ -942,6 +990,9 @@ function discardBuildStructure (game) {
                 })
                 .start();
         }
+
+        // Update menu buttons
+        updateMenus(game);
     }
 };
 
