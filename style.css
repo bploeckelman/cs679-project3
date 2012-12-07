@@ -14,3 +14,15 @@ button.menuItem {
 	padding: 10px;
 	font-weight: bold;
 }
+
+input.endBuild {
+	padding: 10px;
+	font-weight: bold;
+    width: 128px;
+    height: 128px;
+    border: 0 none;
+    vertical-align: middle;
+    background: url("images/button.png") center;
+    background-size: cover;
+}
+

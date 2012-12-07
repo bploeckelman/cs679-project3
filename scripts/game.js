@@ -590,6 +590,14 @@ function Game(canvas, renderer) {
                 self.switchMode();
             }
         };
+        document.getElementById("switchMode").onmousedown = function () {
+            document.getElementsByTagName("input")[0].style.background = "url(images/button-pressed.png) center";
+            document.getElementsByTagName("input")[0].style.backgroundSize = "cover";
+        };
+        document.getElementById("switchMode").onmouseup = function () {
+            document.getElementsByTagName("input")[0].style.background = "url(images/button.png) center";
+            document.getElementsByTagName("input")[0].style.backgroundSize = "cover";
+        };
 
         CANVAS2D = document.createElement("canvas");
         CANVAS2D.id = "canvas2d";
