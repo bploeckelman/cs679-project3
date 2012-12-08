@@ -256,16 +256,13 @@ function Enemy (description) {
         if (self.health <= 0) {
             self.die();
         } else {
-			//var snd = new Audio("sounds/enemy_damage.wav");
-			//snd.play();
+			//new Audio("sounds/enemy_damage.wav").play();
         }
     };
 
 
     this.die = function () {
-        // TODO: add any special handling for enemy death here
-		var snd = new Audio("sounds/enemy_die.wav");
-		snd.play();
+		new Audio("sounds/enemy_die.wav").play();
     };
 
 

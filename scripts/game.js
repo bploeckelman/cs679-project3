@@ -129,8 +129,7 @@ function Game(canvas, renderer) {
 				//Menu display handled in renderOverlayText
 				if(!self.lost_music_played){
 					self.lost_music_played = true;
-				 var snd = new Audio("sounds/end_game.wav");
-				snd.play();
+                new Audio("sounds/end_game.wav").play();
 				}
 				
 				updateParticles(self);
@@ -141,8 +140,7 @@ function Game(canvas, renderer) {
 				//Menu display handled in renderOverlayText
 				if(!self.won_music_played){
 					self.won_music_played = true;
-				var snd = new Audio("sounds/won_game.mp3");
-				snd.play();
+				new Audio("sounds/won_game.mp3").play();
 				}
 				
 				updateParticles(self);
@@ -308,8 +306,7 @@ function Game(canvas, renderer) {
             self.mode = GAME_MODE.BUILD;
 			
 			//Play happy, winning sound
-			 var snd = new Audio("sounds/defence_complete.mp3");
-			 snd.play();
+            new Audio("sounds/defence_complete.mp3").play();
 
             // Add money based on territorial control + artifact health
             self.player.money += self.level.territory.length * 0.15
@@ -574,8 +571,6 @@ function Game(canvas, renderer) {
 		button.setAttribute('data-structCost', STRUCTURE_COSTS[STRUCTURE_TYPES.ONE_BY_ONE]);
 		button.onclick = function () {
 			self.input.menuClicked = true;
-			var snd = new Audio("sounds/click.wav");
-			snd.play();
 			createStructure(STRUCTURE_TYPES.ONE_BY_ONE, game);
 		};
         button.onmousedown = function () {
@@ -595,8 +590,6 @@ function Game(canvas, renderer) {
 		button.setAttribute('data-structCost', STRUCTURE_COSTS[STRUCTURE_TYPES.TWO_BY_TWO]);
 		button.onclick = function () {
 			self.input.menuClicked = true;
-			var snd = new Audio("sounds/click.wav");
-			snd.play();
 			createStructure(STRUCTURE_TYPES.TWO_BY_TWO, game);
 		};
         button.onmousedown = function () {
@@ -616,8 +609,6 @@ function Game(canvas, renderer) {
 		button.setAttribute('data-structCost', STRUCTURE_COSTS[STRUCTURE_TYPES.THREE_BY_THREE]);
 		button.onclick = function () {
 			self.input.menuClicked = true;
-			var snd = new Audio("sounds/click.wav");
-			snd.play();
 			createStructure(STRUCTURE_TYPES.THREE_BY_THREE, game);
 		};
         button.onmousedown = function () {
@@ -637,8 +628,6 @@ function Game(canvas, renderer) {
 		button.setAttribute('data-structCost', STRUCTURE_COSTS[STRUCTURE_TYPES.FOUR_BY_FOUR]);
 		button.onclick = function () {
 			self.input.menuClicked = true;
-			var snd = new Audio("sounds/click.wav");
-			snd.play();
 			createStructure(STRUCTURE_TYPES.FOUR_BY_FOUR, game);
 		};
         button.onmousedown = function () {
@@ -749,7 +738,8 @@ function createStructure (structureType, game) {
             if (game.player.money >= STRUCTURE_COSTS[structureType]) {
                 game.player.money -= STRUCTURE_COSTS[structureType];
                 game.build.structure = new Structure(structureType, game);
-                // TODO: play some animation or sound
+
+                new Audio("sounds/click.wav").play();
             }
         }
 		

@@ -57,8 +57,7 @@ function Artifact (level, game) {
                     { color: new THREE.Color(0xf0f000) },
                     game
                 );
-                var snd = new Audio("sounds/artifact_damage.wav");
-                snd.play();
+                new Audio("sounds/artifact_damage.wav").play();
 
                 setTimeout(function () { self.runningDamageEffect = false; }, 1500);
                 self.runningDamageEffect = true;
@@ -76,9 +75,8 @@ function Artifact (level, game) {
             game
         );
         game.scene.remove(self.mesh);
-		
-        var snd = new Audio("sounds/artifact_die.wav");
-        snd.play();
+        new Audio("sounds/artifact_die.wav").play();
+
 		//End game
 		game.gamelost = true;
     };

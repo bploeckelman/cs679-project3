@@ -170,10 +170,11 @@ function Structure (type, game) {
                 .start();
 			
             self.placed = true;
-			var snd = new Audio("sounds/structure_built.wav");
-			snd.play();
             game.level.territoryDirty = true; // Regenerate territory geometry
+			new Audio("sounds/structure_built_yes.wav").play();
         } else { // !buildable
+			new Audio("sounds/structure_built_no.wav").play();
+
             // Add a little pop to the mesh to indicate that it can't be placed
             new TWEEN.Tween({
                     scale: 1.0,
@@ -251,8 +252,7 @@ function Structure (type, game) {
             self.die(arrayIndex);
         } else {
             if (!self.damageEffect.running) {
-				var snd = new Audio("sounds/structure_damage.wav");
-				snd.play();
+				new Audio("sounds/structure_damage.wav").play();
                 self.damageEffect.tween.start();
                 self.damageEffect.running = true;
             }
@@ -262,8 +262,8 @@ function Structure (type, game) {
 	
     this.die = function (arrayIndex) {
 		//FIXME: Particles not getting displayed
-		var snd = new Audio("sounds/structure_die.wav");
-		snd.play();
+		new Audio("sounds/structure_die.wav").play();
+
 		spawnParticles(
             PARTICLES.ENEMY_DEATH,
             self.mesh.position,

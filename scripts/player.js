@@ -118,7 +118,7 @@ function Player (game) {
             
             // Rotate the player
             var ROT_AMOUNT = -8 * Math.PI,
-                ROT_TIME   = 500;
+                ROT_TIME   = 1000;
 
 			setTimeout(function () { self.canSpin = true; }, 2 * ROT_TIME);
             new TWEEN.Tween({ rot: 0 })
@@ -128,8 +128,7 @@ function Player (game) {
                 .onComplete(function () { self.isSpinning = false;})
                 .start();
 
-            var snd = new Audio("sounds/saw1.mp3");
-            snd.play();
+            new Audio("sounds/saw.wav").play();
         }
     };
 	
@@ -187,8 +186,7 @@ function Player (game) {
         } else {
             //Damage effect?
 			 if (!self.damageEffect.running) {
-			    var snd = new Audio("sounds/player_hurt.wav");
-				snd.play();
+			    new Audio("sounds/player_hurt.wav").play();
                 self.damageEffect.tween.start();
                 self.damageEffect.running = true;
             }
@@ -206,8 +204,8 @@ function Player (game) {
         );
         game.scene.remove(self.mesh);
 		
-        var snd = new Audio("sounds/player_die.wav");
-        snd.play();
+        new Audio("sounds/player_die.wav").play();
+
 		//End game
 		game.gamelost = true;
     };
