@@ -33,6 +33,7 @@ function Structure (type, game) {
     this.maxHealth   = null;
     this.damageEffect = null;
 
+    this.collidable = true;
 
     // Private variables ------------------------------------------------------
     var self = this;
@@ -245,7 +246,7 @@ function Structure (type, game) {
     };
 	
 	
-	this.takeDamage = function (amount, arrayIndex) { 
+    this.takeDamage = function (amount, arrayIndex) { 
 		self.health = self.health - amount;
 
         if (self.health <= 0) {
@@ -298,6 +299,12 @@ function Structure (type, game) {
 		game.level.territoryDirty = true; // Regenerate territory geometry
     };
 
+    /*
+     * Checks to see if this object collides with the passed object
+     */
+    this.collidesWith = function (object) {
+        
+    };
 
     // Constructor ------------------------------------------------------------
     (this.init = function (structure) {

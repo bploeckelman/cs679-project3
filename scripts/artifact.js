@@ -5,18 +5,18 @@ function Artifact (level, game) {
 
     // Public properties ------------------------------------------------------
     this.mesh   = null;
-	this.position = null;
-	this.positionMin = null;
-	this.positionMax = null;
+    this.position = null;
     this.clock  = null;
     this.health = null;
     this.pulse  = null;
     this.runningDamageEffect = false;
-
+    
+    this.collidable = true;
+    this.boundingBox = null;
+    
     // Private variables ------------------------------------------------------
     var self = this,
         accum = 0;
-
 
     // Level methods ----------------------------------------------------------
     this.update = function () {
@@ -42,7 +42,7 @@ function Artifact (level, game) {
     };
 
 
-	this.takeDamage = function (amount) {
+    this.takeDamage = function (amount) {
 		if (!self.runningDamageEffect)
 			self.health = self.health - amount;
         if (self.health <= 0) {
@@ -77,10 +77,16 @@ function Artifact (level, game) {
         game.scene.remove(self.mesh);
         new Audio("sounds/artifact_die.wav").play();
 
-		//End game
-		game.gamelost = true;
+        //End game
+        game.gamelost = true;
     };
 
+    /*
+     * Checks to see if this object collides with the passed object
+     */
+    this.collidesWith = function (object) {
+        
+    };
 
     // Constructor ------------------------------------------------------------
     (this.init = function (artifact) {
@@ -97,16 +103,17 @@ function Artifact (level, game) {
             })
         );
 		
-		artifact.position = new THREE.Vector2(
-			level.size.width / 2,
-			level.size.height / 2);		
-		artifact.positionMin = new THREE.Vector2(
-			artifact.position.x + 10 - (level.size.cellw * 4) / 2,
-			artifact.position.y + 10 - (level.size.cellh * 4) / 2);
-		artifact.positionMax = new THREE.Vector2(
-			artifact.position.x - 15 + (level.size.cellw * 4) / 2,
-			artifact.position.y - 15 + (level.size.cellh * 4) / 2);
-
+        artifact.position = new THREE.Vector2(
+                level.size.width / 2,
+                level.size.height / 2);
+                
+        artifact.boundingBox = new Rect(
+                artifact.position.x + 10 - (level.size.cellw * 4) / 2,
+                artifact.position.y + 10 - (level.size.cellh * 4) / 2,
+                artifact.position.x - 15 + (level.size.cellw * 4) / 2,
+                artifact.position.y - 15 + (level.size.cellh * 4) / 2
+            );
+     
         artifact.mesh.position.set(
             level.size.width  / 2,
             level.size.height / 2,

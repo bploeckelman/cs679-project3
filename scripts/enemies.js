@@ -49,14 +49,15 @@ function Enemy (description) {
     this.target   = null;
     this.health   = null;
     this.intersects = null;
-	this.type     = null;
-	this.structDamage = 0.02;
-	this.artifactDamage = 10;
-	this.playerDamage = 0.1;
-	this.vision = 100;
+    this.type     = null;
+    this.structDamage = 0.02;
+    this.artifactDamage = 10;
+    this.playerDamage = 0.1;
+    this.vision = 100;
 
-	this.path = null;
-	this.EPSILON = 4;
+    this.path = null;
+    
+    this.EPSILON = 4;
 	
 	
     // Private variables ------------------------------------------------------
@@ -129,103 +130,103 @@ function Enemy (description) {
 		this.checkStructCollisions();
     };
 
-	this.checkStructCollisions = function() {
-		var enemyMin = new THREE.Vector2(
-            self.position.x - 9 / 2,
-            self.position.y - 9 / 2),
-        enemyMax = new THREE.Vector2(
-            self.position.x + 9 / 2,
-            self.position.y + 9 / 2);
-			
-		for (var i = 0; i < game.level.structures.length; i++) {
-			var struct = game.level.structures[i];
+    this.checkStructCollisions = function() {
+            var enemyMin = new THREE.Vector2(
+        self.position.x - 9 / 2,
+        self.position.y - 9 / 2),
+    enemyMax = new THREE.Vector2(
+        self.position.x + 9 / 2,
+        self.position.y + 9 / 2);
 
-			if (enemyMin.x > struct.positionMax.x
-			 || enemyMax.x < struct.positionMin.x
-			 || enemyMin.y > struct.positionMax.y
-			 || enemyMax.y < struct.positionMin.y) {
-				continue;				
-			} else {
-				struct.takeDamage(self.structDamage, i);
-			}
-		}
-		
-		var pos = self.position.toGridCoords();
-	//	console.log(pos);
-		if (game.level.grid[pos.y][pos.x] == 1) {
-			self.intersects = true;
-		}
-		else {
-			self.intersects = false;
-		}
-	};
-	
-	this.setPathToTake = function (path) {
-		if (path != null && path.length >= 1) {
-			//path.reverse();
-			self.path = path;
-			//console.log(path);
-		}
-		//console.log(path);
-		
-	};
+            for (var i = 0; i < game.level.structures.length; i++) {
+                    var struct = game.level.structures[i];
 
-	this.progressAlongPath = function () {
-		if (self.path == null) {
-			self.target = null;
-			return;
-		}
-		else if (self.target == null) {
-			self.path.shift();
-			self.target = new THREE.Vector2(self.path[0][0], self.path[0][1]).toRealCoords();
-			self.path.shift();
-			//console.log(self.path[0]);
-		}
-		else if (self.path.length == 0) {
-			//console.log(self.path[0]);
-		}
-		else {
-			var now = self.position;
-			var target = self.target;
-			//console.log(target);
-			if ( Math.abs(target.x - now.x) < self.EPSILON && Math.abs(target.y - now.y) < self.EPSILON ) {
-				var next = new THREE.Vector2(self.path[0][0], self.path[0][1]).toRealCoords();
-				self.path.shift();
-				//console.log(target);
-				//console.log(now);
-				self.target = next;
-			}
-		}
-		//console.log(self.path.length);
-	};
-	
-	this.findPathTo = function (object) {
-        var level = game.level;		
-        var from = self.position.toGridCoords();
-        var to = object.toGridCoords();
-		
-		
-        var grid = new PF.Grid(level.size.xcells, level.size.ycells, level.grid);
-        var finder = new PF.AStarFinder();
-        
-        if ( from == null || to == null ) {
-            self.target = null;
-        } else {
-            var path = finder.findPath(from.x, from.y, to.x, to.y, grid);
-
-            if (path.length > 1 ) { 
-                path = PF.Util.smoothenPath(grid, path);
-                return path;
+                    if (enemyMin.x > struct.positionMax.x
+                     || enemyMax.x < struct.positionMin.x
+                     || enemyMin.y > struct.positionMax.y
+                     || enemyMax.y < struct.positionMin.y) {
+                            continue;				
+                    } else {
+                            struct.takeDamage(self.structDamage, i);
+                    }
             }
-			else {
-				path.push([from.x, from.y]);
-				path.push([to.x, to.y]);
-				//console.log(path);
-				return path
-			}
-            
-        }
+
+            var pos = self.position.toGridCoords();
+    //	console.log(pos);
+            if (game.level.grid[pos.y][pos.x] == 1) {
+                    self.intersects = true;
+            }
+            else {
+                    self.intersects = false;
+            }
     };
+
+    this.setPathToTake = function (path) {
+            if (path != null && path.length >= 1) {
+                    //path.reverse();
+                    self.path = path;
+                    //console.log(path);
+            }
+            //console.log(path);
+
+    };
+
+    this.progressAlongPath = function () {
+            if (self.path == null) {
+                    self.target = null;
+                    return;
+            }
+            else if (self.target == null) {
+                    self.path.shift();
+                    self.target = new THREE.Vector2(self.path[0][0], self.path[0][1]).toRealCoords();
+                    self.path.shift();
+                    //console.log(self.path[0]);
+            }
+            else if (self.path.length == 0) {
+                    //console.log(self.path[0]);
+            }
+            else {
+                    var now = self.position;
+                    var target = self.target;
+                    //console.log(target);
+                    if ( Math.abs(target.x - now.x) < self.EPSILON && Math.abs(target.y - now.y) < self.EPSILON ) {
+                            var next = new THREE.Vector2(self.path[0][0], self.path[0][1]).toRealCoords();
+                            self.path.shift();
+                            //console.log(target);
+                            //console.log(now);
+                            self.target = next;
+                    }
+            }
+            //console.log(self.path.length);
+    };
+
+    this.findPathTo = function (object) {
+    var level = game.level;		
+    var from = self.position.toGridCoords();
+    var to = object.toGridCoords();
+
+
+    var grid = new PF.Grid(level.size.xcells, level.size.ycells, level.grid);
+    var finder = new PF.AStarFinder();
+
+    if ( from == null || to == null ) {
+        self.target = null;
+    } else {
+        var path = finder.findPath(from.x, from.y, to.x, to.y, grid);
+
+        if (path.length > 1 ) { 
+            path = PF.Util.smoothenPath(grid, path);
+            return path;
+        }
+                    else {
+                            path.push([from.x, from.y]);
+                            path.push([to.x, to.y]);
+                            //console.log(path);
+                            return path
+                    }
+
+    }
+};
 	
 	
     this.setFollowTarget = function (object) {
@@ -265,6 +266,12 @@ function Enemy (description) {
 		new Audio("sounds/enemy_die.wav").play();
     };
 
+    /*
+     * Checks to see if this object collides with the passed object
+     */
+    this.collidesWith = function (object) {
+        
+    };
 
     // Constructor ------------------------------------------------------------
     (this.init = function (enemy, description) {

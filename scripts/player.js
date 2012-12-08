@@ -11,10 +11,12 @@ function Player (game) {
     this.isSpinning = false;
 	this.health		= 100;
     this.enemyDamage = 10;
-	this.damageEffect = null;
-	this.canSpin = true;
+    this.damageEffect = null;
+    this.canSpin = true;
 
-
+    this.collidable = true;
+    this.boundingBox = null;
+        
     // Private variables ------------------------------------------------------
     var self = this,
         TEXTURE     = THREE.ImageUtils.loadTexture("images/player.png"),
@@ -131,68 +133,66 @@ function Player (game) {
             new Audio("sounds/saw.wav").play();
         }
     };
-	
-	this.checkStructCollisions = function() {
-		var playerMin = new THREE.Vector2(
-            self.position.x - 9 / 2,
-            self.position.y - 9 / 2),
-        playerMax = new THREE.Vector2(
-            self.position.x + 9 / 2,
-            self.position.y + 9 / 2);
-			
-		for (var i = 0; i < game.level.structures.length; i++) {
-			var struct = game.level.structures[i];
+    
+    /*
+     * Checks to see if this object collides with the passed object
+     */
+    this.collidesWith = function (object) {
+        
+    };
 
-			if (playerMin.x > struct.positionMax.x
-			 || playerMax.x < struct.positionMin.x
-			 || playerMin.y > struct.positionMax.y
-			 || playerMax.y < struct.positionMin.y) {
-				continue;
-			} else {
-				self.velocity.x = -self.velocity.x;
-				self.velocity.y = -self.velocity.y;
-				self.mesh.position = self.position.addSelf(self.velocity).clone();
-			}
-		}
-	};
-	
-	this.checkArtifactCollision = function() {
-		var playerMin = new THREE.Vector2(
-            self.position.x - 9 / 2,
-            self.position.y - 9 / 2),
-        playerMax = new THREE.Vector2(
-            self.position.x + 9 / 2,
-            self.position.y + 9 / 2);
-			
-		var artifact = game.level.artifact;
+    this.checkStructCollisions = function() {
+        for (var i = 0; i < game.level.structures.length; i++) {
+                var struct = game.level.structures[i];
 
-		if (playerMin.x > artifact.positionMax.x
-		 || playerMax.x < artifact.positionMin.x
-		 || playerMin.y > artifact.positionMax.y
-		 || playerMax.y < artifact.positionMin.y) {
-			//Do nothing
-		} else {
-			self.velocity.x = -self.velocity.x;
-			self.velocity.y = -self.velocity.y;
-			self.mesh.position = self.position.addSelf(self.velocity).clone();
-		}
-	};
-	
-	
-	this.takeDamage = function (amount) {
-		self.health = self.health - amount;
-        if (self.health <= 0) {
-            self.die();
-        } else {
-            //Damage effect?
-			 if (!self.damageEffect.running) {
-			    new Audio("sounds/player_hurt.wav").play();
-                self.damageEffect.tween.start();
-                self.damageEffect.running = true;
-            }
+                if (playerMin.x > struct.positionMax.x
+                 || playerMax.x < struct.positionMin.x
+                 || playerMin.y > struct.positionMax.y
+                 || playerMax.y < struct.positionMin.y) {
+                        continue;
+                } else {
+                        self.velocity.x = -self.velocity.x;
+                        self.velocity.y = -self.velocity.y;
+                        self.mesh.position = self.position.addSelf(self.velocity).clone();
+                }
         }
     };
 
+    this.checkArtifactCollision = function() {
+            var playerMin = new THREE.Vector2(
+        self.position.x - 9 / 2,
+        self.position.y - 9 / 2),
+    playerMax = new THREE.Vector2(
+        self.position.x + 9 / 2,
+        self.position.y + 9 / 2);
+
+            var artifact = game.level.artifact;
+
+            if (playerMin.x > artifact.positionMax.x
+             || playerMax.x < artifact.positionMin.x
+             || playerMin.y > artifact.positionMax.y
+             || playerMax.y < artifact.positionMin.y) {
+                    //Do nothing
+            } else {
+                    self.velocity.x = -self.velocity.x;
+                    self.velocity.y = -self.velocity.y;
+                    self.mesh.position = self.position.addSelf(self.velocity).clone();
+            }
+    };
+
+    this.takeDamage = function (amount) {
+            self.health = self.health - amount;
+    if (self.health <= 0) {
+        self.die();
+    } else {
+        //Damage effect?
+                     if (!self.damageEffect.running) {
+                        new Audio("sounds/player_hurt.wav").play();
+            self.damageEffect.tween.start();
+            self.damageEffect.running = true;
+        }
+    }
+};
 
     this.die = function () {
         spawnParticles(
@@ -209,9 +209,8 @@ function Player (game) {
 		//End game
 		game.gamelost = true;
     };
-	
 
-	this.reset = function() {
+    this.reset = function() {
 		self.mesh.position.set(PLAYER_SIZE.w / 2, PLAYER_SIZE.h / 2, PLAYER_Z);
         self.position = self.mesh.position;
         self.velocity = new THREE.Vector3(0,0,0);
@@ -234,12 +233,12 @@ function Player (game) {
         player.position = player.mesh.position;
         player.velocity = new THREE.Vector3(0,0,0);
 		
-		player.positionMin = new THREE.Vector2(
-            self.position.x - 9 / 2,
-            self.position.y - 9 / 2);
-        player.positionMax = new THREE.Vector2(
-            self.position.x + 9 / 2,
-            self.position.y + 9 / 2);
+	player.boundingBox = new Rect(
+                self.position.x - 9 / 2, 
+                self.position.y - 9 / 2,
+                self.position.x + 9 / 2,
+                self.position.y + 9 / 2
+            );
 
         player.money = 250;
 		
