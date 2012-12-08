@@ -434,8 +434,10 @@ function Game(canvas, renderer) {
             // Place current structure and clear placeholder object
             if (self.build.structure !== null) {
                 if (self.build.structure.place()) {
+                    var type = self.build.structure.type;
                     self.level.structures.push(self.build.structure);
                     self.build.structure = null;
+                    createStructure(type, self);
                 } else {
                     // TODO: display "can't build here" message 
                     console.log("can't build here");
