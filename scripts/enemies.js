@@ -51,7 +51,7 @@ function Enemy (description) {
     this.intersects = null;
 	this.type     = null;
 	this.structDamage = 0.02;
-	this.artifactDamage = 0.1;
+	this.artifactDamage = 10;
 	this.playerDamage = 0.1;
 	this.vision = 100;
 
@@ -309,7 +309,8 @@ function Enemy (description) {
         }
         
         if ("speed" in description && description["speed"] instanceof THREE.Vector2) {
-        	enemy.speed = description["speed"].clone();        
+        	var s = description["speed"].clone();        
+			enemy.speed = new THREE.Vector2(Math.random() * 1.2 + 0.1 + s.x, Math.random() * 1.2 + 0.1 + s.y);
         } else {
         	enemy.speed = new THREE.Vector2( Math.random() * 1.5, Math.random() * 1.5);
         }

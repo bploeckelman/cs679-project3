@@ -12,6 +12,7 @@ function Player (game) {
 	this.health		= 100;
     this.enemyDamage = 10;
 	this.damageEffect = null;
+	this.canSpin = true;
 
 
     // Private variables ------------------------------------------------------
@@ -28,14 +29,26 @@ function Player (game) {
     // Player methods ---------------------------------------------------------
     this.update = function () {	
         // Move the player using keyboard
-        if      (game.input.panLeft)  this.velocity.x -= MOVE_SPEED.x;
-        else if (game.input.panRight) this.velocity.x += MOVE_SPEED.x;
-        else                          this.velocity.x  = 0;
+		var keydx = 0, keydy = 0;
+        if      (game.input.panLeft)  { this.velocity.x -= MOVE_SPEED.x; keydx -= MOVE_SPEED.x; }
+        else if (game.input.panRight) { this.velocity.x += MOVE_SPEED.x; keydx += MOVE_SPEED.x; }
+        else                          { this.velocity.x  = 0; keydx = 0; }
 
-        if      (game.input.panUp)    this.velocity.y += MOVE_SPEED.y;
-        else if (game.input.panDown)  this.velocity.y -= MOVE_SPEED.y;
-        else                          this.velocity.y  = 0;
+        if      (game.input.panUp)    { this.velocity.y += MOVE_SPEED.y; keydy += MOVE_SPEED.y; }
+        else if (game.input.panDown)  { this.velocity.y -= MOVE_SPEED.y; keydy -= MOVE_SPEED.y; }
+        else                          { this.velocity.y  = 0; keydy = 0; }
 
+		// Rotate the keyboard movement vector by 45 deg for nicer control
+		/*
+		var kx = this.velocity.x + keydx,
+			ky = this.velocity.y + keydy,
+			keyrotx = kx * Math.cos(CONTROL_ROTATION) - ky * Math.sin(CONTROL_ROTATION),
+			keyroty = kx * Math.sin(CONTROL_ROTATION) + ky * Math.cos(CONTROL_ROTATION);
+
+		// Move player based on mouse movements
+		this.velocity.x = keyrotx;
+		this.velocity.y = keyroty;
+		*/		
         // Move the player by moving mouse to edges of screen
         if (game.input.mouseMove && !game.countdown) {
             var minEdge = new THREE.Vector2(
@@ -95,10 +108,11 @@ function Player (game) {
 		//this.checkArtifactCollision();
 
         // Handle spin move
-        if (game.input.spin && !this.isSpinning) {
+        if (game.input.spin && !self.isSpinning && self.canSpin) {
             var currentZoom = game.camera.position.z;
 
             self.isSpinning = true;
+			self.canSpin = true;  // DISABLED FOR NOW
             self.mesh.scale.x = 5;
             self.mesh.scale.y = 5;
             
@@ -106,11 +120,12 @@ function Player (game) {
             var ROT_AMOUNT = -8 * Math.PI,
                 ROT_TIME   = 500;
 
+			setTimeout(function () { self.canSpin = true; }, 2 * ROT_TIME);
             new TWEEN.Tween({ rot: 0 })
                 .to({ rot: ROT_AMOUNT }, ROT_TIME)
                 .easing(TWEEN.Easing.Quadratic.InOut)
                 .onUpdate(function () { self.mesh.rotation.z = this.rot; })
-                .onComplete(function () { self.isSpinning = false; })
+                .onComplete(function () { self.isSpinning = false;})
                 .start();
 
             var snd = new Audio("sounds/saw1.mp3");
@@ -248,8 +263,8 @@ function Player (game) {
 
         // Create "breathing" animation
         var BREATHE_TIME = 1000,
-            MAX_SCALE = 1.05,
-            MIN_SCALE = 0.95,
+            MAX_SCALE = 1.2,
+            MIN_SCALE = 0.8,
             breatheIn = new TWEEN.Tween({ scale: MIN_SCALE })
                 .to({ scale: MAX_SCALE }, BREATHE_TIME)
                 .easing(TWEEN.Easing.Cubic.InOut)

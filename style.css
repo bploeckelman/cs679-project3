@@ -16,7 +16,7 @@ div#buildMenus {
     /* Note: this centers the buttons nicely in a reasonably sized window
        it breaks things in a smal window though, 
        might want to go back to left aligned? */
-    width: 95%;
+    width: 80%;
 	left: 50%;
     margin-left: -650px;
 }

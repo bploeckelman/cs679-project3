@@ -13,11 +13,11 @@ function Wave (round, game) {
         // TODO: decide on ROUND_DETAILS vs using ENEMY_TYPES
         ROUND_DETAILS = [
             { numEnemies: 5,   health: 10,  size: 10, speed: 0.25 },
-            { numEnemies: 8,   health: 20,  size: 12, speed: 0.70 },
-            { numEnemies: 10,  health: 40,  size: 14, speed: 1.25 },
-            { numEnemies: 16,  health: 60,  size: 16, speed: 1.75 },
-            { numEnemies: 20,  health: 80,  size: 18, speed: 2.25 },
-            { numEnemies: 24,  health: 100, size: 20, speed: 2.75 },
+            { numEnemies: 8,   health: 20,  size: 12, speed: 0.50 },
+            { numEnemies: 10,  health: 40,  size: 14, speed: 0.75 },
+            { numEnemies: 16,  health: 60,  size: 16, speed: 1.00 },
+            { numEnemies: 20,  health: 80,  size: 18, speed: 1.50 },
+            { numEnemies: 24,  health: 100, size: 20, speed: 2.00 },
         ];
 
 

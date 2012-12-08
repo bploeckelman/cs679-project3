@@ -43,7 +43,8 @@ function Artifact (level, game) {
 
 
 	this.takeDamage = function (amount) {
-		self.health = self.health - amount;
+		if (!self.runningDamageEffect)
+			self.health = self.health - amount;
         if (self.health <= 0) {
             self.die();
         } else {
@@ -120,7 +121,7 @@ function Artifact (level, game) {
         artifact.clock = new THREE.Clock(true);
 
         // Set initial health
-        artifact.health = 200;
+        artifact.health = 300;
 
         // Setup pulse tweens
         artifact.pulse = { time: 500, minScale: 0.75, maxScale: 1.0, tweenIn: null, tweenOut: null };
