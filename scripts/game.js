@@ -22,6 +22,7 @@ function Game(canvas, renderer) {
 	this.gamewon = null;
 	this.won_music_played = false;
 	this.lost_music_played = false;
+    this.music  = null;
     this.input  = {
         panUp:    false,
         panDown:  false,
@@ -270,6 +271,10 @@ function Game(canvas, renderer) {
 			self.instructions.draw = false;
             self.round++;
 
+            // Toggle music track
+            self.music.build.end();
+            self.music.defend.begin();
+
             // Add the player
             if (self.player === null)
                 self.player = new Player(self);
@@ -304,9 +309,10 @@ function Game(canvas, renderer) {
         // Defend -> Build
         else if (self.mode === GAME_MODE.DEFEND) {
             self.mode = GAME_MODE.BUILD;
-			
-			//Play happy, winning sound
-            new Audio("sounds/defence_complete.mp3").play();
+
+            // Toggle music track
+            self.music.defend.end();
+            self.music.build.begin();
 
             // Add money based on territorial control + artifact health
             self.player.money += self.level.territory.length * 0.15
@@ -565,6 +571,57 @@ function Game(canvas, renderer) {
             readyTween2: null,
             tweenStarted: false
         };
+
+        // Initialize the music tracks
+        var FADE_TIME = 2000;
+        game.music = {
+            build:  { audio: new Audio("sounds/build_phase_music.mp3")  },
+            defend: { audio: new Audio("sounds/defend_phase_music.mp3") }
+        };
+        game.music.build.audio.loop  = true;
+        game.music.defend.audio.loop = true;
+
+        // Setup music begin/end helper functions (fade in/out, start/stop/reset)
+        game.music.build.begin = function () {
+            game.music.build.audio.volume = 0;
+            game.music.build.audio.play();
+            new TWEEN.Tween({ volume: 0 })
+                .to({ volume: 1 }, FADE_TIME)
+                .onUpdate(function () { game.music.build.audio.volume = this.volume; })
+                .start();
+        };
+        game.music.build.end = function () {
+            new TWEEN.Tween({ volume: 1 })
+                .to({ volume: 0 }, FADE_TIME)
+                .onUpdate(function () { game.music.build.audio.volume = this.volume; })
+                .onComplete(function () {
+                    game.music.build.audio.pause();
+                    game.music.build.audio.currentTime  = 0;
+                })
+                .start();
+        };
+
+        game.music.defend.begin = function () {
+            game.music.defend.audio.volume = 0;
+            game.music.defend.audio.play();
+            new TWEEN.Tween({ volume: 0 })
+                .to({ volume: 1 }, FADE_TIME)
+                .onUpdate(function () { game.music.defend.audio.volume = this.volume; })
+                .start();
+        };
+        game.music.defend.end = function () {
+            new TWEEN.Tween({ volume: 1 })
+                .to({ volume: 0 }, FADE_TIME)
+                .onUpdate(function () { game.music.defend.audio.volume = this.volume; })
+                .onComplete(function () {
+                    game.music.defend.audio.pause();
+                    game.music.defend.audio.currentTime  = 0;
+                })
+                .start();
+        };
+        // Start build music
+        game.music.build.audio.play();
+
 		
 		// Initialize the menus
 		game.menus = [];
