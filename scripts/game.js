@@ -271,6 +271,8 @@ function Game(canvas, renderer) {
 			self.instructions.draw = false;
             self.round++;
 
+            document.getElementsByTagName('body')[0].style.cursor = 'url(\"images/defend-cursor.cur\"), default';
+
             // Toggle music track
             self.music.build.end();
             self.music.defend.begin();
@@ -309,6 +311,8 @@ function Game(canvas, renderer) {
         // Defend -> Build
         else if (self.mode === GAME_MODE.DEFEND) {
             self.mode = GAME_MODE.BUILD;
+
+            document.getElementsByTagName('body')[0].style.cursor = 'url(\"images/repair-cursor.cur\"), default';
 
             // Toggle music track
             self.music.defend.end();
@@ -496,6 +500,7 @@ function Game(canvas, renderer) {
         // Set the initial game mode and round counter
         game.mode = GAME_MODE.BUILD;
         game.round = 1;
+        document.getElementsByTagName('body')[0].style.cursor = 'url(\"images/repair-cursor.cur\"), default';
 
         // Set initial 'instructions'
         game.instructions = {
