@@ -348,33 +348,16 @@ function Game(canvas, renderer) {
         self.input.zoomMod = event.shiftKey;
 
         switch (event.keyCode) {
-            case self.keymap.panUp:
-                self.input.panUp   = true;
-                self.input.panDown = false;
-            break;
-            case self.keymap.panDown:
-                self.input.panDown = true;
-                self.input.panUp   = false;
-            break;
-            case self.keymap.panLeft:
-                self.input.panLeft  = true;
-                self.input.panRight = false;
-            break;
-            case self.keymap.panRight:
-                self.input.panRight = true;
-                self.input.panLeft  = false;
-            break;
-            case self.keymap.zoom:
-                self.input.zoom = true;
-            break;
-            case self.keymap.spin:
-                self.input.spin = true;
-            break;
+            case self.keymap.panUp:    self.input.panUp    = true; break;
+            case self.keymap.panDown:  self.input.panDown  = true; break;
+            case self.keymap.panLeft:  self.input.panLeft  = true; break;
+            case self.keymap.panRight: self.input.panRight = true; break;
+            case self.keymap.zoom:     self.input.zoom     = true; break;
+            case self.keymap.spin:     self.input.spin     = true; break;
             case self.keymap.mode:
                 self.input.mode = true;
-                if (self.mode === GAME_MODE.BUILD) {
+                if (self.mode === GAME_MODE.BUILD)
                     self.switchMode();
-                }
             break;
             case self.keymap.action1:
                 self.input.action1 = true;
@@ -573,7 +556,8 @@ function Game(canvas, renderer) {
         };
 
         // Initialize the music tracks
-        var FADE_TIME = 2000;
+        var FADE_TIME = 2000,
+            DEFAULT_VOLUME = 0.25;
         game.music = {
             build:  { audio: new Audio("sounds/build_phase_music.mp3")  },
             defend: { audio: new Audio("sounds/defend_phase_music.mp3") }
@@ -586,12 +570,12 @@ function Game(canvas, renderer) {
             game.music.build.audio.volume = 0;
             game.music.build.audio.play();
             new TWEEN.Tween({ volume: 0 })
-                .to({ volume: 1 }, FADE_TIME)
+                .to({ volume: DEFAULT_VOLUME }, FADE_TIME)
                 .onUpdate(function () { game.music.build.audio.volume = this.volume; })
                 .start();
         };
         game.music.build.end = function () {
-            new TWEEN.Tween({ volume: 1 })
+            new TWEEN.Tween({ volume: DEFAULT_VOLUME })
                 .to({ volume: 0 }, FADE_TIME)
                 .onUpdate(function () { game.music.build.audio.volume = this.volume; })
                 .onComplete(function () {
@@ -605,12 +589,12 @@ function Game(canvas, renderer) {
             game.music.defend.audio.volume = 0;
             game.music.defend.audio.play();
             new TWEEN.Tween({ volume: 0 })
-                .to({ volume: 1 }, FADE_TIME)
+                .to({ volume: DEFAULT_VOLUME }, FADE_TIME)
                 .onUpdate(function () { game.music.defend.audio.volume = this.volume; })
                 .start();
         };
         game.music.defend.end = function () {
-            new TWEEN.Tween({ volume: 1 })
+            new TWEEN.Tween({ volume: DEFAULT_VOLUME })
                 .to({ volume: 0 }, FADE_TIME)
                 .onUpdate(function () { game.music.defend.audio.volume = this.volume; })
                 .onComplete(function () {
@@ -620,6 +604,7 @@ function Game(canvas, renderer) {
                 .start();
         };
         // Start build music
+        game.music.build.audio.volume = DEFAULT_VOLUME;
         game.music.build.audio.play();
 
 		
@@ -942,11 +927,8 @@ function updateCamera (game) {
 
     // Zoom the camera
     if (game.input.zoom) {
-        if (game.input.zoomMod) {
-            game.camera.position.z += ZOOM_SPEED;
-        } else {
-            game.camera.position.z -= ZOOM_SPEED;
-        }
+        if (game.input.zoomMod) game.camera.position.z += ZOOM_SPEED;
+        else                    game.camera.position.z -= ZOOM_SPEED;
     }
 
     // DEFEND MODE - Camera Handling ------------------------------------------
@@ -961,17 +943,10 @@ function updateCamera (game) {
             game.camera.position.x = game.player.mesh.position.x - 50;
             game.camera.position.y = game.player.mesh.position.y - 50;
         } else {
-            if (game.player.velocity.x != 0) {
-                game.camera.velocity.x = game.player.velocity.x;
-            } else {
-                game.camera.velocity.x = dx / d;
-            }
-
-            if (game.player.velocity.y != 0) {
-                game.camera.velocity.y = game.player.velocity.y;
-            } else {
-                game.camera.velocity.y = dy / d;
-            }
+            if (game.player.velocity.x != 0) game.camera.velocity.x = game.player.velocity.x;
+            else                             game.camera.velocity.x = dx / d;
+            if (game.player.velocity.y != 0) game.camera.velocity.y = game.player.velocity.y;
+            else                             game.camera.velocity.y = dy / d;
 
             game.camera.velocity.x *= CAMERA_FRICTION.x;
             game.camera.velocity.y *= CAMERA_FRICTION.y;
