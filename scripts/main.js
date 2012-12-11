@@ -39,6 +39,9 @@ window.onload = function initializeGame() {
     document.getElementsByTagName("body")[0].style.padding    = "0";
     document.getElementsByTagName("body")[0].style.overflow   = "hidden";
 
+    // Disable left-click text selection so cursor doesn't change
+    document.onselectstart = function (e) { e.preventDefault(); return false; };
+
     // Setup sizes and add the renderer to the document 
     canvas.width  = canvasWidth;
     canvas.height = canvasHeight;

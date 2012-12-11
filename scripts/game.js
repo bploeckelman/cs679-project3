@@ -22,6 +22,7 @@ function Game(canvas, renderer) {
 	this.gamewon = null;
 	this.won_music_played = false;
 	this.lost_music_played = false;
+    this.music  = null;
     this.input  = {
         panUp:    false,
         panDown:  false,
@@ -270,6 +271,12 @@ function Game(canvas, renderer) {
 			self.instructions.draw = false;
             self.round++;
 
+            document.getElementsByTagName('body')[0].style.cursor = 'url(\"images/defend-cursor.cur\"), default';
+
+            // Toggle music track
+            self.music.build.end();
+            self.music.defend.begin();
+
             // Add the player
             if (self.player === null)
                 self.player = new Player(self);
@@ -304,9 +311,12 @@ function Game(canvas, renderer) {
         // Defend -> Build
         else if (self.mode === GAME_MODE.DEFEND) {
             self.mode = GAME_MODE.BUILD;
-			
-			//Play happy, winning sound
-            new Audio("sounds/defence_complete.mp3").play();
+
+            document.getElementsByTagName('body')[0].style.cursor = 'url(\"images/repair-cursor.cur\"), default';
+
+            // Toggle music track
+            self.music.defend.end();
+            self.music.build.begin();
 
             // Add money based on territorial control + artifact health
             self.player.money += self.level.territory.length * 0.15
@@ -342,33 +352,16 @@ function Game(canvas, renderer) {
         self.input.zoomMod = event.shiftKey;
 
         switch (event.keyCode) {
-            case self.keymap.panUp:
-                self.input.panUp   = true;
-                self.input.panDown = false;
-            break;
-            case self.keymap.panDown:
-                self.input.panDown = true;
-                self.input.panUp   = false;
-            break;
-            case self.keymap.panLeft:
-                self.input.panLeft  = true;
-                self.input.panRight = false;
-            break;
-            case self.keymap.panRight:
-                self.input.panRight = true;
-                self.input.panLeft  = false;
-            break;
-            case self.keymap.zoom:
-                self.input.zoom = true;
-            break;
-            case self.keymap.spin:
-                self.input.spin = true;
-            break;
+            case self.keymap.panUp:    self.input.panUp    = true; break;
+            case self.keymap.panDown:  self.input.panDown  = true; break;
+            case self.keymap.panLeft:  self.input.panLeft  = true; break;
+            case self.keymap.panRight: self.input.panRight = true; break;
+            case self.keymap.zoom:     self.input.zoom     = true; break;
+            case self.keymap.spin:     self.input.spin     = true; break;
             case self.keymap.mode:
                 self.input.mode = true;
-                if (self.mode === GAME_MODE.BUILD) {
+                if (self.mode === GAME_MODE.BUILD)
                     self.switchMode();
-                }
             break;
             case self.keymap.action1:
                 self.input.action1 = true;
@@ -507,6 +500,7 @@ function Game(canvas, renderer) {
         // Set the initial game mode and round counter
         game.mode = GAME_MODE.BUILD;
         game.round = 1;
+        document.getElementsByTagName('body')[0].style.cursor = 'url(\"images/repair-cursor.cur\"), default';
 
         // Set initial 'instructions'
         game.instructions = {
@@ -565,6 +559,59 @@ function Game(canvas, renderer) {
             readyTween2: null,
             tweenStarted: false
         };
+
+        // Initialize the music tracks
+        var FADE_TIME = 2000,
+            DEFAULT_VOLUME = 0.25;
+        game.music = {
+            build:  { audio: new Audio("sounds/build_phase_music.mp3")  },
+            defend: { audio: new Audio("sounds/defend_phase_music.mp3") }
+        };
+        game.music.build.audio.loop  = true;
+        game.music.defend.audio.loop = true;
+
+        // Setup music begin/end helper functions (fade in/out, start/stop/reset)
+        game.music.build.begin = function () {
+            game.music.build.audio.volume = 0;
+            game.music.build.audio.play();
+            new TWEEN.Tween({ volume: 0 })
+                .to({ volume: DEFAULT_VOLUME }, FADE_TIME)
+                .onUpdate(function () { game.music.build.audio.volume = this.volume; })
+                .start();
+        };
+        game.music.build.end = function () {
+            new TWEEN.Tween({ volume: DEFAULT_VOLUME })
+                .to({ volume: 0 }, FADE_TIME)
+                .onUpdate(function () { game.music.build.audio.volume = this.volume; })
+                .onComplete(function () {
+                    game.music.build.audio.pause();
+                    game.music.build.audio.currentTime  = 0;
+                })
+                .start();
+        };
+
+        game.music.defend.begin = function () {
+            game.music.defend.audio.volume = 0;
+            game.music.defend.audio.play();
+            new TWEEN.Tween({ volume: 0 })
+                .to({ volume: DEFAULT_VOLUME }, FADE_TIME)
+                .onUpdate(function () { game.music.defend.audio.volume = this.volume; })
+                .start();
+        };
+        game.music.defend.end = function () {
+            new TWEEN.Tween({ volume: DEFAULT_VOLUME })
+                .to({ volume: 0 }, FADE_TIME)
+                .onUpdate(function () { game.music.defend.audio.volume = this.volume; })
+                .onComplete(function () {
+                    game.music.defend.audio.pause();
+                    game.music.defend.audio.currentTime  = 0;
+                })
+                .start();
+        };
+        // Start build music
+        game.music.build.audio.volume = DEFAULT_VOLUME;
+        game.music.build.audio.play();
+
 		
 		// Initialize the menus
 		game.menus = [];
@@ -885,11 +932,8 @@ function updateCamera (game) {
 
     // Zoom the camera
     if (game.input.zoom) {
-        if (game.input.zoomMod) {
-            game.camera.position.z += ZOOM_SPEED;
-        } else {
-            game.camera.position.z -= ZOOM_SPEED;
-        }
+        if (game.input.zoomMod) game.camera.position.z += ZOOM_SPEED;
+        else                    game.camera.position.z -= ZOOM_SPEED;
     }
 
     // DEFEND MODE - Camera Handling ------------------------------------------
@@ -904,17 +948,10 @@ function updateCamera (game) {
             game.camera.position.x = game.player.mesh.position.x - 50;
             game.camera.position.y = game.player.mesh.position.y - 50;
         } else {
-            if (game.player.velocity.x != 0) {
-                game.camera.velocity.x = game.player.velocity.x;
-            } else {
-                game.camera.velocity.x = dx / d;
-            }
-
-            if (game.player.velocity.y != 0) {
-                game.camera.velocity.y = game.player.velocity.y;
-            } else {
-                game.camera.velocity.y = dy / d;
-            }
+            if (game.player.velocity.x != 0) game.camera.velocity.x = game.player.velocity.x;
+            else                             game.camera.velocity.x = dx / d;
+            if (game.player.velocity.y != 0) game.camera.velocity.y = game.player.velocity.y;
+            else                             game.camera.velocity.y = dy / d;
 
             game.camera.velocity.x *= CAMERA_FRICTION.x;
             game.camera.velocity.y *= CAMERA_FRICTION.y;

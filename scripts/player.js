@@ -21,61 +21,65 @@ function Player (game) {
     var self = this,
         TEXTURE     = THREE.ImageUtils.loadTexture("images/player.png"),
         PLAYER_SIZE = { w: 9, h: 9 },
-        MOVE_SPEED  = { x: 0.25, y: 0.25 },
+        MOVE_SPEED  = { x: 1.0, y: 1.0 },
         MAX_SPEED   = { x: 3, y: 3 },
         PLAYER_Z    = 0.2,
-        SPIN_SLOWDOWN = 0.85,
-        CONTROL_ROTATION = -Math.PI / 8;
+        SPIN_SLOWDOWN      = 0.85,
+        MOUSE_PAN_SPEED    = 8,
+        KEYBOARD_PAN_SPEED = 1.0,
+        KEYBOARD_FRICTION  = 0.85,
+        CONTROL_ROTATION   = -Math.PI / 4; // 45 degrees counter-clockwise for defend phase
+    var keydx = 0, keydy = 0; // TODO: should just be acceleration
 
 
     // Player methods ---------------------------------------------------------
     this.update = function () {	
+        // KEYBOARD MOVEMENT ----------------------------------------
+
         // Move the player using keyboard
-		var keydx = 0, keydy = 0;
-        if      (game.input.panLeft)  { this.velocity.x -= MOVE_SPEED.x; keydx -= MOVE_SPEED.x; }
-        else if (game.input.panRight) { this.velocity.x += MOVE_SPEED.x; keydx += MOVE_SPEED.x; }
-        else                          { this.velocity.x  = 0; keydx = 0; }
+        if      (game.input.panLeft)  { keydx -= KEYBOARD_PAN_SPEED; }
+        else if (game.input.panRight) { keydx += KEYBOARD_PAN_SPEED; }
+        else                          { this.velocity.x = 0; keydx *= KEYBOARD_FRICTION; }
+        if      (game.input.panUp)    { keydy += KEYBOARD_PAN_SPEED; }
+        else if (game.input.panDown)  { keydy -= KEYBOARD_PAN_SPEED; }
+        else                          { this.velocity.y = 0; keydy *= KEYBOARD_FRICTION; }
 
-        if      (game.input.panUp)    { this.velocity.y += MOVE_SPEED.y; keydy += MOVE_SPEED.y; }
-        else if (game.input.panDown)  { this.velocity.y -= MOVE_SPEED.y; keydy -= MOVE_SPEED.y; }
-        else                          { this.velocity.y  = 0; keydy = 0; }
+        if (keydx >  MAX_SPEED.x) keydx =  MAX_SPEED.x;
+        if (keydx < -MAX_SPEED.x) keydx = -MAX_SPEED.x;
+        if (keydy >  MAX_SPEED.y) keydy =  MAX_SPEED.y;
+        if (keydy < -MAX_SPEED.y) keydy = -MAX_SPEED.y;
 
-		// Rotate the keyboard movement vector by 45 deg for nicer control
-		/*
-		var kx = this.velocity.x + keydx,
-			ky = this.velocity.y + keydy,
-			keyrotx = kx * Math.cos(CONTROL_ROTATION) - ky * Math.sin(CONTROL_ROTATION),
-			keyroty = kx * Math.sin(CONTROL_ROTATION) + ky * Math.cos(CONTROL_ROTATION);
+        // Rotate the keyboard movement vector by 45 deg for nicer control
+        var keyrotx = keydx * Math.cos(CONTROL_ROTATION) - keydy * Math.sin(CONTROL_ROTATION),
+            keyroty = keydx * Math.sin(CONTROL_ROTATION) + keydy * Math.cos(CONTROL_ROTATION);
 
-		// Move player based on mouse movements
-		this.velocity.x = keyrotx;
-		this.velocity.y = keyroty;
-		*/		
+        // Move player based on keyboard movements
+        this.velocity.x = keyrotx;
+        this.velocity.y = keyroty;
+
+        // MOUSE MOVEMENT -------------------------------------------
+
         // Move the player by moving mouse to edges of screen
-        if (game.input.mouseMove && !game.countdown) {
-            var minEdge = new THREE.Vector2(
-                    window.innerWidth  / 2,
-                    window.innerHeight / 2),
-                maxEdge = new THREE.Vector2(
-                    window.innerWidth  / 2,
-                    window.innerHeight / 2),
-                // TODO: recalculate min/max edges on window resize
-                MOUSE_PAN_SPEED = 125,
-                dx = 0,
-                dy = 0;
+        // Note: commented input flag so mouse always moves player
+        if (/*game.input.mouseMove &&*/ !game.countdown) {
+            var dx = 0, dy = 0,
+                halfWidth  = window.innerWidth  * 0.5,
+                halfHeight = window.innerHeight * 0.5,
+                minEdge = new THREE.Vector2(halfWidth, halfHeight),
+                maxEdge = new THREE.Vector2(halfWidth, halfHeight);
 
             // Calculate delta for x edges
             if (game.input.mousePos.x < minEdge.x) {
-                dx = (game.input.mousePos.x - minEdge.x) / MOUSE_PAN_SPEED;
+                dx = ((game.input.mousePos.x - minEdge.x) / halfWidth) * MOUSE_PAN_SPEED;
             } else if (game.input.mousePos.x > maxEdge.x) {
-                dx = (game.input.mousePos.x - maxEdge.x) / MOUSE_PAN_SPEED;
+                dx = ((game.input.mousePos.x - maxEdge.x) / halfWidth) * MOUSE_PAN_SPEED;
             }
 
             // Calculate delta for y edges
             if (game.input.mousePos.y < minEdge.y) {
-                dy = -1 * (game.input.mousePos.y - minEdge.y) / MOUSE_PAN_SPEED;
+                dy = -1 * ((game.input.mousePos.y - minEdge.y) / halfHeight) * MOUSE_PAN_SPEED;
             } else if (game.input.mousePos.y > maxEdge.y) {
-                dy = -1 * (game.input.mousePos.y - maxEdge.y) / MOUSE_PAN_SPEED;
+                dy = -1 * ((game.input.mousePos.y - maxEdge.y) / halfHeight) * MOUSE_PAN_SPEED;
             }
 
             // Rotate the mouse movement vector by 45 deg for nicer control
@@ -98,25 +102,23 @@ function Player (game) {
         // Limit the players maximum velocity
         if (this.velocity.x >  MAX_SPEED.x) this.velocity.x =  MAX_SPEED.x;
         if (this.velocity.x < -MAX_SPEED.x) this.velocity.x = -MAX_SPEED.x;
-
         if (this.velocity.y >  MAX_SPEED.y) this.velocity.y =  MAX_SPEED.y;
         if (this.velocity.y < -MAX_SPEED.y) this.velocity.y = -MAX_SPEED.y;
 		
         // Position the mesh to correspond with players updated position
         this.mesh.position = this.position.addSelf(this.velocity).clone();
 		
-		//Check structure collisions
+		//Check collisions
+        // TODO: collisions aren't quite right yet
 		this.checkStructCollisions();
-		//this.checkArtifactCollision();
 
         // Handle spin move
         if (game.input.spin && !self.isSpinning && self.canSpin) {
             var currentZoom = game.camera.position.z;
 
             self.isSpinning = true;
-			self.canSpin = true;  // DISABLED FOR NOW
-            self.mesh.scale.x = 5;
-            self.mesh.scale.y = 5;
+            // Note: set canSpin to false to force a pause between attacks
+			self.canSpin = true;  // Continuous attacking currently enabled...
             
             // Rotate the player
             var ROT_AMOUNT = -8 * Math.PI,
@@ -240,8 +242,10 @@ function Player (game) {
                 self.position.y + 9 / 2
             );
 
+        // Set initial money
         player.money = 250;
 		
+        // Create damage effect animation
 		player.damageEffect = {
             running: false,
             tween: null
@@ -256,7 +260,6 @@ function Player (game) {
 				player.mesh.material.color.setRGB(1, playerColor.g, playerColor.b);
 				player.damageEffect.running = false;
             });
-
 
         // Create "breathing" animation
         var BREATHE_TIME = 1000,
