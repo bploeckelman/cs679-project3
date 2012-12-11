@@ -90,6 +90,11 @@ function Structure (type, game) {
             // + "min(" + min.x + ", " + min.y + ") "
             // + "max(" + max.x + ", " + max.y + ") ");
 
+            // TODO: should be a member of Artifact object
+            var artifactRegion = new Rect(
+                    game.level.size.xcells / 2 - 2, game.level.size.ycells / 2 + 1,
+                    game.level.size.xcells / 2 + 1, game.level.size.ycells / 2 - 2);
+
             // Set buildability status of neighbor cells
             var halfArea = Math.floor(structureArea / 2);
             for (var y = min.y - halfArea; y <= max.y + halfArea; ++y) {
@@ -103,8 +108,9 @@ function Structure (type, game) {
                     else if (y >= game.level.size.ycells) iy = game.level.size.ycells - 1;
                     else                                  iy = y;
 
-                    // Set cell as buildable
-                    if (ix >= 48 && ix <= 51 && iy >= 48 && iy <= 51) // keep center region non-buildable
+                    // Set cell as buildable, but keep area under artifact non-buildable
+                    if (x >= artifactRegion.left   && x <= artifactRegion.right
+                     && y >= artifactRegion.bottom && y <= artifactRegion.top)
                         game.level.cells[iy][ix].buildable = false;
                     else
                         game.level.cells[iy][ix].buildable = true;

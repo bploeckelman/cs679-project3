@@ -300,14 +300,16 @@ function Enemy (description) {
         	enemy.position = description["position"].clone();      
         } else {
             // Only start at edges
-            var edge = Math.floor(Math.random() * 4);
+            // TODO: only start in spawning areas
+            var edge  = Math.floor(Math.random() * 4),
+                randX = Math.floor(Math.random() * game.level.size.width),
+                randY = Math.floor(Math.random() * game.level.size.height);
             switch (edge) {
-                case 0: enemy.position = new THREE.Vector3(Math.floor(Math.random() * 1000), 0, 0.1); break;
-                case 1: enemy.position = new THREE.Vector3(Math.floor(Math.random() * 1000), 999, 0.1); break;
-                case 2: enemy.position = new THREE.Vector3(0, Math.floor(Math.random() * 1000), 0.1); break;
-                case 3: enemy.position = new THREE.Vector3(999, Math.floor(Math.random() * 999), 0.1); break;
-                default: enemy.position = new THREE.Vector3(Math.floor(Math.random() * 1000),
-                            Math.floor(Math.random() * 1000), 0.1);
+                case 0: enemy.position  = new THREE.Vector3(randX, 0, 0.1); break;
+                case 1: enemy.position  = new THREE.Vector3(randX, game.level.size.height - 1, 0.1); break;
+                case 2: enemy.position  = new THREE.Vector3(0, randY, 0.1); break;
+                case 3: enemy.position  = new THREE.Vector3(game.level.size.width - 1, randY, 0.1); break;
+                default: enemy.position = new THREE.Vector3(randX, randY, 0.1);
             }
         }
         

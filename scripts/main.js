@@ -48,6 +48,9 @@ window.onload = function initializeGame() {
     renderer.setSize(canvasWidth, canvasHeight);
     document.getElementById("container").appendChild(renderer.domElement);
 
+    // Create the game object
+    game = new Game(canvas, renderer);
+
     // Setup window resizing handler 
     //window.onresize = function (event) {
     window.addEventListener('resize', function (event) {
@@ -73,8 +76,6 @@ window.onload = function initializeGame() {
     document.getElementById("container").appendChild(stats.domElement);
     */
 
-    // Create the game object
-    game = new Game(canvas, renderer);
 
     // Enter main loop
     // ---------------

@@ -73,3 +73,11 @@ function randomBetween(min, max) {
     return Math.random() * (max - min) + min;
 };
 
+
+/*
+ * Next closest multiple
+ */
+function closestMultiple(x, multiplier) {
+    return Math.ceil(x / multiplier) * multiplier;
+}
+

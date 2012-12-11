@@ -1,7 +1,7 @@
 // ----------------------------------------------------------------------------
 // Level object
 // ----------------------------------------------------------------------------
-function Level (game) {
+function Level (game, numXCells, numYCells) {
 
     // Public properties ------------------------------------------------------
     this.grid0 = null;
@@ -19,6 +19,9 @@ function Level (game) {
 
     // Private variables ------------------------------------------------------
     var self = this,
+        CELL_SIZE = 10,
+        MIN_NUM_X_CELLS = 40,
+        MIN_NUM_Y_CELLS = 40,
         TERRITORY_GEOMETRY = null, // Created on init()
         TERRITORY_MATERIAL = new THREE.ShaderMaterial(shaders.noise);
         /*
@@ -126,13 +129,15 @@ function Level (game) {
     (this.init = function (level) {
         // Specify level sizes
         level.size = {
-            width:  1000,
-            height: 1000,
-            cellw:  10,
-            cellh:  10,
-            xcells: 100,
-            ycells: 100
+            cellw:  CELL_SIZE,
+            cellh:  CELL_SIZE,
+            // Note: num cells in either dimension must be multiples of 4
+            //       in order for grid to look right
+            xcells: closestMultiple(Math.max(numXCells, MIN_NUM_X_CELLS), 4),
+            ycells: closestMultiple(Math.max(numYCells, MIN_NUM_Y_CELLS), 4) 
         };
+        level.size.width  = level.size.cellw * level.size.xcells;
+        level.size.height = level.size.cellh * level.size.ycells;
         level.size = Object.freeze(level.size);
 
         // Create level meshes
@@ -151,7 +156,7 @@ function Level (game) {
 
         level.grid2 = new THREE.Mesh(
             new THREE.PlaneGeometry(level.size.width, level.size.height,
-                                    level.size.xcells / 4, level.size.ycells / 4),
+                                    Math.floor(level.size.xcells / 4), Math.floor(level.size.ycells / 4)),
             new THREE.MeshBasicMaterial({ color: 0x116611, wireframe: true })
         );
 
@@ -164,6 +169,17 @@ function Level (game) {
         game.scene.add(level.grid0);
         game.scene.add(level.grid1);
         game.scene.add(level.grid2);
+
+        // Non-buildable region in center underneath artifact
+        var artifactRegion = new Rect(
+                level.size.xcells / 2 - 2, level.size.ycells / 2 + 1,
+                level.size.xcells / 2 + 1, level.size.ycells / 2 - 2),
+            BUILDABLE_OFFSET = 7,
+            buildableRegion = new Rect(
+                artifactRegion.left  - BUILDABLE_OFFSET, artifactRegion.top + BUILDABLE_OFFSET,
+                artifactRegion.right + BUILDABLE_OFFSET, artifactRegion.bottom - BUILDABLE_OFFSET);
+        //console.log(artifactRegion);
+        //console.log(buildableRegion);
 
         // Create level grid and cells
         // grid  : 0 - Empty, 1 - Obstacle
@@ -181,12 +197,12 @@ function Level (game) {
                 });
 
                 // Enable building for some initial buildable region
-                // Note: this isn't really ideal, but it gets the job done
-                if (x >= 41 && x <= 58 && y >= 41 && y <= 58) {
-                    if (x >= 48 && x <= 51 && y >= 48 && y <= 51) // keep center region non-buildable
-                        level.cells[y][x].buildable = false;
-                    else
-                        level.cells[y][x].buildable = true;
+                //   excluding the center under the artifact
+                if (!(x >= artifactRegion.left   && x <= artifactRegion.right
+                   && y >= artifactRegion.bottom && y <= artifactRegion.top)
+                 && (x >= buildableRegion.left   && x <= buildableRegion.right
+                  && y >= buildableRegion.bottom && y <= buildableRegion.top)) {
+                    level.cells[y][x].buildable = true;
                 }
             }
         }

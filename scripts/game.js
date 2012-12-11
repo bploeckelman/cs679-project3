@@ -336,7 +336,7 @@ function Game(canvas, renderer) {
             self.particles = [];
 
             // Position camera above treasure/artifact @ center of base
-            self.camera.position.set(500, 500, 200);
+            self.camera.position.set(self.level.size.width / 2, self.level.size.height / 2, 200);
 			
 			// Display the menus
 			document.getElementById("buildMenus").style.display = "block";
@@ -532,7 +532,7 @@ function Game(canvas, renderer) {
 
         // Initialize the camera
         game.camera = new THREE.PerspectiveCamera(FOV, ASPECT, NEAR, FAR);
-        game.camera.position.set(500, 500, 200);
+        game.camera.position.set(0,0,0);
         game.camera.velocity = new THREE.Vector3(0,0,0);
         game.camera.up = new THREE.Vector3(0,0,1);
         game.camera.lookAt(new THREE.Vector3(0,0,0));
@@ -547,8 +547,12 @@ function Game(canvas, renderer) {
         game.scene.add(game.camera);
         game.scene.add(new THREE.AxisHelper());
 
+
         // Initialize the level
-        game.level  = new Level(game);
+        game.level  = new Level(game, 40, 60);
+
+        // Move camera to center of level
+        game.camera.position.set(game.level.size.width / 2, game.level.size.height / 2, 200);
 
         // Initialize the player
         game.player = new Player(game);
