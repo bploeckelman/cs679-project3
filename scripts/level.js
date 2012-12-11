@@ -32,7 +32,7 @@ function Level (game, numXCells, numYCells) {
         });
         */
 
-	// Utility variables ------------------------------------------------------
+	// Utility variables and methods --------------------------------------------------
 	THREE.Vector2.prototype.toGridCoords = function () {
 		var ans = new THREE.Vector2();
 		ans.x = Math.floor(this.x / self.size.cellw);
@@ -75,6 +75,25 @@ function Level (game, numXCells, numYCells) {
 		else return ans;
 	};
 	
+        Rect.prototype.toGridCoords = function () {
+            var ans = new Rect(0,0,0,0);
+            ans.left = this.left * self.size.cellw;
+            ans.right = this.right * self.size.cellw;
+            ans.top = this.top * self.size.cellh;
+            ans.bottom = this.bottom * self.size.cellh;
+            
+            return ans;
+        };
+    
+        Rect.prototype.toRealCoords = function () {
+            var ans = new Rect(0,0,0,0);
+            ans.left = Math.floor(this.left / self.size.cellw);
+            ans.right = Math.floor(this.right / self.size.cellw);
+            ans.top = Math.floor(this.top / self.size.cellh);
+            ans.bottom = Math.floor(this.bottom / self.size.cellh);
+            
+            return ans;
+        };
 	
 	
     // Level methods ----------------------------------------------------------
