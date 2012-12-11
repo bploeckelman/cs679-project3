@@ -48,7 +48,7 @@ function Enemy (description) {
     this.maxspeed = null;
     this.target   = null;
     this.health   = null;
-    this.intersects = null;
+    
     this.type     = null;
     this.structDamage = 0.02;
     this.artifactDamage = 10;
@@ -58,7 +58,10 @@ function Enemy (description) {
     this.path = null;
     
     this.EPSILON = 4;
-	
+
+    this.collidable = true;
+    this.boundingBox = null;
+    this.intersects = false;
 	
     // Private variables ------------------------------------------------------
     var self = this;
@@ -69,7 +72,7 @@ function Enemy (description) {
     	
     	switch(self.type) {
         case ENEMY_TYPES.BRUTE :
-            self.setFollowTarget(game.player);
+            self.setFollowTarget(game.player.position);
             break;
         case ENEMY_TYPES.LUNATIC :
             if (game.frames % 60 == 0 || !self.target) {
@@ -79,20 +82,20 @@ function Enemy (description) {
             }
             break;
         case ENEMY_TYPES.ARTIPHILE :
-			//self.setFollowTarget(game.level.artifact.mesh.position);
-			if ( self.path == null ) {
-				self.setPathToTake(self.findPathTo(game.level.artifact.mesh.position));
-			}
-			else {
-				self.progressAlongPath();
-			}
+                //self.setFollowTarget(game.level.artifact.mesh.position);
+                if ( self.path == null ) {
+                        self.setPathToTake(self.findPathTo(game.level.artifact.mesh.position));
+                }
+                else {
+                        self.progressAlongPath();
+                }
             break;
-			var range = {
-				x1: Math.max(0,from.x-self.vision),
-				x2: Math.min(level.size.xcells, from.x+self.vision),
-				y1: Math.max(0,from.y-self.vision),
-				y2: Math.min(level.size.xcells, from.y+self.vision),
-			}; 
+                var range = {
+                        x1: Math.max(0,from.x-self.vision),
+                        x2: Math.min(level.size.xcells, from.x+self.vision),
+                        y1: Math.max(0,from.y-self.vision),
+                        y2: Math.min(level.size.xcells, from.y+self.vision),
+                }; 
         }
     	
         // Follow the target
@@ -125,40 +128,46 @@ function Enemy (description) {
                 self.target.y - self.mesh.position.y,
                 self.target.x - self.mesh.position.x);
         }
-		
-		//Check structure collisions
-		this.checkStructCollisions();
+    
+        // Update the BoundingBox
+        self.boundingBox = new Rect(
+                self.position.x - 9 / 2,
+                self.position.y - 9 / 2,
+                self.position.x + 9 / 2,
+                self.position.y + 9 / 2);
+                
+        //Allow it to move and check again for collision
+        self.intersects = false;
     };
 
-    this.checkStructCollisions = function() {
-            var enemyMin = new THREE.Vector2(
-        self.position.x - 9 / 2,
-        self.position.y - 9 / 2),
-    enemyMax = new THREE.Vector2(
-        self.position.x + 9 / 2,
-        self.position.y + 9 / 2);
+    this.collidesWith = function (object) {
+        if (this.collidable) {
+            return self.boundingBox.intersects(object.boundingBox);
+        }
+        else {
+            return false;
+        }
+    };
 
-            for (var i = 0; i < game.level.structures.length; i++) {
-                    var struct = game.level.structures[i];
-
-                    if (enemyMin.x > struct.positionMax.x
-                     || enemyMax.x < struct.positionMin.x
-                     || enemyMin.y > struct.positionMax.y
-                     || enemyMax.y < struct.positionMin.y) {
-                            continue;				
-                    } else {
-                            struct.takeDamage(self.structDamage, i);
-                    }
+    this.handleCollision = function (object) {
+        if (object instanceof Player) {
+            if (object.isSpinning) {
+                self.takeDamage(object.enemyDamage);
             }
-
-            var pos = self.position.toGridCoords();
-    //	console.log(pos);
-            if (game.level.grid[pos.y][pos.x] == 1) {
-                    self.intersects = true;
-            }
-            else {
-                    self.intersects = false;
-            }
+        }
+        else if (object instanceof Artifact) {
+            //Stop enemy
+            self.velocity.x = -self.velocity.x;
+            self.velocity.y = -self.velocity.y;
+            self.mesh.position = self.position.addSelf(self.velocity).clone();
+        }
+        else if (object instanceof Structure) {
+            //console.log("Enemy:colliding with structure")
+            self.intersects = true;
+            //alert("Enemy:colliding with structure");
+            //self.takeDamage(10000);
+        }
+        
     };
 
     this.setPathToTake = function (path) {
@@ -228,7 +237,6 @@ function Enemy (description) {
     }
 };
 	
-	
     this.setFollowTarget = function (object) {
         var level = game.level;		
         var from = self.position.toGridCoords();
@@ -269,9 +277,7 @@ function Enemy (description) {
     /*
      * Checks to see if this object collides with the passed object
      */
-    this.collidesWith = function (object) {
-        
-    };
+
 
     // Constructor ------------------------------------------------------------
     (this.init = function (enemy, description) {
@@ -340,20 +346,20 @@ function Enemy (description) {
         	enemy.vision = 100;
         }
         
-		//Do specific initial things based on the type of enemy
-		switch(self.type) {
-			case ENEMY_TYPES.BRUTE :
-				break;
-			case ENEMY_TYPES.LUNATIC :
-				self.target = new THREE.Vector2(
-				Math.floor(Math.random() * 1000),
-				Math.floor(Math.random() * 1000));
-				break;
-			case ENEMY_TYPES.ARTIPHILE :
-				//self.setFollowTarget(game.level.artifact.mesh.position);
-				self.setPathToTake(self.findPathTo(game.level.artifact.mesh.position));
-				break;
-		};
+        //Do specific initial things based on the type of enemy
+        switch(self.type) {
+                case ENEMY_TYPES.BRUTE :
+                        break;
+                case ENEMY_TYPES.LUNATIC :
+                        self.target = new THREE.Vector2(
+                        Math.floor(Math.random() * 1000),
+                        Math.floor(Math.random() * 1000));
+                        break;
+                case ENEMY_TYPES.ARTIPHILE :
+                        //self.setFollowTarget(game.level.artifact.mesh.position);
+                        self.setPathToTake(self.findPathTo(game.level.artifact.mesh.position));
+                        break;
+        };
 		
         // Generate a mesh for the enemy
         // TODO: pass an enemy type value in the description object
@@ -394,6 +400,13 @@ function Enemy (description) {
         breatheOut.chain(breatheIn);
         breatheIn.start();
 
+        //Set the bounding box
+        self.boundingBox = new Rect(
+                self.position.x - 9 / 2,
+                self.position.y - 9 / 2,
+                self.position.x + 9 / 2,
+                self.position.y + 9 / 2);
+                
         console.log("Enemy initialized.");
     })(self, description);
 

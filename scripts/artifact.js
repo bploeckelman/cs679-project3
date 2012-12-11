@@ -85,7 +85,18 @@ function Artifact (level, game) {
      * Checks to see if this object collides with the passed object
      */
     this.collidesWith = function (object) {
-        
+        if (this.collidable) {
+            return self.boundingBox.intersects(other.boundingBox);
+        }
+        else {
+            return false;
+        }
+    };
+    
+     this.handleCollision = function (object) {
+        if (object instanceof Enemy) {
+            self.takeDamage(object.artifactDamage);
+        }
     };
 
     // Constructor ------------------------------------------------------------

@@ -126,56 +126,56 @@ function Game(canvas, renderer) {
         }
 
         if (self.mode === GAME_MODE.DEFEND) {
-			if (self.gamelost) {
-				//Menu display handled in renderOverlayText
-				if(!self.lost_music_played){
-					self.lost_music_played = true;
-                new Audio("sounds/end_game.wav").play();
-				}
-				
-				updateParticles(self);
+            if (self.gamelost) {
+                //Menu display handled in renderOverlayText
+                if(!self.lost_music_played){
+                        self.lost_music_played = true;
+                            new Audio("sounds/end_game.wav").play();
+                }
 
-				//Add replay button?
-			}
-			else if (self.gamewon) {
-				//Menu display handled in renderOverlayText
-				if(!self.won_music_played){
-					self.won_music_played = true;
-				new Audio("sounds/won_game.mp3").play();
-				}
-				
-				updateParticles(self);
-				
-				//Add replay button?
-			}
-			else {
-				self.player.update();
-				self.wave.update();
-				handleCollisions(self);
-				updateParticles(self);
+                updateParticles(self);
 
-				if (self.wave.enemies.length == 0 && !self.countdown){
-					setTimeout(function () {
-						self.switchMode();
-						self.countdown = false;
-					}, 4000);
-					self.countdown = true;
-					// TODO: display some message about defend mode completion
-					// ideally we'd display some stats here too, 
-					//  - time it took to beat round
-					//  - remaining artifact health
-					//  - money gained
-					//  - etc...
-					// It should also be setup so that instead of counting 
-					// down to mode switch, the player has to click through 
-					// the completion message...
-					
-					//Game won if defeated all enemies on last round
-					if (self.round >= 6) {
-						self.gamewon = true;
-					}
-				}
-			}
+                //Add replay button?
+            }
+            else if (self.gamewon) {
+                //Menu display handled in renderOverlayText
+                if(!self.won_music_played){
+                        self.won_music_played = true;
+                new Audio("sounds/won_game.mp3").play();
+                }
+
+                updateParticles(self);
+
+                //Add replay button?
+            }
+            else {
+                handleCollisions(self);
+                self.player.update();
+                self.wave.update();
+                updateParticles(self);
+
+                if (self.wave.enemies.length == 0 && !self.countdown){
+                    setTimeout(function () {
+                            self.switchMode();
+                            self.countdown = false;
+                    }, 4000);
+                    self.countdown = true;
+                    // TODO: display some message about defend mode completion
+                    // ideally we'd display some stats here too, 
+                    //  - time it took to beat round
+                    //  - remaining artifact health
+                    //  - money gained
+                    //  - etc...
+                    // It should also be setup so that instead of counting 
+                    // down to mode switch, the player has to click through 
+                    // the completion message...
+
+                    //Game won if defeated all enemies on last round
+                    if (self.round >= 6) {
+                            self.gamewon = true;
+                    }
+                }
+            }
         } else if (self.mode === GAME_MODE.BUILD) {		
             // Move new structure around if one is waiting to be placed
             if (self.build.structure !== null)
@@ -800,61 +800,42 @@ function createStructure (structureType, game) {
 
 // Handle Collisions ----------------------------------------------------------
 function handleCollisions (game) {
-    var player = game.player,
-        playerMin = new THREE.Vector2(
-            player.position.x - 9 / 2,
-            player.position.y - 9 / 2),
-        playerMax = new THREE.Vector2(
-            player.position.x + 9 / 2,
-            player.position.y + 9 / 2);
-
+    var player = game.player;
+    var artifact = game.level.artifact;
     // TODO: move player/enemy collision test to Wave object?
-    for(var i = 0; i < game.wave.enemies.length; ++i) {
-        var enemy = game.wave.enemies[i],
-            enemyMin = new THREE.Vector2(
-                enemy.position.x - enemy.size.x / 2,
-                enemy.position.y - enemy.size.y / 2),
-            enemyMax = new THREE.Vector2(
-                enemy.position.x + enemy.size.x / 2,
-                enemy.position.y + enemy.size.y / 2);
-
-        if (playerMin.x > enemyMax.x
-         || playerMax.x < enemyMin.x
-         || playerMin.y > enemyMax.y
-         || playerMax.y < enemyMin.y) {
-        } else {
-            if (player.isSpinning) {
-                enemy.takeDamage(player.enemyDamage);
-            }
-			else {
-				player.takeDamage(enemy.playerDamage);
-			}
+    for(var i = game.wave.enemies.length-1; i>=0; --i) {
+        var enemy = game.wave.enemies[i];
+        if ( enemy.collidesWith(player)) {
+            enemy.handleCollision(player);
+            player.handleCollision(enemy);
         }
-
-        // Damage the artifact
-        // TODO: this is temporary, remove when collision is merged
-        /*if (enemyMin.x >= 480 && enemyMax.x <= 520
-         && enemyMin.y >= 480 && enemyMax.y <= 520) {
-            if (game.level.artifact.health > 0) {
-                game.level.artifact.health -= 0.1;
-                if (game.level.artifact.health <= 0)
-                    game.level.artifact.die();
-            }
-        }*/
-		if (enemyMin.x > game.level.artifact.positionMax.x
-         || enemyMax.x < game.level.artifact.positionMin.x
-         || enemyMin.y > game.level.artifact.positionMax.y
-         || enemyMax.y < game.level.artifact.positionMin.y) {
-            //Do nothing
+        
+        if ( enemy.collidesWith(artifact) ) {
+            enemy.handleCollision(artifact);
+            artifact.handleCollision(enemy);
         }
-		else {
-			//Stop enemy
-			enemy.velocity.x = -enemy.velocity.x;
-			enemy.velocity.y = -enemy.velocity.y;
-			enemy.mesh.position = enemy.position.addSelf(enemy.velocity).clone();
-			
-			game.level.artifact.takeDamage(enemy.artifactDamage);
-		}
+    }
+    
+    for(var i = game.level.structures.length-1; i>=0; --i) {
+        var struct = game.level.structures[i];
+        if ( player.collidesWith(struct) ) {
+            player.handleCollision(struct);
+            struct.handleCollision(player);
+        }
+        for(var j = game.wave.enemies.length-1; j>=0; --j) {
+            var enemy = game.wave.enemies[j];
+            if ( struct.collidesWith(enemy)) {
+                struct.handleCollision(enemy);
+                enemy.handleCollision(struct);
+                //console.log("collide with enemy"+j)
+            }
+        } 
+    }
+    for(var i = game.level.structures.length-1; i>=0; --i) {
+        var struct = game.level.structures[i];
+        if ( struct.dead ) {
+            struct.die(i);
+        }
     }
 }
 

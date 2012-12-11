@@ -9,7 +9,7 @@ function Player (game) {
     this.velocity 	= null;
     this.money		= null;
     this.isSpinning = false;
-	this.health		= 100;
+    this.health		= 1000;
     this.enemyDamage = 10;
     this.damageEffect = null;
     this.canSpin = true;
@@ -61,7 +61,7 @@ function Player (game) {
 
         // Move the player by moving mouse to edges of screen
         // Note: commented input flag so mouse always moves player
-        if (/*game.input.mouseMove &&*/ !game.countdown) {
+        if (game.input.mouseMove && !game.countdown) {
             var dx = 0, dy = 0,
                 halfWidth  = window.innerWidth  * 0.5,
                 halfHeight = window.innerHeight * 0.5,
@@ -108,10 +108,13 @@ function Player (game) {
         // Position the mesh to correspond with players updated position
         this.mesh.position = this.position.addSelf(this.velocity).clone();
 		
-		//Check collisions
-        // TODO: collisions aren't quite right yet
-		this.checkStructCollisions();
-
+        // Update the BoundingBox
+	self.boundingBox = new Rect(
+                self.position.x - 9 / 2,
+                self.position.y - 9 / 2,
+                self.position.x + 9 / 2,
+                self.position.y + 9 / 2);
+                
         // Handle spin move
         if (game.input.spin && !self.isSpinning && self.canSpin) {
             var currentZoom = game.camera.position.z;
@@ -134,53 +137,34 @@ function Player (game) {
 
             new Audio("sounds/saw.wav").play();
         }
+    
     };
     
     /*
      * Checks to see if this object collides with the passed object
      */
     this.collidesWith = function (object) {
-        
-    };
-
-    this.checkStructCollisions = function() {
-        for (var i = 0; i < game.level.structures.length; i++) {
-                var struct = game.level.structures[i];
-
-                if (playerMin.x > struct.positionMax.x
-                 || playerMax.x < struct.positionMin.x
-                 || playerMin.y > struct.positionMax.y
-                 || playerMax.y < struct.positionMin.y) {
-                        continue;
-                } else {
-                        self.velocity.x = -self.velocity.x;
-                        self.velocity.y = -self.velocity.y;
-                        self.mesh.position = self.position.addSelf(self.velocity).clone();
-                }
+        if (this.collidable) {
+            return self.boundingBox.intersects(object.boundingBox);
         }
+        else {
+            return false;
+        }
+            
     };
 
-    this.checkArtifactCollision = function() {
-            var playerMin = new THREE.Vector2(
-        self.position.x - 9 / 2,
-        self.position.y - 9 / 2),
-    playerMax = new THREE.Vector2(
-        self.position.x + 9 / 2,
-        self.position.y + 9 / 2);
-
-            var artifact = game.level.artifact;
-
-            if (playerMin.x > artifact.positionMax.x
-             || playerMax.x < artifact.positionMin.x
-             || playerMin.y > artifact.positionMax.y
-             || playerMax.y < artifact.positionMin.y) {
-                    //Do nothing
-            } else {
-                    self.velocity.x = -self.velocity.x;
-                    self.velocity.y = -self.velocity.y;
-                    self.mesh.position = self.position.addSelf(self.velocity).clone();
+    this.handleCollision = function (object) {
+        if (object instanceof Enemy) {
+            if (!self.isSpinning) {
+                self.takeDamage(object.playerDamage);
             }
-    };
+        }
+        else if (object instanceof Structure) {
+            self.velocity.x = -self.velocity.x;
+            self.velocity.y = -self.velocity.y;
+            self.mesh.position = self.position.addSelf(self.velocity).clone();
+        }
+    }
 
     this.takeDamage = function (amount) {
             self.health = self.health - amount;
@@ -286,6 +270,13 @@ function Player (game) {
         breatheOut.chain(breatheIn);
         breatheIn.start();
 
+        //Set the bounding box
+        self.boundingBox = new Rect(
+                self.position.x - 9 / 2,
+                self.position.y - 9 / 2,
+                self.position.x + 9 / 2,
+                self.position.y + 9 / 2);
+                
         console.log("Player initialized.");
     })(self);
 

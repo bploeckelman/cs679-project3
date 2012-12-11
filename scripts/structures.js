@@ -26,14 +26,15 @@ function Structure (type, game) {
     this.node     = null;
     this.placed   = null;
     this.position = null;
-	this.positionMin = null;
-	this.positionMax = null;
     this.gridindices = null;
-	this.health      = null;
+    this.health      = null;
     this.maxHealth   = null;
     this.damageEffect = null;
 
     this.collidable = true;
+    this.boundingBox = null;
+    
+    this.dead = false;
 
     // Private variables ------------------------------------------------------
     var self = this;
@@ -110,34 +111,33 @@ function Structure (type, game) {
                 }
             }
 			
-			var all_buildable = true;
-			for(var y = 0; y < game.level.size.ycells; y++){
-				for(var x = 0; x < game.level.size.xcells; x++){
-				 if (x >= 48 && x <= 51 && y >= 48 && y <= 51){ // keep center region non-buildable
-                        continue;
-					}else if(game.level.cells[y][x].buildable === false){
-						all_buildable = false;
-					}
-				}
-			}
-					
-			if(all_buildable){
-				game.gamewon = true;
-			}
-				
-			self.position = new THREE.Vector2(
-				self.node.position.x + self.mesh.position.x,
-				self.node.position.y + self.mesh.position.y);
-			
-			//alert("mesh postion: " + self.mesh.position.x + "," + self.mesh.position.y);
-			//alert("node postion: " + self.node.position.x + "," + self.node.position.y);
-			//alert("center postion: " + posX + "," + posY);
-			self.positionMin = new THREE.Vector2(
-                self.position.x - 0 - (game.level.size.cellw * STRUCTURE_SIZES[self.type]) / 2,
-                self.position.y - 0 - (game.level.size.cellh * STRUCTURE_SIZES[self.type]) / 2);
-            self.positionMax = new THREE.Vector2(
-                self.position.x - 2 + (game.level.size.cellw * STRUCTURE_SIZES[self.type]) / 2,
-                self.position.y - 2 + (game.level.size.cellh * STRUCTURE_SIZES[self.type]) / 2);
+            var all_buildable = true;
+            for(var y = 0; y < game.level.size.ycells; y++){
+                    for(var x = 0; x < game.level.size.xcells; x++){
+                     if (x >= 48 && x <= 51 && y >= 48 && y <= 51){ // keep center region non-buildable
+            continue;
+                            }else if(game.level.cells[y][x].buildable === false){
+                                    all_buildable = false;
+                            }
+                    }
+            }
+
+            if(all_buildable){
+                    game.gamewon = true;
+            }
+
+            self.position = new THREE.Vector2(
+                    self.node.position.x + self.mesh.position.x,
+                    self.node.position.y + self.mesh.position.y);
+
+            //alert("mesh postion: " + self.mesh.position.x + "," + self.mesh.position.y);
+            //alert("node postion: " + self.node.position.x + "," + self.node.position.y);
+            //alert("center postion: " + posX + "," + posY);
+            self.boundingBox = new Rect(
+                    self.position.x - 0 - (game.level.size.cellw * STRUCTURE_SIZES[self.type]) / 2,
+                    self.position.y - 0 - (game.level.size.cellh * STRUCTURE_SIZES[self.type]) / 2,
+                    self.position.x - 2 + (game.level.size.cellw * STRUCTURE_SIZES[self.type]) / 2,
+                    self.position.y - 2 + (game.level.size.cellh * STRUCTURE_SIZES[self.type]) / 2);
                 
             // Add a little pop to the mesh to indicate that it is placed
             new TWEEN.Tween({
@@ -246,11 +246,12 @@ function Structure (type, game) {
     };
 	
 	
-    this.takeDamage = function (amount, arrayIndex) { 
-		self.health = self.health - amount;
+    this.takeDamage = function (amount) { 
+	self.health = self.health - amount;
 
         if (self.health <= 0) {
-            self.die(arrayIndex);
+            self.dead = true;
+            //self.die(arrayIndex);
         } else {
             if (!self.damageEffect.running) {
 				new Audio("sounds/structure_damage.wav").play();
@@ -262,17 +263,17 @@ function Structure (type, game) {
 
 	
     this.die = function (arrayIndex) {
-		//FIXME: Particles not getting displayed
-		new Audio("sounds/structure_die.wav").play();
+        //FIXME: Particles not getting displayed
+        new Audio("sounds/structure_die.wav").play();
 
-		spawnParticles(
+        spawnParticles(
             PARTICLES.ENEMY_DEATH,
             self.mesh.position,
             { color: new THREE.Color(0xff0000) },
             game
         );
-		
-		var structureSize = STRUCTURE_SIZES[self.type];
+
+        var structureSize = STRUCTURE_SIZES[self.type];
 
         for (var i=0; i < structureSize; ++i) {
             for (var j=0; j < structureSize; ++j) {
@@ -282,12 +283,12 @@ function Structure (type, game) {
 
             }
         }
-		game.level.structures.splice(arrayIndex, 1);
+        game.level.structures.splice(arrayIndex, 1);
         game.scene.remove(self.mesh);
-		game.scene.remove(self.node);
+        game.scene.remove(self.node);
 		
-		//Free up the grid cell
-		var structureSize = STRUCTURE_SIZES[self.type];
+        //Free up the grid cell
+        var structureSize = STRUCTURE_SIZES[self.type];
 
         for (var i=0; i < structureSize; ++i) {
             for (var j=0; j < structureSize; ++j) {
@@ -296,14 +297,25 @@ function Structure (type, game) {
                 game.level.cells[indices.y][indices.x].occupied = false;
             }
         }
-		game.level.territoryDirty = true; // Regenerate territory geometry
+        game.level.territoryDirty = true; // Regenerate territory geometry
     };
 
     /*
      * Checks to see if this object collides with the passed object
      */
     this.collidesWith = function (object) {
-        
+        if (this.collidable) {
+            return self.boundingBox.intersects(object.boundingBox);
+        }
+        else {
+            return false;
+        }
+    };
+
+    this.handleCollision = function (object) {
+        if (object instanceof Enemy) {
+            self.takeDamage(object.structDamage);
+        }
     };
 
     // Constructor ------------------------------------------------------------
