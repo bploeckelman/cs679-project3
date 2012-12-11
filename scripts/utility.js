@@ -66,4 +66,27 @@ Rect.prototype.intersects = function( other ) {
              other.bottom <= this.top);
 };
 
+/*
+ * Creates a shallow copy of an object
+ */
+function shallowCopy(object) {
+    var ans = {};
+    for (var key in object) {
+        ans[key] = object[key];
+    }
+    return ans;
+}
 
+function deepCopy(object) {
+    var clone = {};
+
+    for (var key in object) {
+        if (typeof object[key] == 'object') {
+            clone[key] = deepCopy(object[key]);
+        } else {
+            clone[key] = object[key];
+        }
+    }
+
+    return clone;
+}

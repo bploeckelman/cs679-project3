@@ -24,6 +24,8 @@ var ENEMY_TYPES = {
 var ENEMY_DESCRIPTIONS= [
     {
         type     : ENEMY_TYPES.BRUTE,
+        health   : 10,
+        speed    : 1.0,
         init     :  function(self) {
             
                     },
@@ -33,6 +35,8 @@ var ENEMY_DESCRIPTIONS= [
     },
     {
         type     : ENEMY_TYPES.LUNATIC,
+        health   : 10,
+        speed    : 1.0,
         maxspeed : new THREE.Vector2(20,20),
         init     :  function(self) {
                         self.target = new THREE.Vector2(
@@ -49,6 +53,8 @@ var ENEMY_DESCRIPTIONS= [
     },
     {
         type     : ENEMY_TYPES.ARTIPHILE,
+        health   : 10,
+        speed    : 1.0,
         init     :  function(self) {
                         self.setPathToTake(self.findPathTo(game.level.artifact.mesh.position));
                     },
@@ -334,6 +340,7 @@ function Enemy (description) {
             enemy.health = description["health"];
         } else {
             enemy.health = 100;
+            alert("");
         }
     
         if ("type" in description) {
