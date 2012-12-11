@@ -20,7 +20,7 @@ function Player (game) {
     // Private variables ------------------------------------------------------
     var self = this,
         TEXTURE     = THREE.ImageUtils.loadTexture("images/player.png"),
-        PLAYER_SIZE = { w: 9, h: 9 },
+        PLAYER_SIZE = { w: 10, h: 10 },
         MOVE_SPEED  = { x: 1.0, y: 1.0 },
         MAX_SPEED   = { x: 3, y: 3 },
         PLAYER_Z    = 0.2,
@@ -110,11 +110,11 @@ function Player (game) {
 		
         // Update the BoundingBox
 	self.boundingBox = new Rect(
-                self.position.x - 9 / 2,
-                self.position.y - 9 / 2,
-                self.position.x + 9 / 2,
-                self.position.y + 9 / 2);
-                
+                self.position.x - PLAYER_SIZE.w / 2,
+                self.position.y - PLAYER_SIZE.h / 2,
+                self.position.x + PLAYER_SIZE.w / 2,
+                self.position.y + PLAYER_SIZE.h / 2);
+        console.log(self.position);
         // Handle spin move
         if (game.input.spin && !self.isSpinning && self.canSpin) {
             var currentZoom = game.camera.position.z;
@@ -160,9 +160,10 @@ function Player (game) {
             }
         }
         else if (object instanceof Structure) {
-            self.velocity.x = -self.velocity.x;
-            self.velocity.y = -self.velocity.y;
-            self.mesh.position = self.position.addSelf(self.velocity).clone();
+            var velocity = new THREE.Vector3(0,0,0);
+            velocity.x = -self.velocity.x;
+            velocity.y = -self.velocity.y;
+            self.mesh.position = self.position.addSelf(velocity).clone();
         }
     }
 
@@ -197,14 +198,14 @@ function Player (game) {
     };
 
     this.reset = function() {
-		self.mesh.position.set(PLAYER_SIZE.w / 2, PLAYER_SIZE.h / 2, PLAYER_Z);
+	self.mesh.position.set(PLAYER_SIZE.w / 2, PLAYER_SIZE.h / 2, PLAYER_Z);
         self.position = self.mesh.position;
         self.velocity = new THREE.Vector3(0,0,0);
 	};
 
     // Constructor ------------------------------------------------------------
     (this.init = function (player) {
-		var playerColor =  new THREE.Color(0xff0000);
+	var playerColor =  new THREE.Color(0xff0000);
         // Create player mesh
         player.mesh = new THREE.Mesh(
             new THREE.PlaneGeometry(PLAYER_SIZE.w, PLAYER_SIZE.h),
@@ -217,6 +218,7 @@ function Player (game) {
         );
         player.mesh.position.set(PLAYER_SIZE.w / 2, PLAYER_SIZE.h / 2, PLAYER_Z);
         player.position = player.mesh.position;
+        console.log(player.position);
         player.velocity = new THREE.Vector3(0,0,0);
 		
 	player.boundingBox = new Rect(

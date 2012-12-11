@@ -132,13 +132,14 @@ function Structure (type, game) {
 
             //alert("mesh postion: " + self.mesh.position.x + "," + self.mesh.position.y);
             //alert("node postion: " + self.node.position.x + "," + self.node.position.y);
-            //alert("center postion: " + posX + "," + posY);
-            self.boundingBox = new Rect(
-                    self.position.x - 0 - (game.level.size.cellw * STRUCTURE_SIZES[self.type]) / 2,
-                    self.position.y - 0 - (game.level.size.cellh * STRUCTURE_SIZES[self.type]) / 2,
-                    self.position.x - 2 + (game.level.size.cellw * STRUCTURE_SIZES[self.type]) / 2,
-                    self.position.y - 2 + (game.level.size.cellh * STRUCTURE_SIZES[self.type]) / 2);
-                
+            //alert("center postion: " + self.position.x + "," + self.position.y);
+            
+           self.boundingBox = new Rect(
+                    self.node.position.x,
+                    self.node.position.y,
+                    self.node.position.x + (game.level.size.cellw * STRUCTURE_SIZES[self.type]),
+                    self.node.position.y + (game.level.size.cellh * STRUCTURE_SIZES[self.type]));
+
             // Add a little pop to the mesh to indicate that it is placed
             new TWEEN.Tween({
                     scale: 1.0,

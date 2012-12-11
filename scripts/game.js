@@ -281,8 +281,8 @@ function Game(canvas, renderer) {
             if (self.player === null)
                 self.player = new Player(self);
 			var posX = self.level.artifact.mesh.position.x,
-				posY = self.level.artifact.mesh.position.y + 12,
-				posZ = self.level.artifact.mesh.position.z,
+				posY = self.level.artifact.mesh.position.y,
+				posZ = 0.1,
 				pos = new THREE.Vector3(posX, posY, posZ);
 			self.player.position = pos;
 			self.player.mesh.position = pos;
