@@ -2,63 +2,83 @@
 // Instructions
 //-----------------------------------------------------------------------------
 var styles = {
-    style0: { 
-        font: "50px Arial",
+    title: { 
+        font: "bold small-caps 50px Arial",
         textBaseLine: "bottom",
         textAlign: "left",
         fillStyle: "#ff100f",
-        delay: 2000,
+        xOffset: 0,
+        yOffset: 100,
     },  
+    highlight: {
+        font: "bold 30px Arial",
+        textBaseLine: "bottom",
+        textAlign: "left",
+        fillStyle: "#ffff00",
+        xOffset: 0,
+        yOffset: 60,
+    },
+    image: { },
     style1: {
         font: "25px Arial",
         textBaseLine: "bottom",
         textAlign: "left",
         fillStyle: "#ffffff",
-        delay: 1000,
+        xOffset: 0,
+        yOffset: 50,
     },  
     style2: {
         font: "25px Arial",
         textBaseLine: "bottom",
         textAlign: "left",
         fillStyle: "#ffffff",
-        delay: 5000,
+        xOffset: 0,
+        yOffset: 50,
     }
 };
 
-var instructions = {
+function getImage (src) {
+    var img = new Image();
+    img.src = src;
+    return img;
+}
 
-    // --------------------------------
+var instructions = {
 
     build: {
         draw: true,
-        text: { text: "Build Phase...", style: styles.style0 },
+        alpha: 1.0,
         lines: [
-            { text: "Build Phase...", style: styles.style0 },
-            { text: "W A S D keys move the viewpoint around", style: styles.style2 },
-            { text: "1 2 3 4 keys or clicking a button below buys a new structure", style: styles.style2 },
-            { text: "Left-Click to place structure, Right-Click to discard it", style: styles.style2 },
-            { text: "Structures can only be placed inside green 'claimed' territory", style: styles.style2 },
-            { text: "Placing structures expands your territory", style: styles.style2 },
-            { text: "Large structures expand territory more than small ones", style: styles.style2 },
-            { text: "More territory = more build credits", style: styles.style2 }
+            { text: "Build Phase...", style: styles.title},
+            { text: "Move the viewpoint:", style: styles.highlight },
+            { image: getImage("images/wasd.png"), style: styles.image },
+            { text: "Buy a new structure:", style: styles.highlight },
+            { image: getImage("images/1234.png"), style: styles.image },
+            { image: getImage("images/mouse-left.png"), text: "Place structure", style: styles.highlight },
+            { image: getImage("images/mouse-right.png"), text: "Discard structure", style: styles.highlight},
+            { text: "Build in green 'claimed' cells to...", style: styles.highlight},
+            { text: "    - Defend your cube!", style: styles.style2 },
+            { text: "    - Expand your territory", style: styles.style2 },
+            { text: "    - Earn more build credits", style: styles.style2 }
         ],
-        line: 1,
-        position: new THREE.Vector2(25, window.innerHeight / 6)
+        position: new THREE.Vector2(25, window.innerHeight / 10)
     },
 
 
     defend: {
         draw: true,
-        text: { text: "Defend Phase...", style: styles.style0 },
+        alpha: 1.0,
         lines: [
-            { text: "Defend Phase...", style: styles.style0 },
-            { text: "HOLD Right-Mouse to move with the mouse, or...", style: styles.style2 },
-            { text: "W, A, S, and D keys move also", style: styles.style2 },
-            { text: "Left-Click to use your spin-attack!", style: styles.style2 },
-            { text: "Protect your structures and artifact cube from enemies", style: styles.style2 },
+            { text: "Defend Phase...", style: styles.title },
+            { text: "Move the player:", style: styles.highlight },
+            { image: getImage("images/wasd.png"), style: styles.image },
+            { image: getImage("images/mouse.png"), text: "Mouse move", style: styles.highlight },
+            { image: getImage("images/mouse-left.png"), text: "Spin attack", style: styles.highlight },
+            { text: "Destroy enemies to...", style: styles.highlight },
+            { text: "   - Protect your cube", style: styles.style2 },
+            { text: "   - Protect your structures", style: styles.style2 },
         ],
-        line: 1,
-        position: new THREE.Vector2(25, window.innerHeight / 6),
+        position: new THREE.Vector2(25, window.innerHeight / 10),
     }
 };
 

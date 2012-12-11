@@ -61,39 +61,8 @@ function Game(canvas, renderer) {
         action4:  52, // 4
         esc:      27, // ESC
     };
-    this.instructionTween = new TWEEN.Tween({
-            y: window.innerHeight / 5,
-            starty: window.innerHeight / 5 
-        })
-        .to({ y: window.innerHeight * 9 / 10 }, 750)
-        .easing(TWEEN.Easing.Cubic.In)
-        .onUpdate(function () {
-            game.instructions.position.y = this.y;
-        })
-        .onComplete(function () {
-            if (game.instructions.line < game.instructions.lines.length) {
-                // Move to the next line of text
-                game.instructions.text = game.instructions.lines[game.instructions.line++];
-                game.instructions.tween.delay(game.instructions.text.style.delay);
-                // Reset the tween/text positions
-                this.y = this.starty;
-                game.instructions.position.y = this.starty;
-                // Restart the tween
-                game.instructions.tween.start();
-            } else {
-                // ... all out of instructions 
-                game.instructions.draw = false;
-                // Move back to first line of text
-                game.instructions.line = 0;
-                game.instructions.text = game.instructions.lines[game.instructions.line++];
-                game.instructions.tween.delay(game.instructions.text.style.delay);
-                // Reset the tween/text positions
-                this.y = this.starty;
-                game.instructions.position.y = this.starty;
-            }
-        })
-        .delay(2000)
-        .start()
+    this.firstDefend = true;
+    this.firstBuild  = false; // set to true when game intro text/credits are done
 
 
     // Private variables ------------------------------------------------------
@@ -207,57 +176,75 @@ function Game(canvas, renderer) {
 			CONTEXT2D.textBaseline = "top";
 			CONTEXT2D.textAlign    = "center";
 			CONTEXT2D.fillStyle    = "#ffffff";
-			CONTEXT2D.fillText(
-				"GAME OVER",
-				CANVAS2D.width/2,
-				CANVAS2D.height/2);
-		}
-		else if (self.gamewon) {
+			CONTEXT2D.fillText("GAME OVER", CANVAS2D.width / 2, CANVAS2D.height / 2);
+		} else if (self.gamewon) {
 			CONTEXT2D.font         = "40px Arial";
 			CONTEXT2D.textBaseline = "top";
 			CONTEXT2D.textAlign    = "center";
 			CONTEXT2D.fillStyle    = "#ffffff";
-			CONTEXT2D.fillText(
-				"YOU WIN",
-				CANVAS2D.width/2,
-				CANVAS2D.height/2);
-		}
-		else {
+			CONTEXT2D.fillText("YOU WIN", CANVAS2D.width  / 2, CANVAS2D.height / 2);
+		} else {
 			// Draw any hud info on the 2d canvas
 			CONTEXT2D.font         = "20px Arial";
 			CONTEXT2D.textBaseline = "top";
 			CONTEXT2D.textAlign    = "center";
 			CONTEXT2D.fillStyle    = "#ffffff";
-			CONTEXT2D.fillText(
-				"Round #" + self.round,
-				CANVAS2D.width / 2, 0);
-			CONTEXT2D.fillText(
-				"Build Credits: " + self.player.money,
-				CANVAS2D.width / 2, 20);
-			CONTEXT2D.fillText(
-				"Artifact Health: " + Math.floor(self.level.artifact.health),
-				CANVAS2D.width / 2, 40);
-			CONTEXT2D.fillText(
-				"Player Health: " + Math.floor(self.player.health),
-				CANVAS2D.width / 2, 60);
+			CONTEXT2D.fillText("Round #" + self.round, CANVAS2D.width / 2, 0);
+            // TODO: setup a nicer interface for these
+			CONTEXT2D.fillText("Build Credits: " + self.player.money, CANVAS2D.width / 2, 20);
+			CONTEXT2D.fillText("Artifact Health: " + Math.floor(self.level.artifact.health), CANVAS2D.width / 2, 40);
+			CONTEXT2D.fillText("Player Health: " + Math.floor(self.player.health), CANVAS2D.width / 2, 60);
 			if (self.countdown) {
 				CONTEXT2D.font = "40px Arial";
 				CONTEXT2D.textBaseline = "center";
-				CONTEXT2D.fillText("Defend phase complete!",
-					CANVAS2D.width / 2, CANVAS2D.height / 2);
+				CONTEXT2D.fillText("Defend phase complete!", CANVAS2D.width / 2, CANVAS2D.height / 2);
 			}
 
 			// Draw instructions on the 2d canvas
 			if (self.instructions.draw) {
-				CONTEXT2D.font         = self.instructions.text.style.font;
-				CONTEXT2D.textBaseLine = self.instructions.text.style.textBaseLine;
-				CONTEXT2D.textAlign    = self.instructions.text.style.textAlign;
-				CONTEXT2D.fillStyle    = self.instructions.text.style.fillStyle;
+                var x = self.instructions.position.x,
+                    y = self.instructions.position.y;
 
-				CONTEXT2D.fillText(
-					self.instructions.text.text,
-					self.instructions.position.x,
-					self.instructions.position.y);
+                // Draw a little partially transparent green background
+                CONTEXT2D.globalAlpha = 0.1;
+                CONTEXT2D.fillStyle = "rgb(16, 255, 16)"; 
+                CONTEXT2D.fillRect(0, 0, 500, window.innerHeight);
+                CONTEXT2D.globalAlpha = 1.0;
+
+                // Draw the instruction text
+                CONTEXT2D.globalAlpha = self.instructions.alpha;
+                for (var i = 0; i < self.instructions.lines.length; ++i) {
+                    var line = self.instructions.lines[i];
+
+                    if (line.hasOwnProperty('image')) {
+                        CONTEXT2D.drawImage(line.image, x, y);
+
+                        // HACK: gets text to display next to image
+                        if (!line.hasOwnProperty('text')) {
+                            y += line.image.height + 20;
+                        } else {
+                            x += line.image.width + 20;
+                            y += line.image.height / 4;
+                        }
+                    }
+
+                    if (line.hasOwnProperty('text')) {
+                        // Set style for the line
+                        CONTEXT2D.font = line.style.font;
+                        CONTEXT2D.textBaseLine = line.style.textBaseLine;
+                        CONTEXT2D.textAlign = line.style.textAlign;
+                        CONTEXT2D.fillStyle = line.style.fillStyle;
+
+                        // Draw the line of text
+                        CONTEXT2D.fillText(line.text, x, y);
+
+                        // Update the position for the next line
+                        //x += line.style.xOffset;
+                        x = game.instructions.position.x;
+                        y += line.style.yOffset;
+                    }
+                }
+                CONTEXT2D.globalAlpha = 1.0;
 			}
 		}
     };
@@ -268,8 +255,14 @@ function Game(canvas, renderer) {
         // Build -> Defend
         if (self.mode === GAME_MODE.BUILD) {
             self.mode = GAME_MODE.DEFEND;
-			self.instructions.draw = false;
             self.round++;
+
+            if (self.firstDefend) {
+                self.instructions = instructions.defend;
+                self.instructions.draw = true;
+            } else { 
+                self.instructions.draw = false;
+            }
 
             document.getElementsByTagName('body')[0].style.cursor = 'url(\"images/defend-cursor.cur\"), default';
 
@@ -311,6 +304,13 @@ function Game(canvas, renderer) {
         // Defend -> Build
         else if (self.mode === GAME_MODE.DEFEND) {
             self.mode = GAME_MODE.BUILD;
+
+            if (self.firstBuild) {
+                self.instructions = instructions.build;
+                self.instructions.draw = true;
+            } else { 
+                self.instructions.draw = false;
+            }
 
             document.getElementsByTagName('body')[0].style.cursor = 'url(\"images/repair-cursor.cur\"), default';
 
@@ -505,20 +505,26 @@ function Game(canvas, renderer) {
         // Set initial 'instructions'
         game.instructions = {
             draw: true,
-            text: { text: "Flatland Defender", style: styles.style0 },
+            alpha: 1.0,
             lines: [
-                { text: "A game by...", style: styles.style1 },
-                { text: "Brian Ploeckelman,", style: styles.style1 },
-                { text: "Eric Satterness,", style: styles.style1 },
-                { text: "Shreedhar Hardikar,", style: styles.style1 },
-                { text: "and Suli Yang...", style: styles.style1 },
-                { text: "Made at UW-Madison", style: styles.style1 },
-                { text: "For CS 679 Games Tech", style: styles.style1 },
-                { text: "Fall Semester - 2012", style: styles.style1 },
+                { text: "Flatland Defender", style: styles.title },
+                { text: "A game by:", style: styles.style1 },
+                { text: "    Brian Ploeckelman", style: styles.highlight },
+                { text: "    Eric Satterness", style: styles.highlight },
+                { text: "    Shreedhar Hardikar", style: styles.highlight },
+                { text: "    Suli Yang", style: styles.highlight },
+                { text: "Made at:", style: styles.style1 },
+                { text: "    UW-Madison", style: styles.highlight },
+                { text: "For CS 679:", style: styles.style1 },
+                { text: "    Games Tech, Fall 2012", style: styles.highlight},
             ],
-            line: 0,
-            position: new THREE.Vector2(25, window.innerHeight / 5),
-            tween: game.instructionTween
+            position: new THREE.Vector2(25, window.innerHeight / 8),
+            tween: new TWEEN.Tween({ alpha: 1.0 })
+                        .to({ alpha: 0.0 }, 10000)
+                        .easing(TWEEN.Easing.Cubic.In)
+                        .onUpdate(function () { game.instructions.alpha = this.alpha; })
+                        .onComplete(function () { game.instructions = instructions.build; })
+                        .start()
         };
 		
 		//Draw the game over screen the same way we do the instruction
@@ -722,23 +728,24 @@ function Game(canvas, renderer) {
                     .style.backgroundSize = "100% 100%";
         };
 
-        // --------- Help Buton handlers ------------------
+        // --------- Help Button handlers ------------------
         document.getElementById("help").onclick = function () {
             // Fill game.instructions with instruction text/styles
             if (self.mode === GAME_MODE.BUILD) {
-                game.instructions = instructions.build;
-                game.instructions.line = 0;
-                game.instructions.text = game.instructions.lines[game.instructions.line++];
-                game.instructions.draw = true;
-                game.instructions.tween = game.instructionTween;
-                game.instructions.tween.start();
+                if (game.instructions === instructions.build) {
+                    game.instructions.draw = !game.instructions.draw;
+                    game.firstBuild = false;
+                } else {
+                    game.instructions.tween.stop();
+                    game.instructions = instructions.build;
+                }
             } else if (self.mode === GAME_MODE.DEFEND) {
-                game.instructions = instructions.defend;
-                game.instructions.line = 0;
-                game.instructions.text = game.instructions.lines[game.instructions.line++];
-                game.instructions.draw = true;
-                game.instructions.tween = game.instructionTween;
-                game.instructions.tween.start();
+                if (game.instructions === instructions.defend) {
+                    game.instructions.draw = !game.instructions.draw;
+                    game.firstDefend = false;
+                } else {
+                    game.instructions = instructions.defend;
+                }
             }
         };
         document.getElementById("help").onmousedown = function () {
