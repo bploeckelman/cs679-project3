@@ -160,9 +160,14 @@ function Player (game) {
             }
         }
         else if (object instanceof Structure) {
-            var velocity = new THREE.Vector3(0,0,0);
-            velocity.x = -self.velocity.x;
-            velocity.y = -self.velocity.y;
+            var velocity = new THREE.Vector3(self.velocity.x,self.velocity.y,0);
+            if ( self.boundingBox.intersectsX(object.boundingBox)) {
+                velocity.x = -self.velocity.x;
+            }
+            
+            if ( self.boundingBox.intersectsY(object.boundingBox)) {
+                velocity.y = -self.velocity.y;
+            }
             self.mesh.position = self.position.addSelf(velocity).clone();
         }
     }
@@ -222,10 +227,10 @@ function Player (game) {
         player.velocity = new THREE.Vector3(0,0,0);
 		
 	player.boundingBox = new Rect(
-                self.position.x - 9 / 2, 
-                self.position.y - 9 / 2,
-                self.position.x + 9 / 2,
-                self.position.y + 9 / 2
+                self.position.x - PLAYER_SIZE.w / 2, 
+                self.position.y - PLAYER_SIZE.h / 2,
+                self.position.x + PLAYER_SIZE.w / 2,
+                self.position.y + PLAYER_SIZE.h / 2
             );
 
         // Set initial money
@@ -249,8 +254,8 @@ function Player (game) {
 
         // Create "breathing" animation
         var BREATHE_TIME = 1000,
-            MAX_SCALE = 1.2,
-            MIN_SCALE = 0.8,
+            MAX_SCALE = 1.0,
+            MIN_SCALE = 0.7,
             breatheIn = new TWEEN.Tween({ scale: MIN_SCALE })
                 .to({ scale: MAX_SCALE }, BREATHE_TIME)
                 .easing(TWEEN.Easing.Cubic.InOut)

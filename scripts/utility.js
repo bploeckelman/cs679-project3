@@ -53,8 +53,19 @@ function Rect (x1, y1, x2, y2) {
 };
 
 Rect.prototype.intersects = function( other ) {
-    return !(other.left > this.right || 
-             other.right < this.left || 
-             other.top > this.bottom ||
-             other.bottom < this.top);
+    return !(other.left >= this.right || 
+             other.right <= this.left || 
+             other.top >= this.bottom ||
+             other.bottom <= this.top);
 };
+
+Rect.prototype.intersectsX = function (other) {
+    return !(other.left >= this.right || 
+             other.right <= this.left);
+}
+
+
+Rect.prototype.intersectsY = function (other) {
+    return !(other.top >= this.bottom ||
+             other.bottom <= this.top);
+}
