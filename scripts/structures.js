@@ -388,7 +388,7 @@ function Structure (type, game) {
             .onComplete(function () { })
             .start();
 			
-        structure.maxHealth = 10;
+        structure.maxHealth = 1000000;
 		structure.health = structure.maxHealth;
 
         // Initialize damage effect tween

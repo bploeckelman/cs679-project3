@@ -114,7 +114,7 @@ function Player (game) {
                 self.position.y - PLAYER_SIZE.h / 2,
                 self.position.x + PLAYER_SIZE.w / 2,
                 self.position.y + PLAYER_SIZE.h / 2);
-        console.log(self.position);
+        //console.log(self.position);
         // Handle spin move
         if (game.input.spin && !self.isSpinning && self.canSpin) {
             var currentZoom = game.camera.position.z;
@@ -160,14 +160,32 @@ function Player (game) {
             }
         }
         else if (object instanceof Structure) {
-            var velocity = new THREE.Vector3(self.velocity.x,self.velocity.y,0);
-            if ( self.boundingBox.intersectsX(object.boundingBox)) {
-                velocity.x = -self.velocity.x;
+            var velocity = new THREE.Vector3(-self.velocity.x,-self.velocity.y,0);
+
+            var structPosition = object.position;
+            var enemyPosition = self.position;
+            
+            //Get the vector from the center of the player to the center of structure
+            var diff = new THREE.Vector2().sub(structPosition, enemyPosition);
+            
+            //Get the vectors along the axes
+            var vx = new THREE.Vector2(self.velocity.x,0);
+            var vy = new THREE.Vector2(0,self.velocity.y);
+            
+            //Calulate the angles between the diff vector and the axes
+            var thetaX = Math.acos(diff.dot(vx) / vx.length() / diff.length());
+            var thetaY = Math.acos(diff.dot(vy) / vy.length() / diff.length());
+            //console.log(thetaX * 180 / Math.PI + " " + (thetaY * 180 / Math.PI));
+            
+            //If X axis is farther, so go along x
+            if( thetaX > thetaY ) {
+                velocity.x = self.velocity.x / 2;
+            } 
+            //else Y axis is farther, so go along Y
+            else {
+                velocity.y = self.velocity.y / 2;
             }
             
-            if ( self.boundingBox.intersectsY(object.boundingBox)) {
-                velocity.y = -self.velocity.y;
-            }
             self.mesh.position = self.position.addSelf(velocity).clone();
         }
     }
@@ -223,7 +241,7 @@ function Player (game) {
         );
         player.mesh.position.set(PLAYER_SIZE.w / 2, PLAYER_SIZE.h / 2, PLAYER_Z);
         player.position = player.mesh.position;
-        console.log(player.position);
+        //console.log(player.position);
         player.velocity = new THREE.Vector3(0,0,0);
 		
 	player.boundingBox = new Rect(
@@ -279,10 +297,10 @@ function Player (game) {
 
         //Set the bounding box
         self.boundingBox = new Rect(
-                self.position.x - 9 / 2,
-                self.position.y - 9 / 2,
-                self.position.x + 9 / 2,
-                self.position.y + 9 / 2);
+                self.position.x - PLAYER_SIZE.w / 2,
+                self.position.y - PLAYER_SIZE.h / 2,
+                self.position.x + PLAYER_SIZE.w / 2,
+                self.position.y + PLAYER_SIZE.h / 2);
                 
         console.log("Player initialized.");
     })(self);

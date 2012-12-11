@@ -46,11 +46,18 @@ THREE.Vector3.prototype.almostEquals2D = function ( other, epsilon ) {
  * Rectangle Class for rectangular collision detection
  */
 function Rect (x1, y1, x2, y2) {
+    
+    
     this.left = x1;
     this.right = x2;
     this.top = y1;
     this.bottom = y2;
 };
+
+Rect.prototype.LEFT = 0;
+Rect.prototype.RIGHT = 1;
+Rect.prototype.TOP = 2;
+Rect.prototype.BOTTOM = 3;
 
 Rect.prototype.intersects = function( other ) {
     return !(other.left >= this.right || 
@@ -59,13 +66,4 @@ Rect.prototype.intersects = function( other ) {
              other.bottom <= this.top);
 };
 
-Rect.prototype.intersectsX = function (other) {
-    return !(other.left >= this.right || 
-             other.right <= this.left);
-}
 
-
-Rect.prototype.intersectsY = function (other) {
-    return !(other.top >= this.bottom ||
-             other.bottom <= this.top);
-}
