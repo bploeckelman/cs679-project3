@@ -52,7 +52,7 @@ function Enemy (description) {
     this.type     = null;
     this.structDamage = 0.02;
     this.artifactDamage = 10;
-    this.playerDamage = 0.1;
+    this.playerDamage = 0.2;
     this.vision = 100;
 
     this.path = null;

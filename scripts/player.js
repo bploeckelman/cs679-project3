@@ -9,7 +9,7 @@ function Player (game) {
     this.velocity 	= null;
     this.money		= null;
     this.isSpinning = false;
-    this.health		= 1000;
+    this.health		= 100;
     this.enemyDamage = 10;
     this.damageEffect = null;
     this.canSpin = true;
@@ -191,23 +191,22 @@ function Player (game) {
     }
 
     this.takeDamage = function (amount) {
-            self.health = self.health - amount;
-    if (self.health <= 0) {
-        self.die();
-    } else {
-        //Damage effect?
-                     if (!self.damageEffect.running) {
-                        new Audio("sounds/player_hurt.wav").play();
-            self.damageEffect.tween.start();
-            self.damageEffect.running = true;
+        self.health = self.health - amount;
+        if (self.health <= 0) {
+            self.die();
+        } else {
+            //Damage effect?
+            if (!self.damageEffect.running) {
+                new Audio("sounds/player_hurt.wav").play();
+                self.damageEffect.tween.start();
+                self.damageEffect.running = true;
+            }
         }
-    }
-};
+    };
 
     this.die = function () {
         spawnParticles(
-            // TODO: make a new particle system type for this
-            PARTICLES.ENEMY_DEATH,
+            PARTICLES.PLAYER_DEATH,
             self.mesh.position,
             { color: new THREE.Color(0xff0000) },
             game
@@ -221,7 +220,7 @@ function Player (game) {
     };
 
     this.reset = function() {
-	self.mesh.position.set(PLAYER_SIZE.w / 2, PLAYER_SIZE.h / 2, PLAYER_Z);
+        self.mesh.position.set(PLAYER_SIZE.w / 2, PLAYER_SIZE.h / 2, PLAYER_Z);
         self.position = self.mesh.position;
         self.velocity = new THREE.Vector3(0,0,0);
 	};
@@ -244,12 +243,12 @@ function Player (game) {
         //console.log(player.position);
         player.velocity = new THREE.Vector3(0,0,0);
 		
-	player.boundingBox = new Rect(
-                self.position.x - PLAYER_SIZE.w / 2, 
-                self.position.y - PLAYER_SIZE.h / 2,
-                self.position.x + PLAYER_SIZE.w / 2,
-                self.position.y + PLAYER_SIZE.h / 2
-            );
+        player.boundingBox = new Rect(
+            self.position.x - PLAYER_SIZE.w / 2, 
+            self.position.y - PLAYER_SIZE.h / 2,
+            self.position.x + PLAYER_SIZE.w / 2,
+            self.position.y + PLAYER_SIZE.h / 2
+        );
 
         // Set initial money
         player.money = 250;

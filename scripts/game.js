@@ -732,11 +732,12 @@ function Game(canvas, renderer) {
         document.getElementById("help").onclick = function () {
             // Fill game.instructions with instruction text/styles
             if (self.mode === GAME_MODE.BUILD) {
+                if (game.instructions.hasOwnProperty('tween'))
+                    game.instructions.tween.stop();
                 if (game.instructions === instructions.build) {
                     game.instructions.draw = !game.instructions.draw;
                     game.firstBuild = false;
                 } else {
-                    game.instructions.tween.stop();
                     game.instructions = instructions.build;
                 }
             } else if (self.mode === GAME_MODE.DEFEND) {

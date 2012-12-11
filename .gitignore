@@ -3,6 +3,8 @@
 *.swp
 *.tmp
 
+tags
+nbproject
 Thumbs.db
 /nbproject/private/
 /temp.html

@@ -51,8 +51,7 @@ function Artifact (level, game) {
             // Run damage effect
             if (!self.runningDamageEffect) {
                 spawnParticles(
-                    // TODO: make a new particle system type for this
-                    PARTICLES.ENEMY_DEATH,
+                    PARTICLES.ARTIFACT_DAMAGE,
                     self.mesh.position,
                     { color: new THREE.Color(0xf0f000) },
                     game
@@ -68,8 +67,7 @@ function Artifact (level, game) {
 	
     this.die = function () {
         spawnParticles(
-            // TODO: make a new particle system type for this
-            PARTICLES.ENEMY_DEATH,
+            PARTICLES.ARTIFACT_DEATH,
             self.mesh.position,
             { color: new THREE.Color(0xff0000) },
             game
@@ -137,7 +135,7 @@ function Artifact (level, game) {
         artifact.clock = new THREE.Clock(true);
 
         // Set initial health
-        artifact.health = 30000000;
+        artifact.health = 300;
 
         // Setup pulse tweens
         artifact.pulse = { time: 500, minScale: 0.75, maxScale: 1.0, tweenIn: null, tweenOut: null };

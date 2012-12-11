@@ -66,4 +66,10 @@ Rect.prototype.intersects = function( other ) {
              other.bottom <= this.top);
 };
 
+/*
+ * Random number function
+ */
+function randomBetween(min, max) {
+    return Math.random() * (max - min) + min;
+};
 
