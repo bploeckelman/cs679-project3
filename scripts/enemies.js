@@ -18,19 +18,49 @@ var ENEMY_TYPES = {
 	ARTIPHILE : 2,
 };
 /*
- * Possible description elements :
+ * Possible description elements along with enemy specific methods:
  * type, color, position, size, speed, maxspeed, health
  */
 var ENEMY_DESCRIPTIONS= [
-	{
-        type: ENEMY_TYPES.BRUTE,
+    {
+        type     : ENEMY_TYPES.BRUTE,
+        init     :  function(self) {
+            
+                    },
+        update   :  function(self) {
+                        self.setFollowTarget(game.player.position);
+                    }
     },
     {
-        type: ENEMY_TYPES.LUNATIC,
-        maxspeed: new THREE.Vector2(20,20)
+        type     : ENEMY_TYPES.LUNATIC,
+        maxspeed : new THREE.Vector2(20,20),
+        init     :  function(self) {
+                        self.target = new THREE.Vector2(
+                        Math.floor(Math.random() * 1000),
+                        Math.floor(Math.random() * 1000));
+                    },
+        update   :  function(self) {
+                        if (game.frames % 60 == 0 || !self.target) {
+                            self.target = new THREE.Vector2(
+                                Math.floor(Math.random() * 1000),
+                                Math.floor(Math.random() * 1000));
+                        }
+                    }
     },
     {
-        type: ENEMY_TYPES.ARTIPHILE,
+        type     : ENEMY_TYPES.ARTIPHILE,
+        init     :  function(self) {
+                        self.setPathToTake(self.findPathTo(game.level.artifact.mesh.position));
+                    },
+        update   :  function(self) {
+                        if ( self.path === null ) {
+                                self.setPathToTake(
+                                    self.findPathTo(game.level.artifact.mesh.position));
+                        }
+                        else {
+                                self.progressAlongPath();
+                        }
+                    }
     },
 ];
 
@@ -69,34 +99,15 @@ function Enemy (description) {
 
     // Enemy methods ---------------------------------------------------------
     this.update = function () {
-    	
-    	switch(self.type) {
-        case ENEMY_TYPES.BRUTE :
-            self.setFollowTarget(game.player.position);
-            break;
-        case ENEMY_TYPES.LUNATIC :
-            if (game.frames % 60 == 0 || !self.target) {
-                self.target = new THREE.Vector2(
-                    Math.floor(Math.random() * 1000),
-                    Math.floor(Math.random() * 1000));
-            }
-            break;
-        case ENEMY_TYPES.ARTIPHILE :
-                //self.setFollowTarget(game.level.artifact.mesh.position);
-                if ( self.path == null ) {
-                        self.setPathToTake(self.findPathTo(game.level.artifact.mesh.position));
-                }
-                else {
-                        self.progressAlongPath();
-                }
-            break;
-                var range = {
-                        x1: Math.max(0,from.x-self.vision),
-                        x2: Math.min(level.size.xcells, from.x+self.vision),
-                        y1: Math.max(0,from.y-self.vision),
-                        y2: Math.min(level.size.xcells, from.y+self.vision),
-                }; 
-        }
+    	/*
+    	var range = {
+                x1: Math.max(0,from.x-self.vision),
+                x2: Math.min(level.size.xcells, from.x+self.vision),
+                y1: Math.max(0,from.y-self.vision),
+                y2: Math.min(level.size.xcells, from.y+self.vision),
+        }; */
+        
+        ENEMY_DESCRIPTIONS[self.type].update(self);
     	
         // Follow the target
         if (self.target !== null) {
@@ -171,82 +182,77 @@ function Enemy (description) {
     };
 
     this.setPathToTake = function (path) {
-            if (path != null && path.length >= 1) {
-                    //path.reverse();
+            if (path !== null && path.length >= 1) {
                     self.path = path;
-                    //console.log(path);
             }
-            //console.log(path);
-
     };
 
     this.progressAlongPath = function () {
-            if (self.path == null) {
-                    self.target = null;
-                    return;
+            if (self.path === null) {
+                self.target = null;
+                return;
             }
-            else if (self.target == null) {
-                    self.path.shift();
-                    self.target = new THREE.Vector2(self.path[0][0], self.path[0][1]).toRealCoords();
-                    self.path.shift();
-                    //console.log(self.path[0]);
+            else if (self.target === null) {
+                self.path.shift();
+                self.target = new THREE.Vector2(self.path[0][0], self.path[0][1]).toRealCoords();
+                self.path.shift();
+                //console.log(self.path[0]);
             }
-            else if (self.path.length == 0) {
-                    //console.log(self.path[0]);
+            else if (self.path.length === 0) {
+                //console.log(self.path[0]);
             }
             else {
-                    var now = self.position;
-                    var target = self.target;
+                var now = self.position;
+                var target = self.target;
+                //console.log(target);
+                if ( Math.abs(target.x - now.x) < self.EPSILON && Math.abs(target.y - now.y) < self.EPSILON ) {
+                    var next = new THREE.Vector2(self.path[0][0], self.path[0][1]).toRealCoords();
+                    self.path.shift();
                     //console.log(target);
-                    if ( Math.abs(target.x - now.x) < self.EPSILON && Math.abs(target.y - now.y) < self.EPSILON ) {
-                            var next = new THREE.Vector2(self.path[0][0], self.path[0][1]).toRealCoords();
-                            self.path.shift();
-                            //console.log(target);
-                            //console.log(now);
-                            self.target = next;
-                    }
+                    //console.log(now);
+                    self.target = next;
+                }
             }
             //console.log(self.path.length);
     };
 
     this.findPathTo = function (object) {
-    var level = game.level;		
-    var from = self.position.toGridCoords();
-    var to = object.toGridCoords();
+        var level = game.level;		
+        var from = self.position.toGridCoords();
+        var to = object.toGridCoords();
 
 
-    var grid = new PF.Grid(level.size.xcells, level.size.ycells, level.grid);
-    var finder = new PF.AStarFinder();
+        var grid = new PF.Grid(level.size.xcells, level.size.ycells, level.grid);
+        var finder = new PF.AStarFinder();
 
-    if ( from == null || to == null ) {
-        self.target = null;
-    } else {
-        var path = finder.findPath(from.x, from.y, to.x, to.y, grid);
+        if ( from === null || to === null ) {
+            self.target = null;
+        } else {
+            var path = finder.findPath(from.x, from.y, to.x, to.y, grid);
 
-        if (path.length > 1 ) { 
-            path = PF.Util.smoothenPath(grid, path);
-            return path;
+            if (path.length > 1 ) { 
+                path = PF.Util.smoothenPath(grid, path);
+                return path;
+            }
+                else {
+                    path.push([from.x, from.y]);
+                    path.push([to.x, to.y]);
+                    //console.log(path);
+                    return path
+                }
+
         }
-                    else {
-                            path.push([from.x, from.y]);
-                            path.push([to.x, to.y]);
-                            //console.log(path);
-                            return path
-                    }
-
-    }
-};
+    };
 	
     this.setFollowTarget = function (object) {
         var level = game.level;		
         var from = self.position.toGridCoords();
         var to = object.toGridCoords();
-		
-		
+			
         var grid = new PF.Grid(level.size.xcells, level.size.ycells, level.grid);
         var finder = new PF.AStarFinder();
         
-        if ( from == null || to == null ) {
+        if ( from === null || to === null ) {
             self.target = null;
         } else {
             var path = finder.findPath(from.x, from.y, to.x, to.y, grid);
@@ -259,25 +265,18 @@ function Enemy (description) {
         }
     };
 
-
     this.takeDamage = function (amount) {
-		self.health = self.health - amount;
+	self.health = self.health - amount;
         if (self.health <= 0) {
             self.die();
         } else {
-			//new Audio("sounds/enemy_damage.wav").play();
+            //new Audio("sounds/enemy_damage.wav").play();
         }
     };
-
 
     this.die = function () {
 		new Audio("sounds/enemy_die.wav").play();
     };
-
-    /*
-     * Checks to see if this object collides with the passed object
-     */
-
 
     // Constructor ------------------------------------------------------------
     (this.init = function (enemy, description) {
@@ -287,17 +286,17 @@ function Enemy (description) {
 
         // Initialize properties from description object if available else 
         // assign randomly
-		if ("color" in description && description["color"] instanceof THREE.Vector3) {
-        	var rgb = description["color"].clone();
+        if ("color" in description && description["color"] instanceof THREE.Vector3) {
+            var rgb = description["color"].clone();
             enemy.color = new THREE.Color(0x000000);
             enemy.color.setRGB(rgb.x, rgb.y, rgb.z);       
         } else {
-        	enemy.color = new THREE.Color(0x000000);
-        	enemy.color.setRGB(Math.random(), Math.random(), Math.random());
+            enemy.color = new THREE.Color(0x000000);
+            enemy.color.setRGB(Math.random(), Math.random(), Math.random());
         }
         
-		if ("position" in description && description["position"] instanceof THREE.Vector3) {
-        	enemy.position = description["position"].clone();      
+        if ("position" in description && description["position"] instanceof THREE.Vector3) {
+            enemy.position = description["position"].clone();      
         } else {
             // Only start at edges
             var edge = Math.floor(Math.random() * 4);
@@ -312,58 +311,47 @@ function Enemy (description) {
         }
         
         if ("size" in description && description["size"] instanceof THREE.Vector2) {
-        	enemy.size = description["size"].clone();       
+            enemy.size = description["size"].clone();       
         } else {
-        	enemy.size = new THREE.Vector2( Math.floor(Math.random() * 40) + 10,
-                        Math.floor(Math.random() * 40) + 10);
+            enemy.size = new THREE.Vector2( Math.floor(Math.random() * 40) + 10,
+            Math.floor(Math.random() * 40) + 10);
         }
         
         if ("speed" in description && description["speed"] instanceof THREE.Vector2) {
-        	var s = description["speed"].clone();        
-			enemy.speed = new THREE.Vector2(Math.random() * 1.2 + 0.1 + s.x, Math.random() * 1.2 + 0.1 + s.y);
+            var s = description["speed"].clone();        
+            enemy.speed = new THREE.Vector2(Math.random() * 1.2 + 0.1 + s.x, Math.random() * 1.2 + 0.1 + s.y);
         } else {
-        	enemy.speed = new THREE.Vector2( Math.random() * 1.5, Math.random() * 1.5);
+            enemy.speed = new THREE.Vector2( Math.random() * 1.5, Math.random() * 1.5);
         }
         
         if ("maxspeed" in description && description["maxspeed"] instanceof THREE.Vector2) {
-        	enemy.maxspeed = description["maxspeed"].clone();        
+            enemy.maxspeed = description["maxspeed"].clone();        
         }else {
-        	enemy.maxspeed = new THREE.Vector2(5,5);	
+            enemy.maxspeed = new THREE.Vector2(5,5);	
         }
+    
         if ("health" in description) {
-        	enemy.health = description["health"];
+            enemy.health = description["health"];
         } else {
-        	enemy.health = 100;
+            enemy.health = 100;
         }
+    
         if ("type" in description) {
-        	enemy.type = description["type"];
+            enemy.type = description["type"];
         } else {
-        	enemy.type = ENEMY_TYPES.BRUTE;
+            enemy.type = ENEMY_TYPES.BRUTE;
         }
-		if ("vision" in description) {
-        	enemy.vision = description["vision"];
+
+        if ("vision" in description) {
+            enemy.vision = description["vision"];
         } else {
-        	enemy.vision = 100;
+            enemy.vision = 100;
         }
         
         //Do specific initial things based on the type of enemy
-        switch(self.type) {
-                case ENEMY_TYPES.BRUTE :
-                        break;
-                case ENEMY_TYPES.LUNATIC :
-                        self.target = new THREE.Vector2(
-                        Math.floor(Math.random() * 1000),
-                        Math.floor(Math.random() * 1000));
-                        break;
-                case ENEMY_TYPES.ARTIPHILE :
-                        //self.setFollowTarget(game.level.artifact.mesh.position);
-                        self.setPathToTake(self.findPathTo(game.level.artifact.mesh.position));
-                        break;
-        };
+        ENEMY_DESCRIPTIONS[self.type].init(self);
 		
         // Generate a mesh for the enemy
-        // TODO: pass an enemy type value in the description object
-        //       and pick from predefined geometry based on that 
         enemy.mesh = new THREE.Mesh(
             // PYRAMID, // Note: 3d geometry requires rotation/translation
             TRIANGLE,
@@ -411,4 +399,3 @@ function Enemy (description) {
     })(self, description);
 
 } // end Enemy object
-
