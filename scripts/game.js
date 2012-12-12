@@ -199,6 +199,7 @@ function Game(canvas, renderer) {
 				CONTEXT2D.fillText("Defend phase complete!", CANVAS2D.width / 2, CANVAS2D.height / 2);
 			}                        
 			for (var i=0; i < self.level.artifacts.length; ++i) {
+                CONTEXT2D.font = "20px Arial";
                 CONTEXT2D.fillText("Artifact Health: " + Math.floor(self.level.artifacts[i].health), CANVAS2D.width / 2, 60 + i*20);
             }
 			// Draw instructions on the 2d canvas
