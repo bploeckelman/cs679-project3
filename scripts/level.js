@@ -10,13 +10,12 @@ function Level (game, numXCells, numYCells) {
     this.grid  = null;
     this.cells = null;
     this.size  = null;
-    this.artifact   = null;
+    this.artifacts   = null;
     this.structures = null;
     this.territory  = null;
     this.territoryDirty = null;
     this.cellsClaimed   = null;
     this.clock = null;
-
 
     // Private variables ------------------------------------------------------
     var self = this,
@@ -24,7 +23,14 @@ function Level (game, numXCells, numYCells) {
         MIN_NUM_X_CELLS = 40,
         MIN_NUM_Y_CELLS = 40,
         TERRITORY_GEOMETRY = null, // Created on init()
-        TERRITORY_MATERIAL = new THREE.ShaderMaterial(shaders.noise);
+        TERRITORY_MATERIAL = new THREE.ShaderMaterial(shaders.noise),
+        //TODO : Send in as a parameter!!
+        artifactPositions = [
+            new THREE.Vector2(numXCells * CELL_SIZE / 2, numYCells * CELL_SIZE / 2),
+            new THREE.Vector2(numXCells * CELL_SIZE / 4, numYCells * CELL_SIZE / 4),
+            // ...
+        ];
+
 
 	// Utility variables and methods --------------------------------------------------
 	THREE.Vector2.prototype.toGridCoords = function () {
@@ -140,7 +146,10 @@ function Level (game, numXCells, numYCells) {
             self.structures[i].update();
         }
 
-        self.artifact.update();
+        for (var i = 0; i < self.artifacts.length; ++i) {
+            self.artifacts[i].update();
+        }
+        
     };
 
 	// Constructor ------------------------------------------------------------
@@ -231,7 +240,10 @@ function Level (game, numXCells, numYCells) {
         level.structures = [];
 
         // Initialize the artifact
-        level.artifact = new Artifact(level, game);
+        level.artifacts = [];
+        for (var i=0; i < artifactPositions.length; ++i) {
+            level.artifacts.push(new Artifact(artifactPositions[i], level, game));
+        }
 
         // Initialize the territory visualization meshes
         level.territory = [];
