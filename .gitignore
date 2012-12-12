@@ -1,8 +1,0 @@
-# ignore temp files
-*~
-*.swp
-*.tmp
-
-Thumbs.db
-/nbproject/private/
-/temp.html

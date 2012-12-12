@@ -34,8 +34,8 @@ var ENEMY_DESCRIPTIONS= [
                         var range = new Rect(
                                 Math.max(0,from.x-self.vision),
                                 Math.max(0,from.y-self.vision),
-                                Math.min(game.level.size.xcells, from.x+self.vision),
-                                Math.min(game.level.size.xcells, from.y+self.vision));
+                                Math.min(game.level.size.width-1, from.x+self.vision),
+                                Math.min(game.level.size.height-1, from.y+self.vision));
                         self.setFollowTarget(game.player.position, range);
                     }
     },
@@ -225,10 +225,23 @@ function Enemy (description) {
         var level = game.level;		
         var from = self.position.toGridCoords();
         var to = object.toGridCoords();
-
-        var gridRange = range.toGridCoords();
         
         var grid = new PF.Grid(level.size.xcells, level.size.ycells, level.grid);
+
+        if (range !== null) {
+            var gridRange = range.toGridCoords();
+            //console.log(gridRange);
+            //Block the area beyond range
+            for (var i= gridRange.left ; i <= gridRange.right; ++i) {
+                grid.nodes[i][gridRange.top].walkable = false;
+                grid.nodes[i][gridRange.bottom].walkable = false;
+            }
+            for (var j= gridRange.top ; j <= gridRange.bottom; ++j) {
+                grid.nodes[gridRange.left][j].walkable = false;
+                grid.nodes[gridRange.right][j].walkable = false;
+            }
+    
+        }
         var finder = new PF.AStarFinder();
 
         if ( from === null || to === null ) {
@@ -243,8 +256,8 @@ function Enemy (description) {
                 else {
                     path.push([from.x, from.y]);
                     path.push([to.x, to.y]);
-                    //console.log(path);
-                    return path
+                    console.log("OK");
+                    return path;
                 }
 
         }

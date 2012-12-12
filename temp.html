@@ -1,0 +1,101 @@
+<html>
+<script type="text/javascript">
+	A = 
+	[	[0, 0, 0, 0, 0],
+		[0, 1, 0, 0, 0],
+		[0, 1, 0, 0, 0],
+		[0, 1, 0, 0, 0],
+		[0, 0, 0, 0, 0],
+	];
+	B = []
+	for (var i=0; i<A.length; ++i) {
+		B[i] = []
+		for (var j=0; j<A[i].length; ++j)
+			B[i][j] = -1;
+	}
+	
+	function manhattanDistance(from, to) {
+		return Math.abs(to.x - from.x) + Math.abs(to.y - from.y);
+	};
+	
+	var from = {x:0, y:0};
+	var to = {x:4, y:0};
+	var limit = {x1:0, y1:0, x2:4,y2:4};
+	
+	var open = new Array();
+	var start = {x: from.x, y:from.y, h:manhattanDistance(from,from)+manhattanDistance(from,to)};
+	open.push(start);
+	var node;
+	while( open.length!=0 ){
+		node = open[0]; var index = 0;
+		//Find the node with the least h value and remove it
+		for (var i=0; i< open.length; ++i) {
+			if (A[open[i].x][open[i].y] == 0 && open[i].h < node.h) {
+				index = i;
+				node = open[i]
+				console.log(open[i])
+				console.log(open[i].h);
+			}
+			A[open[i].x][open[i].y] = 10;			
+		}
+		
+		open.splice(index,1)
+		 //Seen
+		
+		//console.log(node);
+		if (node.x == to.x && node.y == to.y)
+			break;
+		/*	0
+		* 3 X 1
+		*	2
+		*/
+		console.log(open);
+		if ( node.x -1 >= limit.x1 && A[node.x -1][node.y] == 0) {
+			var child = {x:node.x-1, y:node.y, h:0 };
+			child.h = manhattanDistance(from,child)+manhattanDistance(child,to)
+			open.push(child);
+			B[child.x][child.y] = 0;
+		}
+		if (node.x +1 <= limit.x2 &&  A[node.x +1][node.y] == 0) {
+			var child = {x:node.x+1, y:node.y, h:0 };
+			child.h = manhattanDistance(from,child)+manhattanDistance(child,to)
+			open.push(child);
+			B[child.x][child.y] = 2;
+		}
+		if (node.y +1 <= limit.y2 &&  A[node.x][node.y+1] == 0) {
+			var child = {x:node.x, y:node.y+1, h:0 };
+			child.h = manhattanDistance(from,child)+manhattanDistance(child,to)
+			open.push(child);
+			B[child.x][child.y] = 1;
+		}
+		if (node.y -1 >= limit.y1 &&  A[node.x][node.y-1] == 0) {
+			var child = {x:node.x, y:node.y-1, h:0 };
+			child.h = manhattanDistance(from,child)+manhattanDistance(child,to)
+			open.push(child);
+			B[child.x][child.y] = 3;
+		}
+		//alert(node.x + " " + node.y + " " +open.length);
+	}
+	
+	var x = to.x, y = to.y;
+	path = []
+	console.log(B);
+	while( x!=from.x || y!= from.y ) {
+		if (B[x][y] == 2) {
+			x = x-1;
+		}
+		else if (B[x][y] == 3) {
+			y = y+1;
+		}
+		else if (B[x][y] == 0) {
+			x = x+1;
+		}
+		else if (B[x][y] == 1) {
+			y = y-1;
+		}
+		path.push({x:x, y:y});
+	}
+	console.log(path);
+
+</script>
+</html>
