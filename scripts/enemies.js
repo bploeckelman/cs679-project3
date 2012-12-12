@@ -30,7 +30,13 @@ var ENEMY_DESCRIPTIONS= [
             
                     },
         update   :  function(self) {
-                        self.setFollowTarget(game.player.position);
+                        var from = self.position;
+                        var range = new Rect(
+                                Math.max(0,from.x-self.vision),
+                                Math.max(0,from.y-self.vision),
+                                Math.min(game.level.size.xcells, from.x+self.vision),
+                                Math.min(game.level.size.xcells, from.y+self.vision));
+                        self.setFollowTarget(game.player.position, range);
                     }
     },
     {
@@ -43,8 +49,8 @@ var ENEMY_DESCRIPTIONS= [
                         Math.floor(Math.random() * 1000),
                         Math.floor(Math.random() * 1000));
                     },
-        update   :  function(self) {
-                        if (game.frames % 60 == 0 || !self.target) {
+        update   :  function(self) {                        
+                        if (game.frames % 60 === 0 || !self.target) {
                             self.target = new THREE.Vector2(
                                 Math.floor(Math.random() * 1000),
                                 Math.floor(Math.random() * 1000));
@@ -105,14 +111,7 @@ function Enemy (description) {
 
     // Enemy methods ---------------------------------------------------------
     this.update = function () {
-    	/*
-    	var range = {
-                x1: Math.max(0,from.x-self.vision),
-                x2: Math.min(level.size.xcells, from.x+self.vision),
-                y1: Math.max(0,from.y-self.vision),
-                y2: Math.min(level.size.xcells, from.y+self.vision),
-        }; */
-        
+    	        
         ENEMY_DESCRIPTIONS[self.type].update(self);
     	
         // Follow the target
@@ -222,12 +221,13 @@ function Enemy (description) {
             //console.log(self.path.length);
     };
 
-    this.findPathTo = function (object) {
+    this.findPathTo = function (object, range) {
         var level = game.level;		
         var from = self.position.toGridCoords();
         var to = object.toGridCoords();
 
-
+        var gridRange = range.toGridCoords();
+        
         var grid = new PF.Grid(level.size.xcells, level.size.ycells, level.grid);
         var finder = new PF.AStarFinder();
 
@@ -250,8 +250,8 @@ function Enemy (description) {
         }
     };
 	
-    this.setFollowTarget = function (object) {
-        var path = this.findPathTo(object);
+    this.setFollowTarget = function (object, range) {
+        var path = this.findPathTo(object, range);
         self.target = new THREE.Vector2(path[1][0], path[1][1]).toRealCoords();
     };
 

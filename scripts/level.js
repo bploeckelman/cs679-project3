@@ -72,7 +72,7 @@ function Level (game) {
 		else return ans;
 	};
 	
-        Rect.prototype.toGridCoords = function () {
+        Rect.prototype.toRealCoords = function () {
             var ans = new Rect(0,0,0,0);
             ans.left = this.left * self.size.cellw;
             ans.right = this.right * self.size.cellw;
@@ -82,7 +82,7 @@ function Level (game) {
             return ans;
         };
     
-        Rect.prototype.toRealCoords = function () {
+        Rect.prototype.toGridCoords = function () {
             var ans = new Rect(0,0,0,0);
             ans.left = Math.floor(this.left / self.size.cellw);
             ans.right = Math.floor(this.right / self.size.cellw);
