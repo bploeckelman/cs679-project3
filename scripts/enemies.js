@@ -31,13 +31,13 @@ var ENEMY_DESCRIPTIONS= [
             
                     },
         update   :  function(self) {
-                        var from = self.position;
-                        var range = new Rect(
-                                Math.max(0,from.x-self.vision),
-                                Math.max(0,from.y-self.vision),
-                                Math.min(game.level.size.width-1, from.x+self.vision),
-                                Math.min(game.level.size.height-1, from.y+self.vision));
-                        self.setFollowTarget(game.player.position, range);
+                        var range = self.calculateRange(self.vision);
+                        if ( range.intersects(game.player.boundingBox) ) {
+                            self.setFollowTarget(game.player.position);
+                        }
+                        else {
+                            self.target = new THREE.Vector2(game.player.position.x, game.player.position.y);
+                        }                            
                     },
         handleCollision : function (self, object) {
                         if (object instanceof Player) {
@@ -59,15 +59,35 @@ var ENEMY_DESCRIPTIONS= [
         speed    : 1.0,
         maxspeed : new THREE.Vector2(20,20),
         init     :  function(self) {
-                        self.target = new THREE.Vector2(
-                        Math.floor(Math.random() * 1000),
-                        Math.floor(Math.random() * 1000));
+                        //self.target = new THREE.Vector2(
+                        //Math.floor(Math.random() * 1000),
+                        //Math.floor(Math.random() * 1000));
                     },
-        update   :  function(self) {                        
-                        if (game.frames % 60 === 0 || !self.target) {
-                            self.target = new THREE.Vector2(
-                                Math.floor(Math.random() * 1000),
-                                Math.floor(Math.random() * 1000));
+        update   :  function(self) {
+                        var range = self.calculateRange(self.vision);
+                        if ( range.intersects(game.player.boundingBox) ) {
+                            self.setFollowTarget(game.player.position);
+                        }
+                        else { 
+                            var nearest = null;
+                            var minLength = 100000;
+                            for (var struct in game.level.structures) {
+                                var length = new THREE.Vector2().sub(struct.position, self.position).length();
+                                if ( nearest === null || (
+                                        range.intersects( struct.boundingBox) &&
+                                         length < minLength) ) {
+                                    nearest = struct;
+                                    minLength = length;
+                                }
+                            }
+                            if ( nearest !== null) {
+                                self.target = new THREE.Vector2(nearest.position.x, nearest.position.y);
+                            }
+                            else if (game.frames % 60 === 0 || !self.target) {
+                                self.target = new THREE.Vector2(
+                                    Math.floor(Math.random() * 1000),
+                                    Math.floor(Math.random() * 1000));
+                            }
                         }
                     },
         handleCollision : function (self, object) {
@@ -77,7 +97,7 @@ var ENEMY_DESCRIPTIONS= [
                             }
                         }
                         else if ( object instanceof Structure) {
-                            self.stuck = true;
+                            //self.stuck = true;
                         }
                         else if (object instanceof Artifact) {
                             self.stuck = true;
@@ -152,7 +172,7 @@ function Enemy (description) {
     this.structDamage = 0.02;
     this.artifactDamage = 10;
     this.playerDamage = 0.1;
-    this.vision = 100;
+    this.vision = 20;
 
     this.path = null;
     
@@ -271,7 +291,7 @@ function Enemy (description) {
         
         var grid = new PF.Grid(level.size.xcells, level.size.ycells, level.grid);
 
-        if (range !== null) {
+        if (range != null) {
             var gridRange = range.toGridCoords();
             //console.log(gridRange);
             //Block the area beyond range
@@ -322,6 +342,16 @@ function Enemy (description) {
 
     this.die = function () {
 		new Audio("sounds/enemy_die.wav").play();
+    };
+
+    this.calculateRange = function (vision) {
+        var from = self.position;
+        var range = new Rect(
+                Math.max(0,from.x-vision),
+                Math.max(0,from.y-vision),
+                Math.min(game.level.size.width-1, from.x+vision),
+                Math.min(game.level.size.height-1, from.y+vision));
+        return range;
     };
 
     // Constructor ------------------------------------------------------------
