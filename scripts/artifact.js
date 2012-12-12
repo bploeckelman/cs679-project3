@@ -14,6 +14,8 @@ function Artifact (position, level, game) {
     this.collidable = true;
     this.boundingBox = null;
     
+    this.claimed = false;
+    
     // Private variables ------------------------------------------------------
     var self = this,
         accum = 0;
@@ -39,6 +41,7 @@ function Artifact (position, level, game) {
         self.pulse.time = 2000 * self.health / 100 + 10;
         self.pulse.tweenIn.to({ scale: self.pulse.maxScale }, self.pulse.time);
         self.pulse.tweenOut.to({ scale: self.pulse.minScale }, self.pulse.time);
+        
     };
 
 

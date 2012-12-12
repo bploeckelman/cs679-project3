@@ -811,7 +811,7 @@ function handleCollisions (game) {
     var player = game.player;
     
     for(var i = game.level.artifacts.length-1; i>=0; --i) {
-        var artifact = game.level.artifact;
+        var artifact = game.level.artifacts[i];
         for(var j = game.wave.enemies.length-1; j>=0; --j) {
             var enemy = game.wave.enemies[j];
             if ( enemy.collidesWith(artifact) ) {

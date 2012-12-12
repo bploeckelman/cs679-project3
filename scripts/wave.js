@@ -12,7 +12,7 @@ function Wave (round, game) {
     // numEnemies : number of enemies of each type
     // health, size, speed : propotion of the standard given in ENEENEMY_DESCRIPTIONS
     ROUND_DETAILS = [
-        { numEnemies: [0, 1, 0, 1],   health: 1.0,  size: 1.0, speed: 0.25 },
+        { numEnemies: [0, 1, 1, 1],   health: 1.0,  size: 1.0, speed: 0.25 },
 //        { numEnemies: [0, 0, 1],   health: 2.0,  size: 1.2, speed: 0.50 },
 //        { numEnemies: [0, 0, 10],  health: 4.0,  size: 1.4, speed: 0.75 },
 //        { numEnemies: [0, 0, 16],  health: 6.0,  size: 1.6, speed: 1.00 },

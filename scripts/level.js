@@ -115,7 +115,7 @@ function Level (game) {
             self.territory = [];
 
             // Create new meshes for buildable grid cells
-			var all_buildable = true;
+            var all_buildable = true;
             for (var y = 0; y < self.size.ycells; ++y) {
                 for (var x = 0; x < self.size.xcells; ++x) {
                     if (self.cells[y][x].buildable) {
@@ -127,8 +127,8 @@ function Level (game) {
                         game.scene.add(mesh);
                         self.territory.push(mesh);
                     }else{
-						all_buildable = false;
-					}
+                            all_buildable = false;
+                    }
                 }
             }
 	

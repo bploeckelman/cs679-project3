@@ -69,17 +69,7 @@ var ENEMY_DESCRIPTIONS= [
                             self.setFollowTarget(game.player.position);
                         }
                         else { 
-                            var nearest = null;
-                            var minLength = 100000;
-                            for (var struct in game.level.structures) {
-                                var length = new THREE.Vector2().sub(struct.position, self.position).length();
-                                if ( nearest === null || (
-                                        range.intersects( struct.boundingBox) &&
-                                         length < minLength) ) {
-                                    nearest = struct;
-                                    minLength = length;
-                                }
-                            }
+                            var nearest = self.getNearestPlayerObject(Structure, range);
                             if ( nearest !== null) {
                                 self.target = new THREE.Vector2(nearest.position.x, nearest.position.y);
                             }
@@ -109,15 +99,16 @@ var ENEMY_DESCRIPTIONS= [
         health   : 10,
         speed    : 1.0,
         init     :  function(self) {
-                        self.setPathToTake(self.findPathTo(game.level.artifact.mesh.position));
+                        var nearest = self.getNearestPlayerObject(Artifact, null);
+                        self.setPathToTake(self.findPathTo(nearest.position));
                     },
         update   :  function(self) {
                         if ( self.path === null ) {
-                                self.setPathToTake(
-                                    self.findPathTo(game.level.artifact.mesh.position));
+                            var nearest = self.getNearestPlayerObject(Artifact, null);
+                            self.setPathToTake(self.findPathTo(nearest.position));
                         }
                         else {
-                                self.progressAlongPath();
+                            self.progressAlongPath();
                         }
                     },
         handleCollision : function (self, object) {
@@ -139,9 +130,9 @@ var ENEMY_DESCRIPTIONS= [
         health   : 10,
         speed    : 2.0,
         init     :  function(self) {
-                        self.target = new THREE.Vector2(
-                                game.level.artifact.mesh.position.x, 
-                                game.level.artifact.mesh.position.y);
+                        self.target = new THREE.Vector2(500,500);
+                         //       game.level.artifact.mesh.position.x, 
+                         ///       game.level.artifact.mesh.position.y);
                         self.damage = self.playerDamage = self.structDamage = self.artifactDamage = 30;
                     },
         update   :  function(self) {
@@ -338,6 +329,33 @@ function Enemy (description) {
         } else {
             //new Audio("sounds/enemy_damage.wav").play();
         }
+    };
+
+    this.getNearestPlayerObject = function (Type, range, fn) {
+        var nearest = null;
+        var minLength = 100000;
+        var objects;
+        if ( Type === Structure ) {
+            objects = game.level.structures;
+        }
+        else if ( Type === Artifact) {
+            objects = game.level.artifacts;
+        }
+
+        for (var i=0; i<objects.length; ++i) {
+            var obj = objects[i];
+            var length = new THREE.Vector2().sub(obj.position, self.position).length();
+            var rangeIntersects = false;
+            if ( range !== null ) rangeIntersects = range.intersects( obj.boundingBox);
+            if ( nearest === null || (
+                     rangeIntersects &&
+                     length < minLength) ) {
+                nearest = obj;
+                minLength = length;
+            }
+        }            
+
+        return nearest;
     };
 
     this.die = function () {
