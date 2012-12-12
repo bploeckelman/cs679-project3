@@ -105,16 +105,24 @@ function Player (game) {
         if (this.velocity.y >  MAX_SPEED.y) this.velocity.y =  MAX_SPEED.y;
         if (this.velocity.y < -MAX_SPEED.y) this.velocity.y = -MAX_SPEED.y;
 		
-        // Position the mesh to correspond with players updated position
-        this.mesh.position = this.position.addSelf(this.velocity).clone();
-		
+        // Keep the player in bounds
+        var inBounds = (self.position.x + self.velocity.x - PLAYER_SIZE.w / 2 >= 0
+                     && self.position.y + self.velocity.y - PLAYER_SIZE.h / 2 >= 0
+                     && self.position.x + self.velocity.x + PLAYER_SIZE.w / 2 <= game.level.size.width
+                     && self.position.y + self.velocity.y + PLAYER_SIZE.h / 2 <= game.level.size.height);
+        if (inBounds) {
+            // Position the mesh to correspond with players updated position
+            this.mesh.position = this.position.addSelf(this.velocity).clone();
+        }
+
         // Update the BoundingBox
-	self.boundingBox = new Rect(
-                self.position.x - PLAYER_SIZE.w / 2,
-                self.position.y - PLAYER_SIZE.h / 2,
-                self.position.x + PLAYER_SIZE.w / 2,
-                self.position.y + PLAYER_SIZE.h / 2);
+        self.boundingBox = new Rect(
+            self.position.x - PLAYER_SIZE.w / 2,
+            self.position.y - PLAYER_SIZE.h / 2,
+            self.position.x + PLAYER_SIZE.w / 2,
+            self.position.y + PLAYER_SIZE.h / 2);
         //console.log(self.position);
+
         // Handle spin move
         if (game.input.spin && !self.isSpinning && self.canSpin) {
             var currentZoom = game.camera.position.z;
@@ -137,7 +145,6 @@ function Player (game) {
 
             new Audio("sounds/saw.wav").play();
         }
-    
     };
     
     /*

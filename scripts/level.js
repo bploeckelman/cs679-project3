@@ -14,6 +14,7 @@ function Level (game, numXCells, numYCells) {
     this.structures = null;
     this.territory  = null;
     this.territoryDirty = null;
+    this.cellsClaimed   = null;
     this.clock = null;
 
 
@@ -24,13 +25,6 @@ function Level (game, numXCells, numYCells) {
         MIN_NUM_Y_CELLS = 40,
         TERRITORY_GEOMETRY = null, // Created on init()
         TERRITORY_MATERIAL = new THREE.ShaderMaterial(shaders.noise);
-        /*
-        TERRITORY_MATERIAL = new THREE.MeshBasicMaterial({
-            color: 0x003000,
-            transparent: true,
-            blending: THREE.AdditiveBlending
-        });
-        */
 
 	// Utility variables and methods --------------------------------------------------
 	THREE.Vector2.prototype.toGridCoords = function () {
@@ -113,6 +107,7 @@ function Level (game, numXCells, numYCells) {
                 mesh = new THREE.Mesh(TERRITORY_GEOMETRY, TERRITORY_MATERIAL),
 			    all_buildable = true;
 
+            self.cellsClaimed = 0;
             for (var y = 0; y < self.size.ycells; ++y) {
                 for (var x = 0; x < self.size.xcells; ++x) {
                     if (self.cells[y][x].buildable) {
@@ -122,7 +117,8 @@ function Level (game, numXCells, numYCells) {
                             y * self.size.cellh + self.size.cellh / 2,
                             0.05);
                         THREE.GeometryUtils.merge(mergedGeom, mesh);
-                    }else{
+                        ++self.cellsClaimed;
+                    } else {
 						all_buildable = false;
 					}
                 }
@@ -206,6 +202,7 @@ function Level (game, numXCells, numYCells) {
         // Create level grid and cells
         // grid  : 0 - Empty, 1 - Obstacle
         // cells : buildability status of grid cells
+        level.cellsClaimed = 0;
         level.grid  = [];
         level.cells = [];
         for(var y = 0; y < level.size.ycells; ++y) {
@@ -225,6 +222,7 @@ function Level (game, numXCells, numYCells) {
                  && (x >= buildableRegion.left   && x <= buildableRegion.right
                   && y >= buildableRegion.bottom && y <= buildableRegion.top)) {
                     level.cells[y][x].buildable = true;
+                    ++level.cellsClaimed;
                 }
             }
         }

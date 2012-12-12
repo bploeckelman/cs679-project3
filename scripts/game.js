@@ -319,7 +319,8 @@ function Game(canvas, renderer) {
             self.music.build.begin();
 
             // Add money based on territorial control + artifact health
-            self.player.money += self.level.territory.length * 0.15
+            console.log("claimed = " + self.level.cellsClaimed);
+            self.player.money += self.level.cellsClaimed * 0.15
                               +  self.level.artifact.health / 50;
             self.player.money = Math.floor(self.player.money);
 
