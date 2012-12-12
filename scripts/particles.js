@@ -37,12 +37,12 @@ function spawnParticles (type, centerPosition, description, game) {
             };
         break;
         case PARTICLES.ARTIFACT_DAMAGE:
-            numParticles = 25;
+            numParticles = 200;
             initialSize  = 20;
             color = description.color;
             velocityRange = {
-                min: new THREE.Vector3(-0.3, -0.3, -0.3),
-                max: new THREE.Vector3( 0.3,  0.3,  0.3)
+                min: new THREE.Vector3(-1.0, -1.0, -1.2),
+                max: new THREE.Vector3( 1.0,  1.0,  0.7)
             };
         break;
         case PARTICLES.ARTIFACT_DEATH:
@@ -50,8 +50,8 @@ function spawnParticles (type, centerPosition, description, game) {
             initialSize  = 8;
             color = description.color;
             velocityRange = {
-                min: new THREE.Vector3(-2.5, -2.5, -3.0),
-                max: new THREE.Vector3( 2.5,  2.5,  3.0)
+                min: new THREE.Vector3(-1.5, -1.5, -2.0),
+                max: new THREE.Vector3( 1.5,  1.5,  2.0)
             };
         break;
         // Add other particle types...
@@ -66,6 +66,18 @@ function spawnParticles (type, centerPosition, description, game) {
             randomBetween(velocityRange.min.y, velocityRange.max.y),
             randomBetween(velocityRange.min.z, velocityRange.max.z));
         geometry.vertices.push(particle);
+    }
+
+    if (type === PARTICLES.ARTIFACT_DEATH) {
+        color = (function () {
+            var color = new THREE.Color(0x00000);
+            var rgb = new THREE.Vector3(
+                Math.random() * 0.5 + 0.5,
+                Math.random() * 0.5 + 0.5,
+                0);
+            color.setRGB(rgb.x, rgb.y, rgb.z);
+            return color;
+        }) ();
     }
 
     // Initialize particle material
