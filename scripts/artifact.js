@@ -1,7 +1,7 @@
 // ----------------------------------------------------------------------------
 // Artifact object
 // ----------------------------------------------------------------------------
-function Artifact (level, game) {
+function Artifact (position, level, game) {
 
     // Public properties ------------------------------------------------------
     this.mesh   = null;
@@ -113,10 +113,8 @@ function Artifact (level, game) {
                 blending: THREE.AdditiveBlending
             })
         );
-		
-        artifact.position = new THREE.Vector2(
-                level.size.width / 2,
-                level.size.height / 2);
+        artifact.mesh.position.set(position.x, position.y, level.size.cellh);
+        artifact.position = artifact.mesh.position;
                 
         artifact.boundingBox = new Rect(
                 artifact.position.x + 10 - (level.size.cellw * 4) / 2,
@@ -124,12 +122,7 @@ function Artifact (level, game) {
                 artifact.position.x - 15 + (level.size.cellw * 4) / 2,
                 artifact.position.y - 15 + (level.size.cellh * 4) / 2
             );
-     
-        artifact.mesh.position.set(
-            level.size.width  / 2,
-            level.size.height / 2,
-            level.size.cellh
-        );
+
 
         game.scene.add(artifact.mesh);
 

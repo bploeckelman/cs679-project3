@@ -10,12 +10,18 @@ function Level (game) {
     this.grid  = null;
     this.cells = null;
     this.size  = null;
-    this.artifact   = null;
+    this.artifacts   = null;
     this.structures = null;
     this.territory  = null;
     this.territoryDirty = null;
     this.clock = null;
 
+    //TODO : Send in as a parameter!!
+    var artifactPositions = [
+        new THREE.Vector2(500,500),
+        new THREE.Vector2(700,400),
+        //new THREE.Vector2(400,700),
+    ];
 
     // Private variables ------------------------------------------------------
     var self = this,
@@ -138,7 +144,10 @@ function Level (game) {
             self.structures[i].update();
         }
 
-        self.artifact.update();
+        for (var i = 0; i < self.structures.length; ++i) {
+            self.artifacts[i].update();
+        }
+        
     };
 
 	// Constructor ------------------------------------------------------------
@@ -214,7 +223,10 @@ function Level (game) {
         level.structures = [];
 
         // Initialize the artifact
-        level.artifact = new Artifact(level, game);
+        level.artifacts = [];
+        for (var i=0; i < artifactPositions.length; ++i) {
+            level.artifacts.push(new Artifact(artifactPositions[i], level, game));
+        }
 
         // Initialize the territory visualization meshes
         level.territory = [];

@@ -191,15 +191,16 @@ function Game(canvas, renderer) {
 			CONTEXT2D.fillStyle    = "#ffffff";
 			CONTEXT2D.fillText("Round #" + self.round, CANVAS2D.width / 2, 0);
             // TODO: setup a nicer interface for these
-			CONTEXT2D.fillText("Build Credits: " + self.player.money, CANVAS2D.width / 2, 20);
-			CONTEXT2D.fillText("Artifact Health: " + Math.floor(self.level.artifact.health), CANVAS2D.width / 2, 40);
+			CONTEXT2D.fillText("Build Credits: " + self.player.money, CANVAS2D.width / 2, 20);                        
 			CONTEXT2D.fillText("Player Health: " + Math.floor(self.player.health), CANVAS2D.width / 2, 60);
 			if (self.countdown) {
 				CONTEXT2D.font = "40px Arial";
 				CONTEXT2D.textBaseline = "center";
 				CONTEXT2D.fillText("Defend phase complete!", CANVAS2D.width / 2, CANVAS2D.height / 2);
-			}
-
+			}                        
+			for (var i=0; i < self.level.artifacts.length; ++i) {
+                            CONTEXT2D.fillText("Artifact Health: " + Math.floor(self.level.artifacts[i].health), CANVAS2D.width / 2, 80 + i*20);
+                        }
 			// Draw instructions on the 2d canvas
 			if (self.instructions.draw) {
                 var x = self.instructions.position.x,
@@ -273,8 +274,8 @@ function Game(canvas, renderer) {
             // Add the player
             if (self.player === null)
                 self.player = new Player(self);
-			var posX = self.level.artifact.mesh.position.x,
-				posY = self.level.artifact.mesh.position.y,
+			var posX = self.level.artifacts[0].mesh.position.x,
+				posY = self.level.artifacts[0].mesh.position.y,
 				posZ = 0.1,
 				pos = new THREE.Vector3(posX, posY, posZ);
 			self.player.position = pos;
@@ -319,8 +320,8 @@ function Game(canvas, renderer) {
             self.music.build.begin();
 
             // Add money based on territorial control + artifact health
-            self.player.money += self.level.territory.length * 0.15
-                              +  self.level.artifact.health / 50;
+            self.player.money += self.level.territory.length * 0.15;
+                              
             self.player.money = Math.floor(self.player.money);
 
             // Remove the player mesh
@@ -808,19 +809,25 @@ function createStructure (structureType, game) {
 // Handle Collisions ----------------------------------------------------------
 function handleCollisions (game) {
     var player = game.player;
-    var artifact = game.level.artifact;
+    
+    for(var i = game.level.artifacts.length-1; i>=0; --i) {
+        var artifact = game.level.artifact;
+        for(var j = game.wave.enemies.length-1; j>=0; --j) {
+            var enemy = game.wave.enemies[j];
+            if ( enemy.collidesWith(artifact) ) {
+                enemy.handleCollision(artifact);
+                artifact.handleCollision(enemy);
+            }
+        }
+    }
     // TODO: move player/enemy collision test to Wave object?
     for(var i = game.wave.enemies.length-1; i>=0; --i) {
         var enemy = game.wave.enemies[i];
         if ( enemy.collidesWith(player)) {
             enemy.handleCollision(player);
             player.handleCollision(enemy);
-        }
+        }     
         
-        if ( enemy.collidesWith(artifact) ) {
-            enemy.handleCollision(artifact);
-            artifact.handleCollision(enemy);
-        }
     }
     
     for(var i = game.level.structures.length-1; i>=0; --i) {
