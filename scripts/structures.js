@@ -120,11 +120,12 @@ function Structure (type, game) {
             var all_buildable = true;
             for(var y = 0; y < game.level.size.ycells; y++){
                     for(var x = 0; x < game.level.size.xcells; x++){
-                     if (x >= 48 && x <= 51 && y >= 48 && y <= 51){ // keep center region non-buildable
-            continue;
-                            }else if(game.level.cells[y][x].buildable === false){
-                                    all_buildable = false;
-                            }
+                        if (x >= artifactRegion.left   && x <= artifactRegion.right
+                         && y >= artifactRegion.bottom && y <= artifactRegion.top) {
+                            continue;
+                        } else if(game.level.cells[y][x].buildable === false) {
+                                all_buildable = false;
+                        }
                     }
             }
 

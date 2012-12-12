@@ -102,35 +102,38 @@ function Level (game, numXCells, numYCells) {
         shaders.noise.uniforms.time.value += delta;
         shaders.cells.uniforms.time.value += 10 * delta;
 
-        // NOTE: this is inefficient, it should be extracted to a function
-        // player should be able to switch the territory visualization on/off
-        if (self.territoryDirty) { // then regenerate territory meshes...
-            // Remove all previous meshes
-            for (var i = 0; i < self.territory.length; ++i) {
-                game.scene.remove(self.territory[i]);
-            }
-            self.territory = [];
+        // Update claimed territory meshes
+        if (self.territoryDirty) {
+            // Remove previous meshes
+            game.scene.remove(self.territory);
+            self.territory = null;
 
             // Create new meshes for buildable grid cells
-			var all_buildable = true;
+            var mergedGeom = new THREE.Geometry(),
+                mesh = new THREE.Mesh(TERRITORY_GEOMETRY, TERRITORY_MATERIAL),
+			    all_buildable = true;
+
             for (var y = 0; y < self.size.ycells; ++y) {
                 for (var x = 0; x < self.size.xcells; ++x) {
                     if (self.cells[y][x].buildable) {
-                        var mesh = new THREE.Mesh(TERRITORY_GEOMETRY, TERRITORY_MATERIAL);
+                        // Position mesh and merge with rest of claimed territory geometry
                         mesh.position.set(
                             x * self.size.cellw + self.size.cellw / 2,
                             y * self.size.cellh + self.size.cellh / 2,
                             0.05);
-                        game.scene.add(mesh);
-                        self.territory.push(mesh);
+                        THREE.GeometryUtils.merge(mergedGeom, mesh);
                     }else{
 						all_buildable = false;
 					}
                 }
             }
+
+            // Add newly merged territory to the scene
+            self.territory = new THREE.Mesh(mergedGeom, TERRITORY_MATERIAL);
+            game.scene.add(self.territory);
 	
-	/*
-			if(all_buildable = true){
+            /*
+			if(all_buildable = true) {
 				game.gamewon = true;
 			}
 			*/
