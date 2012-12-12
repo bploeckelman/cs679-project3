@@ -12,7 +12,7 @@ function Wave (round, game) {
     // numEnemies : number of enemies of each type
     // health, size, speed : propotion of the standard given in ENEENEMY_DESCRIPTIONS
     ROUND_DETAILS = [
-        { numEnemies: [5, 0, 0],   health: 1.0,  size: 1.0, speed: 0.25 },
+        { numEnemies: [0, 0, 0, 1],   health: 1.0,  size: 1.0, speed: 0.25 },
 //        { numEnemies: [0, 0, 1],   health: 2.0,  size: 1.2, speed: 0.50 },
 //        { numEnemies: [0, 0, 10],  health: 4.0,  size: 1.4, speed: 0.75 },
 //        { numEnemies: [0, 0, 16],  health: 6.0,  size: 1.6, speed: 1.00 },
@@ -60,8 +60,8 @@ function Wave (round, game) {
             for(var i = 0; i < roundDetails.numEnemies[ENEMY_TYPES[type]]; ++i){
                 var desc = shallowCopy(ENEMY_DESCRIPTIONS[ENEMY_TYPES[type]]);
                 desc.health *= roundDetails.health;
-                desc.size   *= new THREE.Vector2(roundDetails.size, roundDetails.size);
-                desc.speed  *= new THREE.Vector2(roundDetails.speed, roundDetails.speed);
+                //desc.size   = new THREE.Vector2(desc.size * roundDetails.size, desc.size * roundDetails.size);
+                desc.speed  = new THREE.Vector2(desc.speed * roundDetails.speed, desc.speed *roundDetails.speed);
                 var enemy = new Enemy(desc);
                 
                 wave.enemies.push(enemy);

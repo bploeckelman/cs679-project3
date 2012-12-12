@@ -155,9 +155,9 @@ function Player (game) {
 
     this.handleCollision = function (object) {
         if (object instanceof Enemy) {
-            if (!self.isSpinning) {
-                self.takeDamage(object.playerDamage);
-            }
+            //if (!self.isSpinning) {
+            self.takeDamage(object.playerDamage);
+            //}
         }
         else if (object instanceof Structure) {
             var velocity = new THREE.Vector3(-self.velocity.x,-self.velocity.y,0);

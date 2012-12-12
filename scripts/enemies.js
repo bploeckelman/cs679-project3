@@ -16,6 +16,7 @@ var ENEMY_TYPES = {
 	BRUTE : 0,
 	LUNATIC : 1,
 	ARTIPHILE : 2,
+        BANELING : 3
 };
 /*
  * Possible description elements along with enemy specific methods:
@@ -111,6 +112,23 @@ var ENEMY_DESCRIPTIONS= [
                         else if (object instanceof Artifact) {
                             self.stuck = true;
                         }
+                    }
+    },
+    {
+        type     : ENEMY_TYPES.BANELING,
+        health   : 10,
+        speed    : 2.0,
+        init     :  function(self) {
+                        self.target = new THREE.Vector2(
+                                game.level.artifact.mesh.position.x, 
+                                game.level.artifact.mesh.position.y);
+                        self.damage = self.playerDamage = self.structDamage = self.artifactDamage = 30;
+                    },
+        update   :  function(self) {
+                        console.log(self.speed);
+                    },
+        handleCollision : function (self, object) {
+                        self.takeDamage(object.health+100);                        
                     }
     },
 ];
