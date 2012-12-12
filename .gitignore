@@ -7,5 +7,6 @@ tags
 Thumbs.db
 
 nbproject/
-/nbproject/private/
-/temp.html
+nbproject/private/
+
+temp.html
