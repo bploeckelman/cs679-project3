@@ -144,7 +144,7 @@ function Level (game) {
             self.structures[i].update();
         }
 
-        for (var i = 0; i < self.structures.length; ++i) {
+        for (var i = 0; i < self.artifacts.length; ++i) {
             self.artifacts[i].update();
         }
         
