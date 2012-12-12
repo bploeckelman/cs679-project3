@@ -4,7 +4,8 @@
 *.tmp
 
 tags
-nbproject
 Thumbs.db
+
+nbproject/
 /nbproject/private/
 /temp.html
