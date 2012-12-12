@@ -745,6 +745,8 @@ function Game(canvas, renderer) {
 
         // --------- Help button handlers ------------------
         document.getElementById("help").onclick = function () {
+            game.instructions.tween.stop();
+
             // Fill game.instructions with instruction text/styles
             if (self.mode === GAME_MODE.BUILD) {
                 if (game.instructions === instructions.build) {

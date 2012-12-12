@@ -27,6 +27,7 @@ var ENEMY_DESCRIPTIONS= [
         type     : ENEMY_TYPES.BRUTE,
         health   : 10,
         speed    : 1.0,
+        color    : new THREE.Vector3(255, 0, 0),
         init     :  function(self) {
             
                     },
@@ -58,6 +59,7 @@ var ENEMY_DESCRIPTIONS= [
         health   : 10,
         speed    : 1.0,
         maxspeed : new THREE.Vector2(20,20),
+        color    : new THREE.Vector3(255, 0, 255),
         init     :  function(self) {
                         //self.target = new THREE.Vector2(
                         //Math.floor(Math.random() * 1000),
@@ -98,6 +100,7 @@ var ENEMY_DESCRIPTIONS= [
         type     : ENEMY_TYPES.ARTIPHILE,
         health   : 10,
         speed    : 1.0,
+        color    : new THREE.Vector3(255, 255, 0),
         init     :  function(self) {
                         var nearest = self.getNearestPlayerObject(Artifact, null);
                         self.setPathToTake(self.findPathTo(nearest.position));
@@ -129,6 +132,7 @@ var ENEMY_DESCRIPTIONS= [
         type     : ENEMY_TYPES.BANELING,
         health   : 10,
         speed    : 2.0,
+        color    : new THREE.Vector3(0, 255, 0),
         init     :  function(self) {
                         self.target = new THREE.Vector2(game.level.size.width / 2, game.level.size.height / 2);
                         self.damage = self.playerDamage = self.structDamage = self.artifactDamage = 30;
@@ -447,13 +451,7 @@ function Enemy (description) {
         ENEMY_DESCRIPTIONS[self.type].init(self);
 		
         // Generate a mesh for the enemy
-        enemy.mesh = new THREE.Mesh(
-            // PYRAMID, // Note: 3d geometry requires rotation/translation
-            TRIANGLE,
-            new THREE.MeshBasicMaterial({
-                color: enemy.color.getHex()
-            })
-        );
+        enemy.mesh = new THREE.Mesh(TRIANGLE, new THREE.MeshBasicMaterial({ color: enemy.color }));
         enemy.mesh.position = enemy.position;
 
         enemy.stuck = false;

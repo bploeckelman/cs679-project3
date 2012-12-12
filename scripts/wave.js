@@ -11,8 +11,9 @@ function Wave (round, game) {
     var self = this,
     // numEnemies : number of enemies of each type
     // health, size, speed : propotion of the standard given in ENEENEMY_DESCRIPTIONS
+    // Types: 0 brute, 1 lunatic, 2 artiphile, 3 baneling
     ROUND_DETAILS = [
-        { numEnemies: [0, 1, 1, 1],   health: 1.0,  size: 1.0, speed: 0.25 },
+        { numEnemies: [3, 0, 4, 5],   health: 1.0,  size: 1.0, speed: 0.25 },
 //        { numEnemies: [0, 0, 1],   health: 2.0,  size: 1.2, speed: 0.50 },
 //        { numEnemies: [0, 0, 10],  health: 4.0,  size: 1.4, speed: 0.75 },
 //        { numEnemies: [0, 0, 16],  health: 6.0,  size: 1.6, speed: 1.00 },
