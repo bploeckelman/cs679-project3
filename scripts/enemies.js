@@ -1,13 +1,15 @@
 // Cylinder: topRadius, bottomRadius, height, radiusSegments, heightSegments
+function initializeTriangleGeometry(halfBase, z) {
+    var geometry = new THREE.Geometry();
+    geometry.vertices.push(new THREE.Vector3(-halfBase, -halfBase, z));
+    geometry.vertices.push(new THREE.Vector3( halfBase, -halfBase, z));
+    geometry.vertices.push(new THREE.Vector3( 0,  halfBase, z));
+    geometry.faces.push(new THREE.Face3(0, 1, 2));
+    return geometry;
+}
+
 var PYRAMID = new THREE.CylinderGeometry(0, 10, 10, 4, 1),
-    TRIANGLE = (function initializeTriangleGeometry () {
-        var geometry = new THREE.Geometry();
-        geometry.vertices.push(new THREE.Vector3(-5, -5, 0.2));
-        geometry.vertices.push(new THREE.Vector3( 5, -5, 0.2));
-        geometry.vertices.push(new THREE.Vector3( 0,  5, 0.2));
-        geometry.faces.push(new THREE.Face3(0, 1, 2));
-        return geometry;
-    }) ();
+    TRIANGLE = initializeTriangleGeometry(5, 0.2);
     
 // ----------------------------------------------------------------------------
 // Enemy Types & their Description
@@ -28,6 +30,7 @@ var ENEMY_DESCRIPTIONS= [
         health   : 10,
         speed    : 1.0,
         color    : new THREE.Vector3(255, 0, 0),
+        triangle : initializeTriangleGeometry(7, Math.random() * 0.1 + 0.01),
         init     :  function(self) {
             
                     },
@@ -60,6 +63,7 @@ var ENEMY_DESCRIPTIONS= [
         speed    : 1.0,
         maxspeed : new THREE.Vector2(20,20),
         color    : new THREE.Vector3(255, 0, 255),
+        triangle : initializeTriangleGeometry(3, Math.random() * 0.1 + 0.01),
         init     :  function(self) {
                         //self.target = new THREE.Vector2(
                         //Math.floor(Math.random() * 1000),
@@ -101,6 +105,7 @@ var ENEMY_DESCRIPTIONS= [
         health   : 10,
         speed    : 1.0,
         color    : new THREE.Vector3(255, 255, 0),
+        triangle : initializeTriangleGeometry(5, Math.random() * 0.1 + 0.01),
         init     :  function(self) {
                         var nearest = self.getNearestPlayerObject(Artifact, null);
                         self.setPathToTake(self.findPathTo(nearest.position));
@@ -133,6 +138,7 @@ var ENEMY_DESCRIPTIONS= [
         health   : 10,
         speed    : 2.0,
         color    : new THREE.Vector3(0, 255, 0),
+        triangle : initializeTriangleGeometry(2, Math.random() * 0.1 + 0.01),
         init     :  function(self) {
                         self.target = new THREE.Vector2(game.level.size.width / 2, game.level.size.height / 2);
                         self.damage = self.playerDamage = self.structDamage = self.artifactDamage = 30;
@@ -446,12 +452,20 @@ function Enemy (description) {
         } else {
             enemy.vision = 100;
         }
+
+        if ("triangle" in description) {
+            enemy.triangle = description["triangle"];
+        } else {
+            enemy.triangle = TRIANGLE;
+        }
         
         //Do specific initial things based on the type of enemy
         ENEMY_DESCRIPTIONS[self.type].init(self);
 		
         // Generate a mesh for the enemy
-        enemy.mesh = new THREE.Mesh(TRIANGLE, new THREE.MeshBasicMaterial({ color: enemy.color }));
+        // TODO: make 'material' a description property like 'triangle'
+        // in order to share materials between enemies of the same type
+        enemy.mesh = new THREE.Mesh(enemy.triangle, new THREE.MeshBasicMaterial({ color: enemy.color }));
         enemy.mesh.position = enemy.position;
 
         enemy.stuck = false;
@@ -482,6 +496,7 @@ function Enemy (description) {
         breatheIn.start();
 
         //Set the bounding box
+        // TODO: use type to setup bounding box
         self.boundingBox = new Rect(
                 self.position.x - 9 / 2,
                 self.position.y - 9 / 2,
