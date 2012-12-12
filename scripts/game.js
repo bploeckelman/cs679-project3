@@ -192,24 +192,24 @@ function Game(canvas, renderer) {
 			CONTEXT2D.fillText("Round #" + self.round, CANVAS2D.width / 2, 0);
             // TODO: setup a nicer interface for these
 			CONTEXT2D.fillText("Build Credits: " + self.player.money, CANVAS2D.width / 2, 20);                        
-			CONTEXT2D.fillText("Player Health: " + Math.floor(self.player.health), CANVAS2D.width / 2, 60);
+			CONTEXT2D.fillText("Player Health: " + Math.floor(self.player.health), CANVAS2D.width / 2, 40);
 			if (self.countdown) {
 				CONTEXT2D.font = "40px Arial";
 				CONTEXT2D.textBaseline = "center";
 				CONTEXT2D.fillText("Defend phase complete!", CANVAS2D.width / 2, CANVAS2D.height / 2);
 			}                        
 			for (var i=0; i < self.level.artifacts.length; ++i) {
-                            CONTEXT2D.fillText("Artifact Health: " + Math.floor(self.level.artifacts[i].health), CANVAS2D.width / 2, 80 + i*20);
-                        }
+                CONTEXT2D.fillText("Artifact Health: " + Math.floor(self.level.artifacts[i].health), CANVAS2D.width / 2, 60 + i*20);
+            }
 			// Draw instructions on the 2d canvas
 			if (self.instructions.draw) {
                 var x = self.instructions.position.x,
                     y = self.instructions.position.y;
 
                 // Draw a little partially transparent green background
-                CONTEXT2D.globalAlpha = 0.1;
-                CONTEXT2D.fillStyle = "rgb(16, 255, 16)"; 
-                CONTEXT2D.fillRect(0, 0, 500, window.innerHeight);
+                CONTEXT2D.globalAlpha = 0.25;
+                CONTEXT2D.fillStyle = "rgb(16, 128, 64)"; 
+                CONTEXT2D.fillRect(0, self.instructions.position.y - window.innerHeight / 10, window.innerWidth / 3, window.innerHeight);
                 CONTEXT2D.globalAlpha = 1.0;
 
                 // Draw the instruction text
@@ -220,12 +220,12 @@ function Game(canvas, renderer) {
                     if (line.hasOwnProperty('image')) {
                         CONTEXT2D.drawImage(line.image, x, y);
 
-                        // HACK: gets text to display next to image
-                        if (!line.hasOwnProperty('text')) {
-                            y += line.image.height + 20;
-                        } else {
-                            x += line.image.width + 20;
+                        // HACK: position text to display next to image
+                        if (line.hasOwnProperty('text')) {
+                            x += line.image.width + line.style.xOffset;
                             y += line.image.height / 4;
+                        } else {
+                            y += line.image.height + line.style.yOffset;
                         }
                     }
 
@@ -260,9 +260,10 @@ function Game(canvas, renderer) {
 
             if (self.firstDefend) {
                 self.instructions = instructions.defend;
-                self.instructions.draw = true;
+                self.instructions.tween.start();
             } else { 
                 self.instructions.draw = false;
+                self.instructions.tween.stop();
             }
 
             document.getElementsByTagName('body')[0].style.cursor = 'url(\"images/defend-cursor.cur\"), default';
@@ -306,12 +307,15 @@ function Game(canvas, renderer) {
         else if (self.mode === GAME_MODE.DEFEND) {
             self.mode = GAME_MODE.BUILD;
 
+            /*
             if (self.firstBuild) {
                 self.instructions = instructions.build;
-                self.instructions.draw = true;
+                self.instructions.tween.start();
             } else { 
+            */
                 self.instructions.draw = false;
-            }
+                self.instructions.tween.stop();
+            //}
 
             document.getElementsByTagName('body')[0].style.cursor = 'url(\"images/repair-cursor.cur\"), default';
 
@@ -522,12 +526,15 @@ function Game(canvas, renderer) {
                 { text: "For CS 679:", style: styles.style1 },
                 { text: "    Games Tech, Fall 2012", style: styles.highlight},
             ],
-            position: new THREE.Vector2(25, window.innerHeight / 8),
+            position: new THREE.Vector2(25, window.innerHeight / 10),
             tween: new TWEEN.Tween({ alpha: 1.0 })
                         .to({ alpha: 0.0 }, 3500)
                         .easing(TWEEN.Easing.Cubic.In)
                         .onUpdate(function () { game.instructions.alpha = this.alpha; })
-                        .onComplete(function () { game.instructions = instructions.build; })
+                        .onComplete(function () {
+                            game.instructions = instructions.build;
+                            game.instructions.tween.start();
+                        })
                         .start()
         };
 		
@@ -736,24 +743,28 @@ function Game(canvas, renderer) {
                     .style.backgroundSize = "100% 100%";
         };
 
-        // --------- Help Button handlers ------------------
+        // --------- Help button handlers ------------------
         document.getElementById("help").onclick = function () {
             // Fill game.instructions with instruction text/styles
             if (self.mode === GAME_MODE.BUILD) {
-                if (game.instructions.hasOwnProperty('tween'))
-                    game.instructions.tween.stop();
                 if (game.instructions === instructions.build) {
-                    game.instructions.draw = !game.instructions.draw;
                     game.firstBuild = false;
+                    game.instructions.draw = !game.instructions.draw;
+                    if (game.instructions.draw)
+                        game.instructions.tween.start();
                 } else {
                     game.instructions = instructions.build;
+                    game.instructions.tween.start();
                 }
             } else if (self.mode === GAME_MODE.DEFEND) {
                 if (game.instructions === instructions.defend) {
-                    game.instructions.draw = !game.instructions.draw;
                     game.firstDefend = false;
+                    game.instructions.draw = !game.instructions.draw;
+                    if (game.instructions.draw)
+                        game.instructions.tween.start();
                 } else {
                     game.instructions = instructions.defend;
+                    game.instructions.tween.start();
                 }
             }
         };

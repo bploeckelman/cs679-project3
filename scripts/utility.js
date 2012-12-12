@@ -105,3 +105,14 @@ function deepCopy(object) {
 
     return clone;
 }
+
+
+/*
+ * Get a new html5 image object with the specified src image
+ */
+function getImage (src) {
+    var img = new Image();
+    img.src = src;
+    return img;
+}
+
