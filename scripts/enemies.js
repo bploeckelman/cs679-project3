@@ -37,6 +37,19 @@ var ENEMY_DESCRIPTIONS= [
                                 Math.min(game.level.size.width-1, from.x+self.vision),
                                 Math.min(game.level.size.height-1, from.y+self.vision));
                         self.setFollowTarget(game.player.position, range);
+                    },
+        handleCollision : function (self, object) {
+                        if (object instanceof Player) {
+                            if (object.isSpinning) {
+                                self.takeDamage(object.enemyDamage);
+                            }
+                        }
+                        else if ( object instanceof Structure) {
+                            self.stuck = true;
+                        }
+                        else if (object instanceof Artifact) {
+                            self.stuck = true;
+                        }
                     }
     },
     {
@@ -55,6 +68,19 @@ var ENEMY_DESCRIPTIONS= [
                                 Math.floor(Math.random() * 1000),
                                 Math.floor(Math.random() * 1000));
                         }
+                    },
+        handleCollision : function (self, object) {
+                        if (object instanceof Player) {
+                            if (object.isSpinning) {
+                                self.takeDamage(object.enemyDamage);
+                            }
+                        }
+                        else if ( object instanceof Structure) {
+                            self.stuck = true;
+                        }
+                        else if (object instanceof Artifact) {
+                            self.stuck = true;
+                        }
                     }
     },
     {
@@ -71,6 +97,19 @@ var ENEMY_DESCRIPTIONS= [
                         }
                         else {
                                 self.progressAlongPath();
+                        }
+                    },
+        handleCollision : function (self, object) {
+                        if (object instanceof Player) {
+                            if (object.isSpinning) {
+                                self.takeDamage(object.enemyDamage);
+                            }
+                        }
+                        else if ( object instanceof Structure) {
+                            self.stuck = true;
+                        }
+                        else if (object instanceof Artifact) {
+                            self.stuck = true;
                         }
                     }
     },
@@ -103,7 +142,7 @@ function Enemy (description) {
 
     this.collidable = true;
     this.boundingBox = null;
-    this.intersects = false;
+    this.stuck = false;
 	
     // Private variables ------------------------------------------------------
     var self = this;
@@ -136,7 +175,7 @@ function Enemy (description) {
         }
 
         // Integrate velocity
-        if (!self.intersects) {
+        if (!self.stuck) {
             self.position.addSelf(self.velocity);
 
             // Rotate towards target
@@ -153,7 +192,7 @@ function Enemy (description) {
                 self.position.y + 9 / 2);
                 
         //Allow it to move and check again for collision
-        self.intersects = false;
+        self.stuck = false;
     };
 
     this.collidesWith = function (object) {
@@ -166,24 +205,10 @@ function Enemy (description) {
     };
 
     this.handleCollision = function (object) {
-        if (object instanceof Player) {
-            if (object.isSpinning) {
-                self.takeDamage(object.enemyDamage);
-            }
-        }
-        else if (object instanceof Artifact) {
-            //Stop enemy
-            self.velocity.x = -self.velocity.x;
-            self.velocity.y = -self.velocity.y;
-            self.mesh.position = self.position.addSelf(self.velocity).clone();
-        }
-        else if (object instanceof Structure) {
-            //console.log("Enemy:colliding with structure")
-            self.intersects = true;
-            //alert("Enemy:colliding with structure");
-            //self.takeDamage(10000);
-        }
-        
+        if (object instanceof Player || object instanceof Structure || object instanceof Artifact) {
+            ENEMY_DESCRIPTIONS[self.type].handleCollision(self, object);
+            
+        }        
     };
 
     this.setPathToTake = function (path) {
@@ -365,7 +390,7 @@ function Enemy (description) {
         );
         enemy.mesh.position = enemy.position;
 
-        enemy.intersects = false;
+        enemy.stuck = false;
 
         // Create "breathing" animation
         var BREATHE_TIME = 150 * Math.max(enemy.size.x, enemy.size.y),
