@@ -1,0 +1,12 @@
+# ignore temp files
+*~
+*.swp
+*.tmp
+
+tags
+Thumbs.db
+
+nbproject/
+nbproject/private/
+
+temp.html
