@@ -169,29 +169,7 @@ function Player (game) {
         else if (object instanceof Structure) {
             var velocity = new THREE.Vector3(-self.velocity.x,-self.velocity.y,0);
 
-            var structPosition = object.position;
-            var enemyPosition = self.position;
-            
-            //Get the vector from the center of the player to the center of structure
-            var diff = new THREE.Vector2().sub(structPosition, enemyPosition);
-            
-            //Get the vectors along the axes
-            var vx = new THREE.Vector2(self.velocity.x,0);
-            var vy = new THREE.Vector2(0,self.velocity.y);
-            
-            //Calulate the angles between the diff vector and the axes
-            var thetaX = Math.acos(diff.dot(vx) / vx.length() / diff.length());
-            var thetaY = Math.acos(diff.dot(vy) / vy.length() / diff.length());
-            //console.log(thetaX * 180 / Math.PI + " " + (thetaY * 180 / Math.PI));
-            
-            //If X axis is farther, so go along x
-            if( thetaX > thetaY ) {
-                velocity.x = self.velocity.x / 2;
-            } 
-            //else Y axis is farther, so go along Y
-            else {
-                velocity.y = self.velocity.y / 2;
-            }
+            slide(self, object, velocity);
             
             self.mesh.position = self.position.addSelf(velocity).clone();
         }

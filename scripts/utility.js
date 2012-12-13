@@ -126,3 +126,35 @@ THREE.Color.prototype.getHex = function () {
     hex += this.b;    
     return hex;
 };
+
+/*
+ * Changes the velocity that allows an object to "slide" on other objects
+ * @param object The object that is moving
+ * @param wall The object that is stationary
+ * @param velocity that is to be adjusted
+ */
+function slide (object, wall, velocity) {
+            var wallPosition = wall.position;
+            var objectPosition = object.position;
+            
+            //Get the vector from the center of the player to the center of structure
+            var diff = new THREE.Vector2().sub(wallPosition, objectPosition);
+            
+            //Get the vectors along the axes
+            var vx = new THREE.Vector2(object.velocity.x,0);
+            var vy = new THREE.Vector2(0,object.velocity.y);
+            
+            //Calulate the angles between the diff vector and the axes
+            var thetaX = Math.acos(diff.dot(vx) / vx.length() / diff.length());
+            var thetaY = Math.acos(diff.dot(vy) / vy.length() / diff.length());
+            //console.log(thetaX * 180 / Math.PI + " " + (thetaY * 180 / Math.PI));
+            
+            //If X axis is farther, so go along x
+            if( thetaX > thetaY ) {
+                velocity.x = object.velocity.x / 2;
+            } 
+            //else Y axis is farther, so go along Y
+            else {
+                velocity.y = object.velocity.y / 2;
+            }
+};
