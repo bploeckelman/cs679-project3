@@ -175,15 +175,17 @@ function Player (game) {
     }
 
     this.takeDamage = function (amount) {
-        self.health = self.health - amount;
-        if (self.health <= 0) {
-            self.die();
-        } else {
-            //Damage effect?
-            if (!self.damageEffect.running) {
-                new Audio("sounds/player_hurt.wav").play();
-                self.damageEffect.tween.start();
-                self.damageEffect.running = true;
+        if (amount > 0) {
+            self.health = self.health - amount;
+            if (self.health <= 0) {
+                self.die();
+            } else {
+                //Damage effect?
+                if (!self.damageEffect.running) {
+                    new Audio("sounds/player_hurt.wav").play();
+                    self.damageEffect.tween.start();
+                    self.damageEffect.running = true;
+                }
             }
         }
     };

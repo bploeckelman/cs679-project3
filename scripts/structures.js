@@ -255,18 +255,20 @@ function Structure (type, game) {
 	
 	
     this.takeDamage = function (amount) { 
-	self.health = self.health - amount;
+        if (amount > 0) {
+            self.health = self.health - amount;
 
-        if (self.health <= 0) {
-            self.dead = true;
-            //self.die(arrayIndex);
-        } else {
-            if (!self.damageEffect.running) {
-				new Audio("sounds/structure_damage.wav").play();
-                self.damageEffect.tween.start();
-                self.damageEffect.running = true;
+            if (self.health <= 0) {
+                self.dead = true;
+                //self.die(arrayIndex);
+            } else {
+                if (!self.damageEffect.running) {
+                                    new Audio("sounds/structure_damage.wav").play();
+                    self.damageEffect.tween.start();
+                    self.damageEffect.running = true;
+                }
             }
-        }
+        }            
     };
 
 	

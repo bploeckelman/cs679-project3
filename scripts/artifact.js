@@ -49,23 +49,25 @@ function Artifact (position, level, game) {
 
 
     this.takeDamage = function (amount) {
-		if (!self.runningDamageEffect)
-			self.health = self.health - amount;
-        if (self.health <= 0) {
-            self.die();
-        } else {
-            // Run damage effect
-            if (!self.runningDamageEffect) {
-                spawnParticles(
-                    PARTICLES.ARTIFACT_DAMAGE,
-                    self.mesh.position,
-                    { color: new THREE.Color(0xf0f000) },
-                    game
-                );
-                new Audio("sounds/artifact_damage.wav").play();
+        if (amount > 0) {
+            if (!self.runningDamageEffect)
+                            self.health = self.health - amount;
+            if (self.health <= 0) {
+                self.die();
+            } else {
+                // Run damage effect
+                if (!self.runningDamageEffect) {
+                    spawnParticles(
+                        PARTICLES.ARTIFACT_DAMAGE,
+                        self.mesh.position,
+                        { color: new THREE.Color(0xf0f000) },
+                        game
+                    );
+                    new Audio("sounds/artifact_damage.wav").play();
 
-                setTimeout(function () { self.runningDamageEffect = false; }, 1500);
-                self.runningDamageEffect = true;
+                    setTimeout(function () { self.runningDamageEffect = false; }, 1500);
+                    self.runningDamageEffect = true;
+                }
             }
         }
     };

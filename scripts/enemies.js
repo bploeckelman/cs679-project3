@@ -347,11 +347,13 @@ function Enemy (description) {
     };
 
     this.takeDamage = function (amount) {
-	self.health = self.health - amount;
-        if (self.health <= 0) {
-            self.die();
-        } else {
-            //new Audio("sounds/enemy_damage.wav").play();
+        if (amount > 0) {
+            self.health = self.health - amount;
+            if (self.health <= 0) {
+                self.die();
+            } else {
+                //new Audio("sounds/enemy_damage.wav").play();
+            }
         }
     };
 
