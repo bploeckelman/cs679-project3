@@ -54,6 +54,7 @@ function Structure (type, game) {
                 game.level.cells[i][j].buildable = true;
             }
         }
+        game.level.territoryDirty = true;
     }
 
     this.place = function () {
