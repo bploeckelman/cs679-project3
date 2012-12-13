@@ -50,10 +50,12 @@ var ENEMY_DESCRIPTIONS= [
                             }
                         }
                         else if ( object instanceof Structure) {
-                            self.stuck = true;
+                            var velocity = new THREE.Vector3(-self.velocity.x,-self.velocity.y,0);
+                            slide(self, object, velocity);
+                            self.position.addSelf(velocity);
                         }
                         else if (object instanceof Artifact) {
-                            self.stuck = true;
+                            //ignore
                         }
                     }
     },
@@ -126,11 +128,10 @@ var ENEMY_DESCRIPTIONS= [
                             }
                         }
                         else if ( object instanceof Structure) {
-                            //var velocity = new THREE.Vector3(-self.velocity.x,-self.velocity.y,0);
-                            //slide(self, object, velocity);
-                            //self.mesh.position = self.position.addSelf(velocity).clone();
+                            //ignore
                         }
                         else if (object instanceof Artifact) {
+                            //get stuck and attack
                             self.stuck = true;
                         }
                     }
@@ -225,10 +226,10 @@ function Enemy (description) {
     
         // Update the BoundingBox
         self.boundingBox = new Rect(
-                self.position.x - 9 / 2,
-                self.position.y - 9 / 2,
-                self.position.x + 9 / 2,
-                self.position.y + 9 / 2);
+                self.position.x - self.size ,
+                self.position.y - self.size ,
+                self.position.x + self.size ,
+                self.position.y + self.size );
                 
         //Allow it to move and check again for collision
         self.stuck = false;

@@ -168,10 +168,9 @@ function Player (game) {
         }
         else if (object instanceof Structure) {
             var velocity = new THREE.Vector3(-self.velocity.x,-self.velocity.y,0);
-
             slide(self, object, velocity);
-            
-            self.mesh.position = self.position.addSelf(velocity).clone();
+            self.position.addSelf(velocity);
+//            self.mesh.position = self.position.addSelf(velocity).clone();
         }
     }
 
