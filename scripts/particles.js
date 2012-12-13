@@ -58,9 +58,9 @@ function spawnParticles (type, centerPosition, description, game) {
         break;
         case PARTICLES.ARTIFACT_CLAIMED:
             numParticles  = 500;
-            initialSize   = 0.1;
+            initialSize   = 1;
             color         = description.color;
-            //target        = description.target;
+            target        = description.target;
             velocityRange = {
                 min: new THREE.Vector3(-0.03, -0.03, 0.01),
                 max: new THREE.Vector3( 0.03,  0.03, 0.5)
@@ -74,10 +74,21 @@ function spawnParticles (type, centerPosition, description, game) {
     for (var i = 0; i < numParticles; ++i) {
         var particle = centerPosition.clone();
         if (target !== null && target instanceof THREE.Vector3) {
-            // TODO: targetted particles still need some tweaking
-            var position = particle.clone(),
-                velocity = target.subSelf(position);
-            particle.velocity = velocity.normalize();
+            // Set velocity to move particles towards target
+            var position = new THREE.Vector3(particle.x, particle.y, particle.z),
+                velocity = new THREE.Vector3().sub(target, position).normalize();
+            // Spread out a bit TODO: unhack this, make it a 'spread' property in description
+            particle.x += Math.random() * 20 - 10;
+            particle.y += Math.random() * 20 - 10;
+            particle.z += Math.random() * 20 - 10;
+
+            // TODO: this isn't applied properly during updateParticles() during the first tween
+            //       have to do more debugging to figure out why
+            var SPEED = 1.0;
+            velocity.x = Math.random() * 0.4 - 0.2 + velocity.x; 
+            velocity.y = Math.random() * 0.4 - 0.2 + velocity.y; 
+            velocity.z = Math.random() * 0.4 - 0.2 + velocity.z; 
+            particle.velocity = velocity.multiplyScalar(SPEED);
         } else {
             particle.velocity = new THREE.Vector3(
                 randomBetween(velocityRange.min.x, velocityRange.max.x),
@@ -126,12 +137,31 @@ function spawnParticles (type, centerPosition, description, game) {
 
     // Shrink the size of the particles in the system over time
     if (type === PARTICLES.ARTIFACT_CLAIMED) {
-        var TIME = 10000;
-        new TWEEN.Tween({ size: system.material.size })
-            .to({ size: 10 }, TIME)
-            .easing(TWEEN.Easing.Circular.In)
+        var TIME = 5000,
+            END_SIZE = 5;
+
+        var tween = new TWEEN.Tween({ size: system.material.size })
+            .to({ size: END_SIZE }, TIME)
             .onUpdate(function () { system.material.size = this.size; })
-            .onComplete(function () { system.complete = true; })
+            .onComplete(function () {
+                // Reset tween and material to initial sizes
+                this.size = initialSize;
+                system.material.size = initialSize;
+
+                // Reset particle position to initial position
+                for (var i = 0; i < numParticles; ++i) {
+                    var particle = system.geometry.vertices[i];
+
+                    // Spread out
+                    particle.x = centerPosition.x + Math.random() * 20 - 10;
+                    particle.y = centerPosition.y + Math.random() * 20 - 10;
+                    particle.z = centerPosition.z + Math.random() * 20 - 10;
+                }
+                system.geometry.__dirtyVertices = true;
+
+                // Restart tween
+                tween.start();
+            })
             .start();
     } else {
         // Shrink particles
