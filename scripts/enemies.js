@@ -18,7 +18,7 @@ var ENEMY_TYPES = {
 	BRUTE : 0,
 	LUNATIC : 1,
 	ARTIPHILE : 2,
-    BANELING : 3
+        BANELING : 3
 };
 /*
  * Possible description elements along with enemy specific methods:
@@ -32,9 +32,9 @@ var ENEMY_DESCRIPTIONS= [
         color    : new THREE.Vector3(255, 50, 50), //RED-ISH
         size     : 2,
         init     :  function(self) {
-                            self.structDamage = 0;
-                            self.artifactDamage = 0;
-                            self.playerDamage = 0.1;
+                            self.structDamage = 0.02;
+                            self.artifactDamage = 10;
+                            self.playerDamage = 0.01;
                     },
         update   :  function(self) {
                         var range = self.calculateRange(self.vision);
@@ -69,6 +69,9 @@ var ENEMY_DESCRIPTIONS= [
         color    : new THREE.Vector3(255, 50, 255),  //GREEN-ISH
         size     : 3,
         init     :  function(self) {
+                        self.structDamage = 0.02;
+                        self.artifactDamage = 10;
+                        self.playerDamage = 0.1;
                         //self.target = new THREE.Vector2(
                         //Math.floor(Math.random() * 1000),
                         //Math.floor(Math.random() * 1000));
@@ -111,11 +114,17 @@ var ENEMY_DESCRIPTIONS= [
         color    : new THREE.Vector3(255, 255, 50),  //YELLOW-ISH
         size     : 5,
         init     :  function(self) {
+                        self.structDamage = 0.02;
+                        self.artifactDamage = 10;
+                        self.playerDamage = 0;
+                        //Keep track of structures in the level
+                        self.nStructures = game.level.structures.length;                        
                         var nearest = self.getNearestPlayerObject(Artifact, null);
                         self.setPathToTake(self.findPathTo(nearest.position));
                     },
         update   :  function(self) {
-                        if ( self.path === null ) {
+                        if ( self.path === null || self.nStructures !== game.level.structures.length) {
+                            self.nStructures = game.level.structures.length;
                             var nearest = self.getNearestPlayerObject(Artifact, null);
                             self.setPathToTake(self.findPathTo(nearest.position));
                         }
@@ -130,11 +139,13 @@ var ENEMY_DESCRIPTIONS= [
                             }
                         }
                         else if ( object instanceof Structure) {
-                            //ignore
+                            var velocity = new THREE.Vector3(-self.velocity.x,-self.velocity.y,0);
+                            slide(self, object, velocity);
+                            self.position.addSelf(velocity);
                         }
                         else if (object instanceof Artifact) {
-                            //get stuck and attack
-                            self.stuck = true;
+                            //get stuck and attack only if it's claimed
+                            if (object.claimed) self.stuck = true;
                         }
                     }
     },
@@ -180,7 +191,7 @@ function Enemy (description) {
 
     this.path = null;
     
-    this.EPSILON = 4;
+    this.EPSILON = 1;
 
     this.collidable = true;
     this.boundingBox = null;
@@ -323,7 +334,7 @@ function Enemy (description) {
                 else {
                     path.push([from.x, from.y]);
                     path.push([to.x, to.y]);
-                    console.log("OK");
+                    //console.log("OK");
                     return path;
                 }
 
@@ -344,7 +355,7 @@ function Enemy (description) {
         }
     };
 
-    this.getNearestPlayerObject = function (Type, range, fn) {
+    this.getNearestPlayerObject = function (Type, range) {
         var nearest = null;
         var minLength = 100000;
         var objects;
@@ -358,10 +369,11 @@ function Enemy (description) {
         for (var i=0; i<objects.length; ++i) {
             var obj = objects[i];
             var length = new THREE.Vector2().sub(obj.position, self.position).length();
-            var rangeIntersects = false;
+            var rangeIntersects = true;
+            var claimedArtifact = (Type === Artifact) ? obj.claimed : true;
             if ( range !== null ) rangeIntersects = range.intersects( obj.boundingBox);
             if ( nearest === null || (
-                     rangeIntersects &&
+                     rangeIntersects && claimedArtifact &&
                      length < minLength) ) {
                 nearest = obj;
                 minLength = length;
@@ -503,8 +515,7 @@ function Enemy (description) {
         breatheOut.chain(breatheIn);
         breatheIn.start();
 
-        //Set the bounding box
-        // TODO: use type to setup bounding box
+        //Set the bounding box to something - will be updated later
         self.boundingBox = new Rect(
                 self.position.x - 9 / 2,
                 self.position.y - 9 / 2,
