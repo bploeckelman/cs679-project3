@@ -116,3 +116,13 @@ function getImage (src) {
     return img;
 }
 
+/*
+ * Redefine the working of THREE.Color.getHex()
+ */
+THREE.Color.prototype.getHex = function () {
+    var hex = 0;
+    hex += this.r;    hex <<= 8;
+    hex += this.g;    hex <<= 8;
+    hex += this.b;    
+    return hex;
+};

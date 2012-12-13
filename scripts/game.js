@@ -563,7 +563,7 @@ function Game(canvas, renderer) {
 
 
         // Initialize the level
-        game.level  = new Level(game, 40, 40);
+        game.level  = new Level(game, 80, 80);
 
         // Move camera to center of level
         game.camera.position.set(game.level.size.width / 2, game.level.size.height / 2, 200);

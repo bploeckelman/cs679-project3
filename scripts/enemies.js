@@ -29,8 +29,8 @@ var ENEMY_DESCRIPTIONS= [
         type     : ENEMY_TYPES.BRUTE,
         health   : 10,
         speed    : 1.0,
-        color    : new THREE.Vector3(255, 0, 0),
-        triangle : initializeTriangleGeometry(7, Math.random() * 0.1 + 0.01),
+        color    : new THREE.Vector3(255, 50, 50), //RED-ISH
+        triangle : initializeTriangleGeometry(2, Math.random() * 0.1 + 0.01),
         init     :  function(self) {
             
                     },
@@ -62,7 +62,7 @@ var ENEMY_DESCRIPTIONS= [
         health   : 10,
         speed    : 1.0,
         maxspeed : new THREE.Vector2(20,20),
-        color    : new THREE.Vector3(255, 0, 255),
+        color    : new THREE.Vector3(255, 50, 255),  //GREEN-ISH
         triangle : initializeTriangleGeometry(3, Math.random() * 0.1 + 0.01),
         init     :  function(self) {
                         //self.target = new THREE.Vector2(
@@ -104,7 +104,7 @@ var ENEMY_DESCRIPTIONS= [
         type     : ENEMY_TYPES.ARTIPHILE,
         health   : 10,
         speed    : 1.0,
-        color    : new THREE.Vector3(255, 255, 0),
+        color    : new THREE.Vector3(255, 255, 50),  //YELLOW-ISH
         triangle : initializeTriangleGeometry(5, Math.random() * 0.1 + 0.01),
         init     :  function(self) {
                         var nearest = self.getNearestPlayerObject(Artifact, null);
@@ -137,14 +137,14 @@ var ENEMY_DESCRIPTIONS= [
         type     : ENEMY_TYPES.BANELING,
         health   : 10,
         speed    : 2.0,
-        color    : new THREE.Vector3(0, 255, 0),
-        triangle : initializeTriangleGeometry(2, Math.random() * 0.1 + 0.01),
+        color    : new THREE.Vector3(0, 255, 0), //BLUE
+        triangle : initializeTriangleGeometry(7, Math.random() * 0.1 + 0.01),
         init     :  function(self) {
                         self.target = new THREE.Vector2(game.level.size.width / 2, game.level.size.height / 2);
                         self.damage = self.playerDamage = self.structDamage = self.artifactDamage = 30;
                     },
         update   :  function(self) {
-                        console.log(self.speed);
+                        //console.log(self.speed);
                     },
         handleCollision : function (self, object) {
                         self.takeDamage(object.health+100);                        
@@ -392,9 +392,11 @@ function Enemy (description) {
             var rgb = description["color"].clone();
             enemy.color = new THREE.Color(0x000000);
             enemy.color.setRGB(rgb.x, rgb.y, rgb.z);       
+            enemy.color = enemy.color.getHex();
         } else {
             enemy.color = new THREE.Color(0x000000);
             enemy.color.setRGB(Math.random(), Math.random(), Math.random());
+            enemy.color = enemy.color.getHex();
         }
         
         if ("position" in description && description["position"] instanceof THREE.Vector3) {
@@ -465,6 +467,7 @@ function Enemy (description) {
         // Generate a mesh for the enemy
         // TODO: make 'material' a description property like 'triangle'
         // in order to share materials between enemies of the same type
+        //console.log(enemy.color.getHex());
         enemy.mesh = new THREE.Mesh(enemy.triangle, new THREE.MeshBasicMaterial({ color: enemy.color }));
         enemy.mesh.position = enemy.position;
 
