@@ -98,31 +98,53 @@ function Level (game, numXCells, numYCells) {
 	
     // Level methods ----------------------------------------------------------
     this.update = function () {
+        // Update shader uniforms
         var delta = 0.01 * self.clock.getDelta();
         shaders.noise.uniforms.time.value += delta;
-        shaders.cells.uniforms.time.value += 10 * delta;
 
         // Update claimed territory meshes
+        self.updateClaimedTerritory();
+
+        // Update structures
+        for (var i = 0; i < self.structures.length; ++i) {
+            self.structures[i].update();
+        }
+
+        // Update artifacts
+        for (var i = 0; i < self.artifacts.length; ++i) {
+            self.artifacts[i].update();
+        }
+        
+    };
+
+
+    this.updateClaimedTerritory = function () {
         if (self.territoryDirty) {
             // Remove previous meshes
             game.scene.remove(self.territory);
             self.territory = null;
+            self.cellsClaimed = 0;
 
             // Create new meshes for buildable grid cells
             var mergedGeom = new THREE.Geometry(),
                 mesh = new THREE.Mesh(TERRITORY_GEOMETRY, TERRITORY_MATERIAL),
+                buildableCellIndices = [],
 			    all_buildable = true;
 
-            self.cellsClaimed = 0;
             for (var y = 0; y < self.size.ycells; ++y) {
                 for (var x = 0; x < self.size.xcells; ++x) {
                     if (self.cells[y][x].buildable) {
+                        // Save indices for later
+                        buildableCellIndices.push(new THREE.Vector2(x, y));
+
                         // Position mesh and merge with rest of claimed territory geometry
                         mesh.position.set(
                             x * self.size.cellw + self.size.cellw / 2,
                             y * self.size.cellh + self.size.cellh / 2,
-                            0.05);
+                            0.001);
                         THREE.GeometryUtils.merge(mergedGeom, mesh);
+
+                        // Update the claimed cell counter
                         ++self.cellsClaimed;
                     } else {
 						all_buildable = false;
@@ -133,24 +155,57 @@ function Level (game, numXCells, numYCells) {
             // Add newly merged territory to the scene
             self.territory = new THREE.Mesh(mergedGeom, TERRITORY_MATERIAL);
             game.scene.add(self.territory);
+
+            // Check for claimed artifacts
+            for (var i = 0; i < self.artifacts.length; ++i) {
+                var artifact = self.artifacts[i];
+                // Skip already claimed artifacts
+                if (artifact.claimed)
+                    continue;
+                
+                var allClaimed = true,
+                    indices = new Rect(
+                        Math.floor(artifact.boundingBox.left   / self.size.cellw),
+                        Math.floor(artifact.boundingBox.bottom / self.size.cellh),
+                        Math.floor(artifact.boundingBox.right  / self.size.cellw),
+                        Math.floor(artifact.boundingBox.top    / self.size.cellh));
+
+                // Check grid indices corresponding to artifact bounding box
+                for (var yy = indices.bottom; yy <= indices.top; ++yy) {
+                    for (var xx = indices.left; xx <= indices.right; ++xx) {
+                        var cell = self.cells[yy][xx];
+                        // If this artifact is above this cell and it isn't buildable...
+                        if (cell.artifact == i && !cell.buildable)
+                            allClaimed = false;
+                    }
+                }
+
+                // Set claimed flags
+                if (allClaimed) {
+                    artifact.claimed = true;
+                    artifact.justClaimed = true;
+                    console.log("claimed artifact #" + i);
+                    spawnParticles(
+                        PARTICLES.ARTIFACT_CLAIMED,
+                        artifact.mesh.position.clone(),
+                        { 
+                            color: new THREE.Color(0x0000ff),
+                            target: self.artifacts[0].mesh.position.clone(),
+                        },
+                        game
+                    );
+                }
+                // TODO: run a tween to start particle effect?
+                //  at end of first defend phase w/just claimed
+                //     do something...
+            }
 	
-            /*
-			if(all_buildable = true) {
-				game.gamewon = true;
-			}
-			*/
+            // TODO: Check for and handle 'all claimed' win state
+
             self.territoryDirty = false;
         }
-
-        for (var i = 0; i < self.structures.length; ++i) {
-            self.structures[i].update();
-        }
-
-        for (var i = 0; i < self.artifacts.length; ++i) {
-            self.artifacts[i].update();
-        }
-        
     };
+
 
 	// Constructor ------------------------------------------------------------
     (this.init = function (level) {
@@ -197,6 +252,17 @@ function Level (game, numXCells, numYCells) {
         game.scene.add(level.grid1);
         game.scene.add(level.grid2);
 
+        // Initialize the structures container
+        level.structures = [];
+
+        // Initialize the artifacts
+        level.artifacts = [];
+        for (var i = 0; i < artifactPositions.length; ++i) {
+            level.artifacts.push(new Artifact(artifactPositions[i], level, game));
+        }
+        // Initial artifact starts claimed
+        level.artifacts[0].claimed = true; 
+
         // Non-buildable region in center underneath artifact
         var artifactRegion = new Rect(
                 level.size.xcells / 2 - 2, level.size.ycells / 2 + 1,
@@ -221,7 +287,8 @@ function Level (game, numXCells, numYCells) {
                 level.grid[y].push(0);
                 level.cells[y].push({
                     occupied: false,
-                    buildable: false
+                    buildable: false,
+                    artifact: -1 // indicates no artifact
                 });
 
                 // Enable building for some initial buildable region
@@ -233,16 +300,21 @@ function Level (game, numXCells, numYCells) {
                     level.cells[y][x].buildable = true;
                     ++level.cellsClaimed;
                 }
+
+                // Mark grid cells under the artifacts
+                for (var i = 0; i < level.artifacts.length; ++i) {
+                    var artifact = level.artifacts[i],
+                        indices = new Rect(
+                            artifact.boundingBox.left   / level.size.cellw,
+                            artifact.boundingBox.bottom / level.size.cellh,
+                            artifact.boundingBox.right  / level.size.cellw,
+                            artifact.boundingBox.top    / level.size.cellh);
+                    if (x >= indices.left   && x <= indices.right
+                     && y >= indices.bottom && y <= indices.top) {
+                        level.cells[y][x].artifact = i;
+                    }
+                }
             }
-        }
-
-        // Initialize the structures container
-        level.structures = [];
-
-        // Initialize the artifact
-        level.artifacts = [];
-        for (var i=0; i < artifactPositions.length; ++i) {
-            level.artifacts.push(new Artifact(artifactPositions[i], level, game));
         }
 
         // Initialize the territory visualization meshes

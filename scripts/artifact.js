@@ -15,6 +15,7 @@ function Artifact (position, level, game) {
     this.boundingBox = null;
     
     this.claimed = false;
+    this.justClaimed = false;
     
     // Private variables ------------------------------------------------------
     var self = this,
@@ -35,13 +36,15 @@ function Artifact (position, level, game) {
         // TODO: these updates should be done in a takeDamage() function
         // Update color based on health (goes more red as damaged)
         var green = self.health / 100;
-        self.mesh.material.color.setRGB(1, green, 0);
+        self.mesh.material.color.setRGB(
+                (self.claimed) ? 1.0 : 0.25,
+                (self.claimed) ? green : 0.25,
+                0);
         // Increase pulse rate as health drops
         // TODO: switch to an easing function for calculating pulse time rate 
         self.pulse.time = 2000 * self.health / 100 + 10;
         self.pulse.tweenIn.to({ scale: self.pulse.maxScale }, self.pulse.time);
         self.pulse.tweenOut.to({ scale: self.pulse.minScale }, self.pulse.time);
-        
     };
 
 

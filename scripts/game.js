@@ -149,6 +149,8 @@ function Game(canvas, renderer) {
             // Move new structure around if one is waiting to be placed
             if (self.build.structure !== null)
                 self.build.structure.move();
+
+            updateParticles(self);
         }
 
         TWEEN.update();
