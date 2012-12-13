@@ -30,7 +30,7 @@ var ENEMY_DESCRIPTIONS= [
         health   : 10,
         speed    : 1.0,
         color    : new THREE.Vector3(255, 50, 50), //RED-ISH
-        triangle : initializeTriangleGeometry(2, Math.random() * 0.1 + 0.01),
+        size     : 2,
         init     :  function(self) {
             
                     },
@@ -63,7 +63,7 @@ var ENEMY_DESCRIPTIONS= [
         speed    : 1.0,
         maxspeed : new THREE.Vector2(20,20),
         color    : new THREE.Vector3(255, 50, 255),  //GREEN-ISH
-        triangle : initializeTriangleGeometry(3, Math.random() * 0.1 + 0.01),
+        size     : 3,
         init     :  function(self) {
                         //self.target = new THREE.Vector2(
                         //Math.floor(Math.random() * 1000),
@@ -105,7 +105,7 @@ var ENEMY_DESCRIPTIONS= [
         health   : 10,
         speed    : 1.0,
         color    : new THREE.Vector3(255, 255, 50),  //YELLOW-ISH
-        triangle : initializeTriangleGeometry(5, Math.random() * 0.1 + 0.01),
+        size     : 5,
         init     :  function(self) {
                         var nearest = self.getNearestPlayerObject(Artifact, null);
                         self.setPathToTake(self.findPathTo(nearest.position));
@@ -126,7 +126,9 @@ var ENEMY_DESCRIPTIONS= [
                             }
                         }
                         else if ( object instanceof Structure) {
-                            self.stuck = true;
+                            //var velocity = new THREE.Vector3(-self.velocity.x,-self.velocity.y,0);
+                            //slide(self, object, velocity);
+                            //self.mesh.position = self.position.addSelf(velocity).clone();
                         }
                         else if (object instanceof Artifact) {
                             self.stuck = true;
@@ -138,7 +140,7 @@ var ENEMY_DESCRIPTIONS= [
         health   : 10,
         speed    : 2.0,
         color    : new THREE.Vector3(0, 255, 0), //BLUE
-        triangle : initializeTriangleGeometry(7, Math.random() * 0.1 + 0.01),
+        size     : 7,
         init     :  function(self) {
                         self.target = new THREE.Vector2(game.level.size.width / 2, game.level.size.height / 2);
                         self.damage = self.playerDamage = self.structDamage = self.artifactDamage = 30;
@@ -416,11 +418,10 @@ function Enemy (description) {
             }
         }
         
-        if ("size" in description && description["size"] instanceof THREE.Vector2) {
-            enemy.size = description["size"].clone();       
+        if ("size" in description) {
+            enemy.size = description["size"];       
         } else {
-            enemy.size = new THREE.Vector2( Math.floor(Math.random() * 40) + 10,
-            Math.floor(Math.random() * 40) + 10);
+            enemy.size = Math.floor(Math.random() * 10);
         }
         
         if ("speed" in description && description["speed"] instanceof THREE.Vector2) {
@@ -463,7 +464,8 @@ function Enemy (description) {
         
         //Do specific initial things based on the type of enemy
         ENEMY_DESCRIPTIONS[self.type].init(self);
-		
+        enemy.triangle = initializeTriangleGeometry(enemy.size, Math.random() * 0.1 + 0.01),
+        
         // Generate a mesh for the enemy
         // TODO: make 'material' a description property like 'triangle'
         // in order to share materials between enemies of the same type
@@ -474,7 +476,7 @@ function Enemy (description) {
         enemy.stuck = false;
 
         // Create "breathing" animation
-        var BREATHE_TIME = 150 * Math.max(enemy.size.x, enemy.size.y),
+        var BREATHE_TIME = 150 * enemy.size,
             MAX_SCALE = 1.1,
             MIN_SCALE = 0.9,
             breatheIn = new TWEEN.Tween({ scale: MIN_SCALE })
