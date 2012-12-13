@@ -353,6 +353,14 @@ function Game(canvas, renderer) {
 			document.getElementById("buildMenus").style.display = "block";
 			document.getElementById("switchMode").style.display = "block";
 	    	updateMenus(self);
+                
+            
+            for (var i=0; i< self.level.structures.length; ++i) {
+                if (self.level.structures[i].placed === true &&
+                        self.level.structures[i].type === STRUCTURE_TYPES.ONE_BY_ONE) {
+                    self.level.structures[i].expand();
+                }
+            }
         }
     };
 

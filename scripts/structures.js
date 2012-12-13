@@ -36,6 +36,7 @@ function Structure (type, game) {
     
     this.dead = false;
 
+    this.extent = 1;
     // Private variables ------------------------------------------------------
     var self = this;
 
@@ -45,6 +46,15 @@ function Structure (type, game) {
         // TODO...
     };
 
+    this.expand = function () {
+        var loc = self.gridindices;
+        self.extent+=1;
+        for (var i = loc.y-self.extent; i <= loc.y+self.extent; ++i) {
+            for (var j = loc.x-self.extent; j <= loc.x+self.extent; ++j) {
+                game.level.cells[i][j].buildable = true;
+            }
+        }
+    }
 
     this.place = function () {
         self.gridindices = Object.freeze(self.gridindices);
