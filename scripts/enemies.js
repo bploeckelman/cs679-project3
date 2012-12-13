@@ -32,7 +32,9 @@ var ENEMY_DESCRIPTIONS= [
         color    : new THREE.Vector3(255, 50, 50), //RED-ISH
         size     : 2,
         init     :  function(self) {
-            
+                            self.structDamage = 0;
+                            self.artifactDamage = 0;
+                            self.playerDamage = 0.1;
                     },
         update   :  function(self) {
                         var range = self.calculateRange(self.vision);
