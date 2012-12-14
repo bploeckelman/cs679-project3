@@ -352,8 +352,7 @@ function Game(canvas, renderer) {
             self.player.money = Math.floor(self.player.money);
 			
 			if (allArtifactsClaimed) {
-				//self.levelIndex++;
-				self.levelIndex = 1;
+				self.levelIndex++;
 				self.level.removeLevel();
 				var levelDetails = LEVEL_DETAILS[game.levelIndex];
 				self.level  = new Level(game, levelDetails.numXCells, levelDetails.numYCells, levelDetails.artifactPositions);
@@ -394,7 +393,7 @@ function Game(canvas, renderer) {
 
             // Fire a message box
             if (self.message === null || self.message.finished)
-                self.message = new Message(self, "Start building!", 750, new THREE.Vector2(200, 100));
+                self.message = new Message(self, "Expand your territory to claim cubes, Start building!", 1000, new THREE.Vector2(200, 200));
         }
     };
 
