@@ -155,7 +155,7 @@ function spawnParticles (type, centerPosition, description, game) {
 
             if (resetParticle)
                 system.geometry.__dirtyVertices = true;
-        }, 1000);
+        }, 500);
     } else {
         // Shrink the size of the particles in the system over time
         var SHRINK_TIME = 2000; // in milliseconds
