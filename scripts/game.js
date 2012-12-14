@@ -821,7 +821,14 @@ function Game(canvas, renderer) {
         CONTEXT2D = CANVAS2D.getContext("2d");
 
         // TESTING...
-        game.message = new Message(game); 
+        game.message = new Message(game,
+              "This is a long message that will get broken into multiple lines "
+            + "and so will test the function the message box object's ability "
+            + "to properly deal with really long lines of text :) "
+            + "Ultimately I'd like to use this for mode/level transition messages "
+            + "and some brief story exposition and some quotations can "
+            + "play between levels."
+        ); 
 
         console.log("Game initialized.");
     })(self);
