@@ -12,8 +12,10 @@ function Message (game, text, duration, position, size, margin, entranceTween, e
     this.outTween = null;
 
     var self = this,
-        ROUNDED_CORNER   = 15,
-        DEFAULT_DURATION = 3000;
+        ROUNDED_CORNER         = 15,
+        DEFAULT_DURATION       = 3000,
+        DEFAULT_EXIT_DURATION  = 1500,
+        DEFAULT_ENTER_DURATION = 3000;
 
 
     // NOTE: call this from Game.renderOverlayText() so the canvas is already cleared
@@ -66,15 +68,15 @@ function Message (game, text, duration, position, size, margin, entranceTween, e
         message.duration = (duration > 0) ? duration : DEFAULT_DURATION;
 
         message.inTween  = (entranceTween !== undefined) ? entranceTween
-                         : new TWEEN.Tween({ x: -window.innerHeight })
-                               .to({ x: message.position.x }, message.duration)
+                         : new TWEEN.Tween({ x: -window.innerWidth })
+                               .to({ x: message.position.x }, DEFAULT_ENTER_DURATION)
                                .easing(TWEEN.Easing.Back.Out)
                                .onUpdate(function () { message.position.x = this.x; });
 
         message.outTween = (exitTween !== undefined) ? exitTween 
                          : new TWEEN.Tween({ y: message.position.y })
-                               .to({ y: window.innerHeight }, message.duration)
-                               .easing(TWEEN.Easing.Back.Out)
+                               .to({ y: window.innerHeight }, DEFAULT_EXIT_DURATION)
+                               .easing(TWEEN.Easing.Back.In)
                                .onUpdate(function () { message.position.y = this.y; });
 
         message.inTween.onComplete(function () {
