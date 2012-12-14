@@ -148,7 +148,7 @@ function Artifact (position, level, game) {
         artifact.clock = new THREE.Clock(true);
 
         // Set initial health
-        artifact.health = 300;
+        artifact.health = 100;
 		artifact.origHealth = 300;
 		artifact.destroyed = false;
 

@@ -29,7 +29,7 @@ var ENEMY_DESCRIPTIONS= [
         type     : ENEMY_TYPES.BRUTE,
         health   : 10,
         speed    : 1.0,
-        color    : new THREE.Vector3(255, 50, 50), //RED-ISH
+        color    : new THREE.Vector3(255, 50, 50), // Red
         size     : 2,
         init     :  function(self) {
                             self.structDamage = 0.02;
@@ -66,7 +66,7 @@ var ENEMY_DESCRIPTIONS= [
         health   : 10,
         speed    : 1.0,
         maxspeed : new THREE.Vector2(20,20),
-        color    : new THREE.Vector3(255, 50, 255),  //GREEN-ISH
+        color    : new THREE.Vector3(255, 50, 255),  // Magenta
         size     : 3,
         init     :  function(self) {
                         self.structDamage = 0.02;
@@ -111,7 +111,7 @@ var ENEMY_DESCRIPTIONS= [
         type     : ENEMY_TYPES.ARTIPHILE,
         health   : 10,
         speed    : 1.0,
-        color    : new THREE.Vector3(255, 255, 50),  //YELLOW-ISH
+        color    : new THREE.Vector3(255, 255, 50),  // Yellow
         size     : 5,
         init     :  function(self) {
                         self.structDamage = 0.02;
@@ -153,7 +153,7 @@ var ENEMY_DESCRIPTIONS= [
         type     : ENEMY_TYPES.BANELING,
         health   : 10,
         speed    : 2.0,
-        color    : new THREE.Vector3(0, 255, 0), //BLUE
+        color    : new THREE.Vector3(255, 165, 0), // Orange
         size     : 7,
         init     :  function(self) {
                         self.target = new THREE.Vector2(game.level.size.width / 2, game.level.size.height / 2);

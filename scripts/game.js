@@ -193,7 +193,11 @@ function Game(canvas, renderer) {
 			CONTEXT2D.textBaseline = "top";
 			CONTEXT2D.textAlign    = "center";
 			CONTEXT2D.fillStyle    = "#ffffff";
+<<<<<<< HEAD
+			CONTEXT2D.fillText("Level " + (self.levelIndex + 1) + " : Round " + (self.round + 1), CANVAS2D.width / 2, 0);
+=======
 			CONTEXT2D.fillText("Level " + (self.levelIndex+1) + ", Round " + self.round, CANVAS2D.width / 2, 0);
+>>>>>>> 9051f3eaf46c4648fd218e2ec3ea31f9d938cb4b
             // TODO: setup a nicer interface for these
 			CONTEXT2D.fillText("Build Credits: " + self.player.money, CANVAS2D.width / 2, 20);                        
 			//CONTEXT2D.fillText("Player Health: " + Math.floor(self.player.health), CANVAS2D.width / 2, 40);
@@ -351,7 +355,7 @@ function Game(canvas, renderer) {
 
             // Fire a message box
             if (self.message === null || self.message.finished)
-                self.message = new Message(self, "Defend Flatland!", 750, new THREE.Vector2(200, 100));
+                self.message = new Message(self, "Defend Flatland!", 200, new THREE.Vector2(200, 100));
 		}
         // Defend -> Build
         else if (self.mode === GAME_MODE.DEFEND) {
@@ -380,17 +384,21 @@ function Game(canvas, renderer) {
 			// Also, check if all artifacts have been claimed
 			var allArtifactsClaimed = true;
             console.log("claimed = " + self.level.cellsClaimed);
-            self.player.money += self.level.cellsClaimed * 0.15;
+            self.player.money += self.level.cellsClaimed * (self.levelIndex + 1) * 0.15;
+
             for (var i = 0; i < self.level.artifacts.length; ++i) {
 				if (!self.level.artifacts[i].destroyed) {
-					self.player.money += self.level.artifacts[i].health / 50;
+					self.player.money += (self.levelIndex + 1) * self.level.artifacts[i].health / 50;
+
 					if (!self.level.artifacts[i].claimed)
 						allArtifactsClaimed = false;
 				}
             }
             self.player.money = Math.floor(self.player.money);
 			
+            // Check for level progression
 			if (allArtifactsClaimed) {
+                self.round = 0;
 				self.levelIndex++;
 				self.level.removeLevel();
 				var levelDetails = LEVEL_DETAILS[game.levelIndex];
@@ -406,6 +414,9 @@ function Game(canvas, renderer) {
                     self.scene.remove(self.particles[i]);
                 }
                 self.particles = [];
+
+                // Bonus $$$
+                self.player.money += (self.levelIndex + 1) * 15;
 			}
 
             // Remove the player mesh
@@ -432,7 +443,7 @@ function Game(canvas, renderer) {
 
             // Fire a message box
             if (self.message === null || self.message.finished)
-                self.message = new Message(self, "Expand your territory to claim cubes, Start building!", 1000, new THREE.Vector2(200, 200));
+                self.message = new Message(self, "Expand your territory ..claim the cubes.. --Start building!--", 500, new THREE.Vector2(350, 150));
         }
     };
 
@@ -590,7 +601,7 @@ function Game(canvas, renderer) {
 
         // Set the initial game mode and round counter
         game.mode = GAME_MODE.BUILD;
-        game.round = 1;
+        game.round = 0;
 		game.levelIndex = 0;
         document.getElementsByTagName('body')[0].style.cursor = 'url(\"images/repair-cursor.cur\"), default';
 
@@ -641,7 +652,6 @@ function Game(canvas, renderer) {
         // Add stuff to the scene
         game.scene.add(game.camera);
         game.scene.add(new THREE.AxisHelper());
-
 
         // Initialize the level
 		var levelDetails = LEVEL_DETAILS[game.levelIndex];
