@@ -327,12 +327,22 @@ function Game(canvas, renderer) {
             self.music.build.begin();
 
             // Add money based on territorial control + artifact health
+			// Also, check if all artifacts have been claimed
+			var allArtifactsClaimed = true;
             console.log("claimed = " + self.level.cellsClaimed);
             self.player.money += self.level.cellsClaimed * 0.15;
             for (var i = 0; i < self.level.artifacts.length; ++i) {
                 self.player.money += self.level.artifacts[i].health / 50;
+				if (!self.level.artifacts[i].claimed)
+					allArtifactsClaimed = false;
             }
             self.player.money = Math.floor(self.player.money);
+			
+			if (allArtifactsClaimed) {
+				self.level.removeLevel();
+				//TODO: Pull artifacts and level data from somewhere...
+				self.level  = new Level(self, 100, 100);
+			}
 
             // Remove the player mesh
             self.scene.remove(self.player.mesh);

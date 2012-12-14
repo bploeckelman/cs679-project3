@@ -203,6 +203,22 @@ function Level (game, numXCells, numYCells) {
             self.territoryDirty = false;
         }
     };
+	
+	
+	this.removeLevel = function() {
+		//Remove from member objects from scene
+		game.scene.remove(self.territory);
+		for (var i = 0; i < self.artifacts.length; ++i) {
+			game.scene.remove(self.artifacts[i].mesh);
+		}
+		for (var i = 0; i < self.structures.length; ++i) {
+			game.scene.remove(self.structures[i].mesh);
+			game.scene.remove(self.structures[i].node);
+		}
+		game.scene.remove(self.grid0);
+        game.scene.remove(self.grid1);
+        game.scene.remove(self.grid2);
+	};
 
 
 	// Constructor ------------------------------------------------------------
