@@ -353,6 +353,12 @@ function Game(canvas, renderer) {
 				self.level.removeLevel();
 				var levelDetails = LEVEL_DETAILS[game.levelIndex];
 				self.level  = new Level(game, levelDetails.numXCells, levelDetails.numYCells, levelDetails.artifactPositions);
+
+                // Remove any remaining particle systems
+                for (var i = 0; i < self.particles.length; ++i) {
+                    self.scene.remove(self.particles[i]);
+                }
+                self.particles = [];
 			}
 
             // Remove the player mesh
@@ -360,14 +366,6 @@ function Game(canvas, renderer) {
 
             // Remove any remaining enemies
             self.wave.remove();
-
-            // Remove any remaining particle systems
-            /*
-            for (var i = 0; i < self.particles.length; ++i) {
-                self.scene.remove(self.particles[i]);
-            }
-            self.particles = [];
-            */
 
             // Position camera above treasure/artifact @ center of base
             self.camera.position.set(self.level.size.width / 2, self.level.size.height / 2, 200);
