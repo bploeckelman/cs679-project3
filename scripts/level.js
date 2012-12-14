@@ -28,6 +28,7 @@ function Level (game, numXCells, numYCells) {
         artifactPositions = [
             new THREE.Vector2(numXCells * CELL_SIZE / 2, numYCells * CELL_SIZE / 2),
             new THREE.Vector2(numXCells * CELL_SIZE / 4, numYCells * CELL_SIZE / 4),
+            new THREE.Vector2(numXCells * CELL_SIZE * 3 / 4, numYCells * CELL_SIZE * 3 / 4),
             // ...
         ];
 
@@ -195,9 +196,6 @@ function Level (game, numXCells, numYCells) {
                         game
                     );
                 }
-                // TODO: run a tween to start particle effect?
-                //  at end of first defend phase w/just claimed
-                //     do something...
             }
 	
             // TODO: Check for and handle 'all claimed' win state

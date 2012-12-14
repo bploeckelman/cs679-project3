@@ -57,7 +57,7 @@ function spawnParticles (type, centerPosition, description, game) {
             };
         break;
         case PARTICLES.ARTIFACT_CLAIMED:
-            numParticles  = 500;
+            numParticles  = 100;
             initialSize   = 1;
             color         = description.color;
             target        = description.target;
@@ -77,17 +77,14 @@ function spawnParticles (type, centerPosition, description, game) {
             // Set velocity to move particles towards target
             var position = new THREE.Vector3(particle.x, particle.y, particle.z),
                 velocity = new THREE.Vector3().sub(target, position).normalize();
+
             // Spread out a bit TODO: unhack this, make it a 'spread' property in description
             particle.x += Math.random() * 20 - 10;
             particle.y += Math.random() * 20 - 10;
             particle.z += Math.random() * 20 - 10;
 
-            // TODO: this isn't applied properly during updateParticles() during the first tween
-            //       have to do more debugging to figure out why
-            var SPEED = 1.0;
-            velocity.x = Math.random() * 0.4 - 0.2 + velocity.x; 
-            velocity.y = Math.random() * 0.4 - 0.2 + velocity.y; 
-            velocity.z = Math.random() * 0.4 - 0.2 + velocity.z; 
+            // Scale the speed a bit along the target vector for variety
+            var SPEED = Math.random() * 2 + 0.5;
             particle.velocity = velocity.multiplyScalar(SPEED);
         } else {
             particle.velocity = new THREE.Vector3(
@@ -135,36 +132,32 @@ function spawnParticles (type, centerPosition, description, game) {
     system.sortParticles = true;
     system.complete = false;
 
-    // Shrink the size of the particles in the system over time
+    // Setup any special updates for the system here:
     if (type === PARTICLES.ARTIFACT_CLAIMED) {
-        var TIME = 5000,
-            END_SIZE = 5;
+        // Reset particles that are close enough to the target to their original position
+        // NOTE: This is sort of hacky, but I can't come up with a cleaner way to do this at the moment.
+        setInterval(function () {
+            var resetParticle = false;
 
-        var tween = new TWEEN.Tween({ size: system.material.size })
-            .to({ size: END_SIZE }, TIME)
-            .onUpdate(function () { system.material.size = this.size; })
-            .onComplete(function () {
-                // Reset tween and material to initial sizes
-                this.size = initialSize;
-                system.material.size = initialSize;
-
-                // Reset particle position to initial position
-                for (var i = 0; i < numParticles; ++i) {
-                    var particle = system.geometry.vertices[i];
-
-                    // Spread out
+            for (var i = 0; i < numParticles; ++i) {
+                var particle = system.geometry.vertices[i],
+                    position = new THREE.Vector3(particle.x, particle.y, particle.z),
+                    distance = position.distanceToSquared(target);
+                
+                if (distance < 1500) {
+                    // Reset position
                     particle.x = centerPosition.x + Math.random() * 20 - 10;
                     particle.y = centerPosition.y + Math.random() * 20 - 10;
                     particle.z = centerPosition.z + Math.random() * 20 - 10;
+                    resetParticle = true;
                 }
-                system.geometry.__dirtyVertices = true;
+            }
 
-                // Restart tween
-                tween.start();
-            })
-            .start();
+            if (resetParticle)
+                system.geometry.__dirtyVertices = true;
+        }, 1000);
     } else {
-        // Shrink particles
+        // Shrink the size of the particles in the system over time
         var SHRINK_TIME = 2000; // in milliseconds
         new TWEEN.Tween({ size: system.material.size })
             .to({ size: 0.0 }, SHRINK_TIME)
