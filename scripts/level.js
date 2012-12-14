@@ -1,7 +1,7 @@
 // ----------------------------------------------------------------------------
 // Level object
 // ----------------------------------------------------------------------------
-function Level (game, numXCells, numYCells) {
+function Level (game, numXCells, numYCells, artifactPositions) {
 
     // Public properties ------------------------------------------------------
     this.grid0 = null;
@@ -23,14 +23,16 @@ function Level (game, numXCells, numYCells) {
         MIN_NUM_X_CELLS = 40,
         MIN_NUM_Y_CELLS = 40,
         TERRITORY_GEOMETRY = null, // Created on init()
-        TERRITORY_MATERIAL = new THREE.ShaderMaterial(shaders.noise),
+        TERRITORY_MATERIAL = new THREE.ShaderMaterial(shaders.noise);
         //TODO : Send in as a parameter!!
-        artifactPositions = [
+        /*
+		Moved to game_data.js
+		artifactPositions = [
             new THREE.Vector2(numXCells * CELL_SIZE / 2, numYCells * CELL_SIZE / 2),
             new THREE.Vector2(numXCells * CELL_SIZE / 4, numYCells * CELL_SIZE / 4),
             new THREE.Vector2(numXCells * CELL_SIZE * 3 / 4, numYCells * CELL_SIZE * 3 / 4),
             // ...
-        ];
+        ];*/
 
 
 	// Utility variables and methods --------------------------------------------------
