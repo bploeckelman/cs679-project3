@@ -4,7 +4,7 @@ var STRUCTURE_TYPES = {
         THREE_BY_THREE: 2,
         FOUR_BY_FOUR:   3
     },
-    STRUCTURE_COSTS = [10, 20, 30, 40],
+    STRUCTURE_COSTS = [5, 20, 40, 80],
     STRUCTURE_SIZES = [1,2,3,4],
     STRUCTURE_AREAS = [3,6,8,10], // These territory sizes work pretty well
     STRUCTURE_COLORS = [

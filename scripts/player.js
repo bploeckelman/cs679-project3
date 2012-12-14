@@ -129,13 +129,13 @@ function Player (game) {
 
             self.isSpinning = true;
             // Note: set canSpin to false to force a pause between attacks
-			self.canSpin = true;  // Continuous attacking currently enabled...
+			self.canSpin = false;  // Continuous attacking currently enabled...
             
             // Rotate the player
             var ROT_AMOUNT = -8 * Math.PI,
-                ROT_TIME   = 1000;
+                ROT_TIME   = 500;
 
-			setTimeout(function () { self.canSpin = true; }, 2 * ROT_TIME);
+			setTimeout(function () { self.canSpin = true; }, 300);//2 * ROT_TIME);
             new TWEEN.Tween({ rot: 0 })
                 .to({ rot: ROT_AMOUNT }, ROT_TIME)
                 .easing(TWEEN.Easing.Quadratic.InOut)
@@ -162,9 +162,9 @@ function Player (game) {
 
     this.handleCollision = function (object) {
         if (object instanceof Enemy) {
-            //if (!self.isSpinning) {
-            self.takeDamage(object.playerDamage);
-            //}
+            if (!self.isSpinning) {
+                self.takeDamage(object.playerDamage);
+            }
         }
         else if (object instanceof Structure) {
             var velocity = new THREE.Vector3(-self.velocity.x,-self.velocity.y,0);
