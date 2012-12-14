@@ -359,6 +359,9 @@ function Game(canvas, renderer) {
 				self.level  = new Level(game, levelDetails.numXCells, levelDetails.numYCells, levelDetails.artifactPositions);
 				
 				//Notify player of level advancement...
+				// Fire a message box
+				if (self.message === null || self.message.finished)
+					self.message = new Message(self, "  Level " + self.levelIndex + " Completed!", 750, new THREE.Vector2(200, 100));
 
                 // Remove any remaining particle systems
                 for (var i = 0; i < self.particles.length; ++i) {
