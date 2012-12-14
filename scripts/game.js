@@ -141,8 +141,8 @@ function Game(canvas, renderer) {
                     // down to mode switch, the player has to click through 
                     // the completion message...
 
-                    //Game won if defeated all enemies on last round
-                    if (self.round >= 6) {
+                    //Game won if claimed all artifacts on last level
+                    if (self.levelIndex >= LEVEL_DETAILS.length) {
                             self.gamewon = true;
                     }
                 }
@@ -193,7 +193,7 @@ function Game(canvas, renderer) {
 			CONTEXT2D.textBaseline = "top";
 			CONTEXT2D.textAlign    = "center";
 			CONTEXT2D.fillStyle    = "#ffffff";
-			CONTEXT2D.fillText("Round #" + self.round, CANVAS2D.width / 2, 0);
+			CONTEXT2D.fillText("Level " + (self.levelIndex+1) + ", Round " + self.round, CANVAS2D.width / 2, 0);
             // TODO: setup a nicer interface for these
 			CONTEXT2D.fillText("Build Credits: " + self.player.money, CANVAS2D.width / 2, 20);                        
 			CONTEXT2D.fillText("Player Health: " + Math.floor(self.player.health), CANVAS2D.width / 2, 40);
