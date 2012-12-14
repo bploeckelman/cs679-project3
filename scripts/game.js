@@ -306,6 +306,7 @@ function Game(canvas, renderer) {
             self.round++;
 
             if (self.firstDefend) {
+				self.firstDefend  = false;
                 self.instructions = instructions.defend;
                 self.instructions.tween.start();
             } else { 
