@@ -62,9 +62,9 @@ LEVEL_DETAILS = [
 
 ROUND_DETAILS = [
 	{ numEnemies: [3, 1, 1, 1],  health: 1.0,  size: 1.0, speed: 0.25 },
-    { numEnemies: [5, 3, 1, 1],  health: 2.0,  size: 1.2, speed: 0.50 },
-    { numEnemies: [10, 5, 3, 1],  health: 4.0,  size: 1.4, speed: 0.75 },
-    { numEnemies: [15, 10, 5, 3],  health: 6.0,  size: 1.6, speed: 1.00 },
-    { numEnemies: [110, 15, 10, 5],  health: 8.0,  size: 1.8, speed: 1.25 },
-    { numEnemies: [10, 10, 10, 10], health: 10.0, size: 2.0, speed: 1.50 },
+    { numEnemies: [5, 3, 1, 1],  health: 2.0,  size: 1.2, speed: 0.30 },
+    { numEnemies: [10, 5, 3, 1],  health: 4.0,  size: 1.4, speed: 0.35 },
+    { numEnemies: [15, 10, 5, 3],  health: 6.0,  size: 1.6, speed: 0.40 },
+    { numEnemies: [110, 15, 10, 5],  health: 8.0,  size: 1.8, speed: 0.45 },
+    { numEnemies: [10, 10, 10, 10], health: 10.0, size: 2.0, speed: 0.50 },
 ];

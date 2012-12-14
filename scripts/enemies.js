@@ -32,9 +32,9 @@ var ENEMY_DESCRIPTIONS= [
         color    : new THREE.Vector3(255, 50, 50), // Red
         size     : 2,
         init     :  function(self) {
-                            self.structDamage = 0.02;
-                            self.artifactDamage = 10;
-                            self.playerDamage = 0.01;
+                            self.structDamage = 0.2;
+                            self.artifactDamage = 2;
+                            self.playerDamage = 1.0;
                     },
         update   :  function(self) {
                         var range = self.calculateRange(self.vision);
@@ -71,7 +71,7 @@ var ENEMY_DESCRIPTIONS= [
         init     :  function(self) {
                         self.structDamage = 0.02;
                         self.artifactDamage = 10;
-                        self.playerDamage = 0.1;
+                        self.playerDamage = 1.0;
                         //self.target = new THREE.Vector2(
                         //Math.floor(Math.random() * 1000),
                         //Math.floor(Math.random() * 1000));
@@ -116,7 +116,7 @@ var ENEMY_DESCRIPTIONS= [
         init     :  function(self) {
                         self.structDamage = 0.02;
                         self.artifactDamage = 10;
-                        self.playerDamage = 0;
+                        self.playerDamage = 0.1;
                         //Keep track of structures in the level
                         self.nStructures = game.level.structures.length;                        
                         var nearest = self.getNearestPlayerObject(Artifact, null);
@@ -163,7 +163,12 @@ var ENEMY_DESCRIPTIONS= [
                         //console.log(self.speed);
                     },
         handleCollision : function (self, object) {
-                        self.takeDamage(object.health+100);                        
+						if (object instanceof Structure)
+							self.takeDamage(object.health / 2);
+						else if (object instanceof Artifact)
+							self.takeDamage(object.health / 6);
+						else if (object instanceof Player)
+							self.takeDamage(10);
                     }
     },
 ];
