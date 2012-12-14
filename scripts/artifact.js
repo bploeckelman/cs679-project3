@@ -149,7 +149,7 @@ function Artifact (position, level, game) {
 
         // Set initial health
         artifact.health = 100;
-		artifact.origHealth = 300;
+		artifact.origHealth = 100;
 		artifact.destroyed = false;
 
         // Setup pulse tweens

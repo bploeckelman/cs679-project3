@@ -193,11 +193,8 @@ function Game(canvas, renderer) {
 			CONTEXT2D.textBaseline = "top";
 			CONTEXT2D.textAlign    = "center";
 			CONTEXT2D.fillStyle    = "#ffffff";
-<<<<<<< HEAD
 			CONTEXT2D.fillText("Level " + (self.levelIndex + 1) + " : Round " + (self.round + 1), CANVAS2D.width / 2, 0);
-=======
-			CONTEXT2D.fillText("Level " + (self.levelIndex+1) + ", Round " + self.round, CANVAS2D.width / 2, 0);
->>>>>>> 9051f3eaf46c4648fd218e2ec3ea31f9d938cb4b
+
             // TODO: setup a nicer interface for these
 			CONTEXT2D.fillText("Build Credits: " + self.player.money, CANVAS2D.width / 2, 20);                        
 			//CONTEXT2D.fillText("Player Health: " + Math.floor(self.player.health), CANVAS2D.width / 2, 40);
