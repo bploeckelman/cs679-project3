@@ -142,7 +142,7 @@ function Game(canvas, renderer) {
                     // the completion message...
 
                     //Game won if claimed all artifacts on last level
-                    if (self.levelIndex >= LEVEL_DETAILS.length) {
+                    if (self.levelIndex >= LEVEL_DETAILS.length-1) {
                             self.gamewon = true;
                     }
                 }
@@ -319,6 +319,9 @@ function Game(canvas, renderer) {
 		}
         // Defend -> Build
         else if (self.mode === GAME_MODE.DEFEND) {
+			if (self.gamewon || self.gamelost)
+				return;
+			
             self.mode = GAME_MODE.BUILD;
 
             /*
