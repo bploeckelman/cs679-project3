@@ -1,7 +1,7 @@
 // ----------------------------------------------------------------------------
 // Message object
 // ----------------------------------------------------------------------------
-function Message (game, text, duration, position, size, margin, entranceTween, exitTween) {
+function Message (game, text, duration, size, margin, position, entranceTween, exitTween) {
 
     this.text     = null;
     this.size     = null;
@@ -10,6 +10,7 @@ function Message (game, text, duration, position, size, margin, entranceTween, e
     this.duration = null;
     this.inTween  = null;
     this.outTween = null;
+    this.finished = null;
 
     var self = this,
         ROUNDED_CORNER         = 15,
@@ -77,12 +78,15 @@ function Message (game, text, duration, position, size, margin, entranceTween, e
                          : new TWEEN.Tween({ y: message.position.y })
                                .to({ y: window.innerHeight }, DEFAULT_EXIT_DURATION)
                                .easing(TWEEN.Easing.Back.In)
-                               .onUpdate(function () { message.position.y = this.y; });
+                               .onUpdate(function () { message.position.y = this.y; })
+                               .onComplete(function () { message.finished = true; });
 
         message.inTween.onComplete(function () {
             setTimeout(function () { message.outTween.start(); }, message.duration);
         });
         message.inTween.start();
+
+        message.finished = false;
     }) (self);
 
 }
