@@ -15,6 +15,7 @@ function Game(canvas, renderer) {
     this.wave   = null;
     this.build  = null;
 	this.menus 	= null;
+    this.message = null;
     this.particles = null;
     this.projector = null;
     this.countdown = false;
@@ -255,7 +256,8 @@ function Game(canvas, renderer) {
 			}
 		}
 
-        self.message.render(CONTEXT2D, CANVAS2D);
+        if (self.message !== null)
+            self.message.render(CONTEXT2D, CANVAS2D);
     };
 
 
@@ -310,6 +312,10 @@ function Game(canvas, renderer) {
                 .easing(TWEEN.Easing.Cubic.InOut)
                 .onUpdate(function () { self.camera.position.z = this.zoom; })
                 .start();
+
+            // Fire a message box
+            if (self.message === null || self.message.finished)
+                self.message = new Message(self, "Defend Flatland!", 750, new THREE.Vector2(200, 100));
 		}
         // Defend -> Build
         else if (self.mode === GAME_MODE.DEFEND) {
@@ -353,6 +359,12 @@ function Game(canvas, renderer) {
 				self.level  = new Level(game, levelDetails.numXCells, levelDetails.numYCells, levelDetails.artifactPositions);
 				
 				//Notify player of level advancement...
+
+                // Remove any remaining particle systems
+                for (var i = 0; i < self.particles.length; ++i) {
+                    self.scene.remove(self.particles[i]);
+                }
+                self.particles = [];
 			}
 
             // Remove the player mesh
@@ -360,12 +372,6 @@ function Game(canvas, renderer) {
 
             // Remove any remaining enemies
             self.wave.remove();
-
-            // Remove any remaining particle systems
-            for (var i = 0; i < self.particles.length; ++i) {
-                self.scene.remove(self.particles[i]);
-            }
-            self.particles = [];
 
             // Position camera above treasure/artifact @ center of base
             self.camera.position.set(self.level.size.width / 2, self.level.size.height / 2, 200);
@@ -375,13 +381,17 @@ function Game(canvas, renderer) {
 			document.getElementById("switchMode").style.display = "block";
 	    	updateMenus(self);
                 
-            
+            // Expand the creeper structure's claimed territory
             for (var i=0; i< self.level.structures.length; ++i) {
                 if (self.level.structures[i].placed === true &&
                         self.level.structures[i].type === STRUCTURE_TYPES.ONE_BY_ONE) {
                     self.level.structures[i].expand();
                 }
             }
+
+            // Fire a message box
+            if (self.message === null || self.message.finished)
+                self.message = new Message(self, "Start building!", 750, new THREE.Vector2(200, 100));
         }
     };
 
@@ -830,9 +840,6 @@ function Game(canvas, renderer) {
         CANVAS2D.style.right    = 0;
         document.getElementById("container").appendChild(CANVAS2D);
         CONTEXT2D = CANVAS2D.getContext("2d");
-
-        // TESTING...
-        game.message = new Message(game); 
 
         console.log("Game initialized.");
     })(self);
