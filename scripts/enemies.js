@@ -103,7 +103,7 @@ var ENEMY_DESCRIPTIONS= [
                             //self.stuck = true;
                         }
                         else if (object instanceof Artifact) {
-                            self.stuck = true;
+                            if (object.claimed && !object.destroyed) self.stuck = true;
                         }
                     }
     },
