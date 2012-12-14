@@ -202,8 +202,10 @@ function Game(canvas, renderer) {
 				CONTEXT2D.fillText("Defend phase complete!", CANVAS2D.width / 2, CANVAS2D.height / 2);
 			}                        
 			for (var i=0; i < self.level.artifacts.length; ++i) {
-                CONTEXT2D.font = "20px Arial";
-                CONTEXT2D.fillText("Artifact Health: " + Math.floor(self.level.artifacts[i].health), CANVAS2D.width / 2, 60 + i*20);
+				if (!self.level.artifacts[i].destroyed) {
+					CONTEXT2D.font = "20px Arial";
+					CONTEXT2D.fillText("Artifact Health: " + Math.floor(self.level.artifacts[i].health), CANVAS2D.width / 2, 60 + i*20);
+				}
             }
 			// Draw instructions on the 2d canvas
 			if (self.instructions.draw) {
@@ -335,9 +337,11 @@ function Game(canvas, renderer) {
             console.log("claimed = " + self.level.cellsClaimed);
             self.player.money += self.level.cellsClaimed * 0.15;
             for (var i = 0; i < self.level.artifacts.length; ++i) {
-                self.player.money += self.level.artifacts[i].health / 50;
-				if (!self.level.artifacts[i].claimed)
-					allArtifactsClaimed = false;
+				if (!self.level.artifacts[i].destroyed) {
+					self.player.money += self.level.artifacts[i].health / 50;
+					if (!self.level.artifacts[i].claimed)
+						allArtifactsClaimed = false;
+				}
             }
             self.player.money = Math.floor(self.player.money);
 			
@@ -347,6 +351,8 @@ function Game(canvas, renderer) {
 				self.level.removeLevel();
 				var levelDetails = LEVEL_DETAILS[game.levelIndex];
 				self.level  = new Level(game, levelDetails.numXCells, levelDetails.numYCells, levelDetails.artifactPositions);
+				
+				//Notify player of level advancement...
 			}
 
             // Remove the player mesh
@@ -589,7 +595,7 @@ function Game(canvas, renderer) {
         // Initialize the level
 		var levelDetails = LEVEL_DETAILS[game.levelIndex];
         game.level  = new Level(game, levelDetails.numXCells, levelDetails.numYCells, levelDetails.artifactPositions);
-
+		
         // Move camera to center of level
         game.camera.position.set(game.level.size.width / 2, game.level.size.height / 2, 200);
 
@@ -864,13 +870,15 @@ function handleCollisions (game) {
     
     for(var i = game.level.artifacts.length-1; i>=0; --i) {
         var artifact = game.level.artifacts[i];
-        for(var j = game.wave.enemies.length-1; j>=0; --j) {
-            var enemy = game.wave.enemies[j];
-            if ( enemy.collidesWith(artifact) ) {
-                enemy.handleCollision(artifact);
-                artifact.handleCollision(enemy);
-            }
-        }
+		if (!artifact.destroyed) {
+			for(var j = game.wave.enemies.length-1; j>=0; --j) {
+				var enemy = game.wave.enemies[j];
+				if ( enemy.collidesWith(artifact) ) {
+					enemy.handleCollision(artifact);
+					artifact.handleCollision(enemy);
+				}
+			}
+		}
     }
     // TODO: move player/enemy collision test to Wave object?
     for(var i = game.wave.enemies.length-1; i>=0; --i) {

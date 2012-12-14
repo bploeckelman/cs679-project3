@@ -8,6 +8,7 @@ function Artifact (position, level, game) {
     this.position = null;
     this.clock  = null;
     this.health = null;
+	this.destroyed = null;
     this.pulse  = null;
     this.runningDamageEffect = false;
     
@@ -23,7 +24,7 @@ function Artifact (position, level, game) {
 
     // Level methods ----------------------------------------------------------
     this.update = function () {
-        if (self.health <= 0)
+        if (self.health <= 0 || self.destroyed)
             return;
 
         var t = self.clock.getDelta();
@@ -80,11 +81,21 @@ function Artifact (position, level, game) {
             { color: new THREE.Color(0xff0000) },
             game
         );
+		self.destroyed = true;
         game.scene.remove(self.mesh);
         new Audio("sounds/artifact_die.wav").play();
 
         //End game
-        game.gamelost = true;
+		var gameLost = true;
+		for (var i=0; i < game.level.artifacts.length; ++i) {
+			if (!game.level.artifacts[i].destroyed &&
+				game.level.artifacts[i].claimed) {
+				gameLost = false;
+				break;
+			}
+		}
+		if (gameLost)
+			game.gamelost = true;
     };
 
     /*
@@ -137,6 +148,7 @@ function Artifact (position, level, game) {
 
         // Set initial health
         artifact.health = 300;
+		artifact.destroyed = false;
 
         // Setup pulse tweens
         artifact.pulse = { time: 500, minScale: 0.75, maxScale: 1.0, tweenIn: null, tweenOut: null };

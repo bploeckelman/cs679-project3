@@ -163,7 +163,7 @@ function Level (game, numXCells, numYCells, artifactPositions) {
             for (var i = 0; i < self.artifacts.length; ++i) {
                 var artifact = self.artifacts[i];
                 // Skip already claimed artifacts
-                if (artifact.claimed)
+                if (artifact.claimed || artifact.destroyed)
                     continue;
                 
                 var allClaimed = true,

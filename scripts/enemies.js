@@ -145,7 +145,7 @@ var ENEMY_DESCRIPTIONS= [
                         }
                         else if (object instanceof Artifact) {
                             //get stuck and attack only if it's claimed
-                            if (object.claimed) self.stuck = true;
+                            if (object.claimed && !object.destroyed) self.stuck = true;
                         }
                     }
     },
@@ -373,9 +373,10 @@ function Enemy (description) {
             var length = new THREE.Vector2().sub(obj.position, self.position).length();
             var rangeIntersects = true;
             var claimedArtifact = (Type === Artifact) ? obj.claimed : true;
+			var destroyedArtifact = (Type === Artifact) ? obj.destroyed : true;
             if ( range !== null ) rangeIntersects = range.intersects( obj.boundingBox);
             if ( nearest === null || (
-                     rangeIntersects && claimedArtifact &&
+                     rangeIntersects && claimedArtifact && !destroyedArtifact &&
                      length < minLength) ) {
                 nearest = obj;
                 minLength = length;
