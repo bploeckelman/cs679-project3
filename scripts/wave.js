@@ -8,18 +8,20 @@ function Wave (round, game) {
 
 
     // Private variables ------------------------------------------------------
-    var self = this,
+    var self = this;
     // numEnemies : number of enemies of each type
     //    (type indices: 0 brute, 1 lunatic, 2 artiphile, 3 baneling)
     // health, size, speed : propotion of the standard given in ENEENEMY_DESCRIPTIONS
-    ROUND_DETAILS = [
+    /*
+	Moved to game_data.js
+	ROUND_DETAILS = [
         { numEnemies: [0, 1, 0, 0],   health: 1.0,  size: 1.0, speed: 0.25 },
 //        { numEnemies: [0, 0, 1],   health: 2.0,  size: 1.2, speed: 0.50 },
 //        { numEnemies: [0, 0, 10],  health: 4.0,  size: 1.4, speed: 0.75 },
 //        { numEnemies: [0, 0, 16],  health: 6.0,  size: 1.6, speed: 1.00 },
 //        { numEnemies: [0, 0, 20],  health: 8.0,  size: 1.8, speed: 1.50 },
 //        { numEnemies: [0, 0, 24],  health: 10.0, size: 2.0, speed: 2.00 },
-    ];
+    ];*/
 
     // Wave methods -----------------------------------------------------------
     this.update = function () {

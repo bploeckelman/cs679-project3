@@ -7,6 +7,7 @@ function Game(canvas, renderer) {
     this.frames = 0;            // number of frames drawn
     this.mode   = null;
     this.round  = null;
+	this.levelIndex = null;
     this.scene  = null; 
     this.camera = null;
     this.level  = null;
@@ -341,9 +342,11 @@ function Game(canvas, renderer) {
             self.player.money = Math.floor(self.player.money);
 			
 			if (allArtifactsClaimed) {
+				//self.levelIndex++;
+				self.levelIndex = 1;
 				self.level.removeLevel();
-				//TODO: Pull artifacts and level data from somewhere...
-				self.level  = new Level(self, 100, 100);
+				var levelDetails = LEVEL_DETAILS[game.levelIndex];
+				self.level  = new Level(game, levelDetails.numXCells, levelDetails.numYCells, levelDetails.artifactPositions);
 			}
 
             // Remove the player mesh
@@ -531,6 +534,7 @@ function Game(canvas, renderer) {
         // Set the initial game mode and round counter
         game.mode = GAME_MODE.BUILD;
         game.round = 1;
+		game.levelIndex = 0;
         document.getElementsByTagName('body')[0].style.cursor = 'url(\"images/repair-cursor.cur\"), default';
 
         // Set initial 'instructions'
@@ -583,7 +587,8 @@ function Game(canvas, renderer) {
 
 
         // Initialize the level
-        game.level  = new Level(game, 80, 80);
+		var levelDetails = LEVEL_DETAILS[game.levelIndex];
+        game.level  = new Level(game, levelDetails.numXCells, levelDetails.numYCells, levelDetails.artifactPositions);
 
         // Move camera to center of level
         game.camera.position.set(game.level.size.width / 2, game.level.size.height / 2, 200);
