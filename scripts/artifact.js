@@ -7,6 +7,7 @@ function Artifact (position, level, game) {
     this.mesh   = null;
     this.position = null;
     this.clock  = null;
+	this.origHealth = null;
     this.health = null;
 	this.destroyed = null;
     this.pulse  = null;
@@ -148,6 +149,7 @@ function Artifact (position, level, game) {
 
         // Set initial health
         artifact.health = 300;
+		artifact.origHealth = 300;
 		artifact.destroyed = false;
 
         // Setup pulse tweens

@@ -10,6 +10,7 @@ function Player (game) {
     this.money		= null;
     this.isSpinning = false;
     this.health		= 100;
+	this.origHealth = 100;
     this.enemyDamage = 10;
     this.damageEffect = null;
     this.canSpin = true;

@@ -196,16 +196,52 @@ function Game(canvas, renderer) {
 			CONTEXT2D.fillText("Level " + (self.levelIndex+1) + ", Round " + self.round, CANVAS2D.width / 2, 0);
             // TODO: setup a nicer interface for these
 			CONTEXT2D.fillText("Build Credits: " + self.player.money, CANVAS2D.width / 2, 20);                        
-			CONTEXT2D.fillText("Player Health: " + Math.floor(self.player.health), CANVAS2D.width / 2, 40);
+			//CONTEXT2D.fillText("Player Health: " + Math.floor(self.player.health), CANVAS2D.width / 2, 40);
+			CONTEXT2D.fillText("Player Health", CANVAS2D.width / 2, 40);
+			var barX = 140;
+				barY = 15;
+				percentFull = self.player.health / self.player.origHealth;
+			
+			CONTEXT2D.strokeStyle = "#444444";
+			if (percentFull >= 0.6)
+				CONTEXT2D.fillStyle = "#2db500";
+			else if (percentFull >= 0.3)
+				CONTEXT2D.fillStyle = "#e7cb14";
+			else
+				CONTEXT2D.fillStyle = "#dc0202";
+			CONTEXT2D.roundRect((CANVAS2D.width / 2) - (barX / 2), 70,
+							  percentFull*barX, barY, 15).fill();
+			CONTEXT2D.fillStyle = "#ff0000";
+			CONTEXT2D.roundRect((CANVAS2D.width / 2) - (barX / 2), 70,
+							  barX, barY, 15).stroke();
+			
 			if (self.countdown) {
 				CONTEXT2D.font = "40px Arial";
 				CONTEXT2D.textBaseline = "center";
 				CONTEXT2D.fillText("Defend phase complete!", CANVAS2D.width / 2, CANVAS2D.height / 2);
-			}                        
+			}
+			
+			CONTEXT2D.fillStyle    = "#ffffff";
+			CONTEXT2D.font = "20px Arial";
+			CONTEXT2D.fillText("Artifact Health", (CANVAS2D.width * 2 / 3) + 70, 0);
 			for (var i=0; i < self.level.artifacts.length; ++i) {
 				if (!self.level.artifacts[i].destroyed) {
-					CONTEXT2D.font = "20px Arial";
-					CONTEXT2D.fillText("Artifact Health: " + Math.floor(self.level.artifacts[i].health), CANVAS2D.width / 2, 60 + i*20);
+					//CONTEXT2D.font = "20px Arial";
+					//CONTEXT2D.fillText("Artifact Health: " + Math.floor(self.level.artifacts[i].health), CANVAS2D.width / 2, 60 + i*20);
+					var percentFull = self.level.artifacts[i].health / self.level.artifacts[i].origHealth;
+					
+					CONTEXT2D.strokeStyle = "#444444";
+					if (percentFull >= 0.6)
+						CONTEXT2D.fillStyle = "#2db500";
+					else if (percentFull >= 0.3)
+						CONTEXT2D.fillStyle = "#e7cb14";
+					else
+						CONTEXT2D.fillStyle = "#dc0202";
+					CONTEXT2D.roundRect((CANVAS2D.width * 2 / 3), 30 + i*22,
+									  percentFull*barX, barY, 15).fill();
+					CONTEXT2D.fillStyle = "#ff0000";
+					CONTEXT2D.roundRect((CANVAS2D.width * 2 / 3), 30 + i*22,
+									  barX, barY, 15).stroke();
 				}
             }
 			// Draw instructions on the 2d canvas
