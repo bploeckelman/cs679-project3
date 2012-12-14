@@ -251,6 +251,8 @@ function Game(canvas, renderer) {
                 CONTEXT2D.globalAlpha = 1.0;
 			}
 		}
+
+        self.message.render(CONTEXT2D, CANVAS2D);
     };
 
 
@@ -817,6 +819,9 @@ function Game(canvas, renderer) {
         CANVAS2D.style.right    = 0;
         document.getElementById("container").appendChild(CANVAS2D);
         CONTEXT2D = CANVAS2D.getContext("2d");
+
+        // TESTING...
+        game.message = new Message(game); 
 
         console.log("Game initialized.");
     })(self);
